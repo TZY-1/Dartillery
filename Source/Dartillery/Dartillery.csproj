@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>Dartillery</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Teazy</Authors>
+    <Description>A dart throwing simulator for .NET with Gaussian and uniform deviation models.</Description>
+    <PackageTags>dart;darts;simulation;statistics;gaming</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dartillery.Core\Dartillery.Core.csproj" />
+    <ProjectReference Include="..\Dartillery.Simulation\Dartillery.Simulation.csproj" />
+
+    <!-- For DI support -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+</Project>
