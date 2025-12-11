@@ -1,0 +1,165 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+@using Dartillery.Core.Enums
+
+<div class="throw-results-display">
+    <h3>Statistics</h3>
+
+    @if (SimulationService.ThrowCount == 0)
+    {
+        <div class="alert alert-secondary">
+            <i class="bi bi-info-circle"></i> No throws yet. Select a target and throw some darts!
+        </div>
+    }
+    else
+    {
+        <!-- Overall Statistics -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Overall Performance</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Total Throws</div>
+                            <div class="stat-value">@SimulationService.ThrowCount</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Average Score</div>
+                            <div class="stat-value">@SimulationService.AverageScore.ToString("F2")</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Hit Rate</div>
+                            <div class="stat-value">@((SimulationService.HitRate * 100).ToString("F1"))%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Player</div>
+                            <div class="stat-value">@SimulationService.PlayerName</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Throw Result -->
+        @if (SimulationService.LastThrow != null)
+        {
+            var lastThrow = SimulationService.LastThrow;
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Last Throw</h5>
+                </div>
+                <div class="card-body">
+                    <div class="last-throw-score">
+                        <span class="score-badge @GetScoreBadgeClass(lastThrow.Score)">
+                            @lastThrow.Score
+                        </span>
+                        points
+                    </div>
+                    <div class="throw-details mt-2">
+                        <div><strong>Segment:</strong> @GetSegmentTypeName(lastThrow.SegmentType)</div>
+                        @if (lastThrow.SectorNumber > 0)
+                        {
+                            <div><strong>Sector:</strong> @lastThrow.SectorNumber</div>
+                        }
+                        <div><strong>Deviation:</strong> @lastThrow.Deviation.ToString("F4") units</div>
+                    </div>
+
+                    @if (!lastThrow.IsHit)
+                    {
+                        <div class="alert alert-danger mt-2 mb-0">
+                            <i class="bi bi-x-circle"></i> Miss! Dart landed off the board.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Recent Throws -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Recent Throws</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Score</th>
+                                <th>Segment</th>
+                                <th>Sector</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var (throwResult, index) in SimulationService.Throws.Reverse().Select((t, i) => (t, SimulationService.ThrowCount - i)))
+                            {
+                                <tr class="@(throwResult.IsHit ? "" : "table-danger")">
+                                    <td>@index</td>
+                                    <td>
+                                        <span class="badge @GetScoreBadgeClass(throwResult.Score)">
+                                            @throwResult.Score
+                                        </span>
+                                    </td>
+                                    <td>@GetSegmentTypeAbbreviation(throwResult.SegmentType)</td>
+                                    <td>@(throwResult.SectorNumber > 0 ? throwResult.SectorNumber.ToString() : "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public SimulationService SimulationService { get; set; } = null!;
+
+    private string GetScoreBadgeClass(int score)
+    {
+        return score switch
+        {
+            >= 60 => "bg-danger",
+            >= 40 => "bg-warning text-dark",
+            >= 20 => "bg-primary",
+            > 0 => "bg-secondary",
+            _ => "bg-dark"
+        };
+    }
+
+    private string GetSegmentTypeName(SegmentType segmentType)
+    {
+        return segmentType switch
+        {
+            SegmentType.InnerBull => "Bullseye (Double Bull)",
+            SegmentType.OuterBull => "Outer Bull (Single Bull)",
+            SegmentType.Triple => "Triple",
+            SegmentType.Double => "Double",
+            SegmentType.Single => "Single",
+            SegmentType.Miss => "Miss",
+            _ => "Unknown"
+        };
+    }
+
+    private string GetSegmentTypeAbbreviation(SegmentType segmentType)
+    {
+        return segmentType switch
+        {
+            SegmentType.InnerBull => "DBull",
+            SegmentType.OuterBull => "SBull",
+            SegmentType.Triple => "T",
+            SegmentType.Double => "D",
+            SegmentType.Single => "S",
+            SegmentType.Miss => "X",
+            _ => "?"
+        };
+    }
+}

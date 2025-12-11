@@ -1,0 +1,34 @@
+@page "/"
+@using Dartillery.Web.Services
+@using Dartillery.Web.Components
+@inject SimulationService SimulationService
+
+<PageTitle>Dart Simulator - Dartillery</PageTitle>
+
+<DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
+                     ShowDeviationLines="@ShowDeviationLines" />
+
+@code {
+    private bool ShowDeviationLines { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to state changes from the service
+        SimulationService.OnStateChanged += StateHasChanged;
+
+        // Initialize session with default settings
+        SimulationService.RebuildSession();
+    }
+
+    private void OnThrowExecuted()
+    {
+        // Trigger UI update
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        SimulationService.OnStateChanged -= StateHasChanged;
+    }
+}

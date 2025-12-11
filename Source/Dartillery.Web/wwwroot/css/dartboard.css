@@ -1,0 +1,316 @@
+/* Dartillery Simulator Styles */
+
+/* Page Layout */
+.simulator-page {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.page-header {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Container - 3 Column Grid */
+.simulator-container {
+    display: grid;
+    grid-template-columns: 1fr 400px 350px;
+    gap: 20px;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+/* Dartboard Column */
+.dartboard-column {
+    min-height: 600px;
+}
+
+.dartboard-svg {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    background: #0d1117;
+    border-radius: 50%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Controls Column */
+.controls-column {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.simulation-controls {
+    padding: 10px;
+}
+
+.simulation-controls h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 5px;
+}
+
+/* Statistics Column */
+.stats-column {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.throw-results-display {
+    padding: 10px;
+}
+
+.stat-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.last-throw-score {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.score-badge {
+    display: inline-block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.throw-details {
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+/* Sector Number Styling (in SVG) */
+.sector-number {
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: 600;
+    border-bottom: none;
+}
+
+/* Forms */
+.form-range {
+    cursor: pointer;
+}
+
+.form-range::-webkit-slider-thumb {
+    background: #667eea;
+}
+
+.form-range::-moz-range-thumb {
+    background: #667eea;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Progress Bar */
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #e9ecef;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Table Styling */
+.table-responsive {
+    border-radius: 8px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.table-danger {
+    background-color: #f8d7da !important;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+/* Scrollbar Styling */
+.controls-column::-webkit-scrollbar,
+.stats-column::-webkit-scrollbar {
+    width: 8px;
+}
+
+.controls-column::-webkit-scrollbar-track,
+.stats-column::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.controls-column::-webkit-scrollbar-thumb,
+.stats-column::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.controls-column::-webkit-scrollbar-thumb:hover,
+.stats-column::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .simulator-container {
+        grid-template-columns: 1fr 350px 300px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .simulator-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .dartboard-column,
+    .controls-column,
+    .stats-column {
+        max-height: none;
+    }
+
+    .dartboard-svg {
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .simulator-page {
+        padding: 10px;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .dartboard-svg {
+        max-width: 100%;
+    }
+
+    .simulation-controls h3 {
+        font-size: 1.1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .score-badge {
+        font-size: 2rem;
+        padding: 8px 16px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Icon Styling */
+.bi {
+    margin-right: 5px;
+}
+
+/* Custom Checkbox/Switch Styling */
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}

@@ -1,0 +1,94 @@
+@using Dartillery.Core.Models
+
+<div class="dartboard-container">
+    <svg viewBox="-1.2 -1.2 2.4 2.4" class="dartboard-svg">
+        <!-- Background -->
+        <circle cx="0" cy="0" r="1.15" fill="#1a1a1a" />
+
+        <!-- Double Ring -->
+        @for (int i = 0; i < SectorCount; i++)
+        {
+            <path d="@GetSectorPath(i, DoubleRingInner, DoubleRingOuter)"
+                  fill="@(i % 2 == 0 ? "#dc2626" : "#16a34a")"
+                  stroke="#000"
+                  stroke-width="0.002" />
+        }
+
+        <!-- Outer Single -->
+        @for (int i = 0; i < SectorCount; i++)
+        {
+            <path d="@GetSectorPath(i, TripleRingOuter, DoubleRingInner)"
+                  fill="@(i % 2 == 0 ? "#000" : "#f5f5f5")"
+                  stroke="#000"
+                  stroke-width="0.002" />
+        }
+
+        <!-- Triple Ring -->
+        @for (int i = 0; i < SectorCount; i++)
+        {
+            <path d="@GetSectorPath(i, TripleRingInner, TripleRingOuter)"
+                  fill="@(i % 2 == 0 ? "#dc2626" : "#16a34a")"
+                  stroke="#000"
+                  stroke-width="0.002" />
+        }
+
+        <!-- Inner Single -->
+        @for (int i = 0; i < SectorCount; i++)
+        {
+            <path d="@GetSectorPath(i, OuterBullRadius, TripleRingInner)"
+                  fill="@(i % 2 == 0 ? "#000" : "#f5f5f5")"
+                  stroke="#000"
+                  stroke-width="0.002" />
+        }
+
+        <!-- Outer Bull (Single Bull - Green) -->
+        <circle cx="0" cy="0" r="@OuterBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+                fill="#16a34a"
+                stroke="#000"
+                stroke-width="0.002" />
+
+        <!-- Inner Bull (Double Bull / Bullseye - Red) -->
+        <circle cx="0" cy="0" r="@InnerBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+                fill="#dc2626"
+                stroke="#000"
+                stroke-width="0.002" />
+
+       <!-- Numbers -->
+        @for (int i = 0; i < SectorCount; i++)
+        {
+            var pos = GetSectorTextPosition(i);
+            <g>
+                <text x="@pos.X.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+                      y="@pos.Y.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      fill="#fff"
+                      font-size="0.1"
+                      font-weight="bold"
+                      font-family="Arial, sans-serif">
+                    @SectorOrder[i]
+                </text>
+            </g>
+        }
+         
+    </svg>
+</div>
+
+<style>
+    .dartboard-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .dartboard-svg {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: 1;
+    }
+</style>
+
+@code {
+    [Parameter] public List<ThrowResult>? Throws { get; set; }
+    [Parameter] public bool ShowDeviationLines { get; set; } = false;
+}

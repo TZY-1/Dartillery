@@ -1,0 +1,227 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="simulation-controls">
+    <h3>Player Skill</h3>
+
+    <!-- Skill level preset selector -->
+    <div class="form-group mb-3">
+        <label for="skillLevel" class="form-label">Skill Level</label>
+        <select id="skillLevel"
+                class="form-select"
+                @bind="SimulationService.SelectedSkillLevel"
+                @bind:after="OnSkillLevelChanged">
+            <option value="Professional">Professional (σ=0.02)</option>
+            <option value="Amateur">Amateur (σ=0.05)</option>
+            <option value="Beginner">Beginner (σ=0.08)</option>
+            <option value="Custom">Custom</option>
+        </select>
+    </div>
+
+    <!-- Custom sigma slider (only shown if Custom selected) -->
+    @if (SimulationService.SelectedSkillLevel == "Custom")
+    {
+        <div class="form-group mb-3">
+            <label for="customSigma" class="form-label">
+                Sigma (Standard Deviation): @SimulationService.CustomSigma.ToString("F3")
+            </label>
+            <input id="customSigma"
+                   type="range"
+                   class="form-range"
+                   @bind="SimulationService.CustomSigma"
+                   @bind:after="OnParameterChanged"
+                   min="0.01"
+                   max="0.15"
+                   step="0.001" />
+            <small class="form-text text-muted">Lower = more accurate</small>
+        </div>
+    }
+
+    <hr />
+
+    <h3>Target Selection</h3>
+
+    <!-- Target selector -->
+    <div class="form-group mb-3">
+        <label for="targetSelect" class="form-label">Target</label>
+        <select id="targetSelect" class="form-select" @bind="SelectedTarget">
+            <option value="T20">Triple 20</option>
+            <option value="T19">Triple 19</option>
+            <option value="T18">Triple 18</option>
+            <option value="Bull">Bullseye</option>
+            <option value="OuterBull">Outer Bull</option>
+            <option value="D20">Double 20</option>
+            <option value="D16">Double 16</option>
+            <option value="S20">Single 20</option>
+            <option value="S19">Single 19</option>
+            <option value="S1">Single 1</option>
+        </select>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-grid gap-2 mb-3">
+        <button @onclick="ThrowDart" class="btn btn-primary" type="button">
+            <i class="bi bi-bullseye"></i> Throw Dart
+        </button>
+        <button @onclick="Throw10Darts" class="btn btn-secondary" type="button">
+            <i class="bi bi-arrow-repeat"></i> Throw 10 Darts
+        </button>
+        <button @onclick="ClearThrows" class="btn btn-danger" type="button">
+            <i class="bi bi-trash"></i> Clear All
+        </button>
+    </div>
+
+    <hr />
+
+    <!-- Fatigue controls -->
+    <h3>Fatigue Effects</h3>
+    <div class="form-check form-switch mb-2">
+        <input class="form-check-input"
+               type="checkbox"
+               id="enableFatigue"
+               @bind="SimulationService.EnableFatigue"
+               @bind:after="OnParameterChanged" />
+        <label class="form-check-label" for="enableFatigue">
+            Enable Fatigue Simulation
+        </label>
+    </div>
+
+    @if (SimulationService.EnableFatigue)
+    {
+        <div class="form-group mb-3">
+            <label for="fatigueRate" class="form-label">
+                Fatigue Rate: @SimulationService.FatigueRate.ToString("F4")
+            </label>
+            <input id="fatigueRate"
+                   type="range"
+                   class="form-range"
+                   @bind="SimulationService.FatigueRate"
+                   @bind:after="OnParameterChanged"
+                   min="0.001"
+                   max="0.02"
+                   step="0.001" />
+            <small class="form-text text-muted">How quickly player tires</small>
+        </div>
+
+        <!-- Current tremor display -->
+        <div class="alert alert-info">
+            <strong>Current Tremor:</strong> @SimulationService.CurrentTremor.ToString("F4")
+            <div class="progress mt-2" style="height: 20px;">
+                <div class="progress-bar bg-warning"
+                     role="progressbar"
+                     style="width: @((SimulationService.CurrentTremor * 100).ToString("F0"))%"
+                     aria-valuenow="@((SimulationService.CurrentTremor * 100).ToString("F0"))"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                    @((SimulationService.CurrentTremor * 100).ToString("F0"))%
+                </div>
+            </div>
+        </div>
+
+        <button @onclick="Throw50Darts" class="btn btn-outline-warning w-100 mb-3" type="button">
+            Demonstrate Fatigue (50 throws)
+        </button>
+    }
+
+    <hr />
+
+    <!-- Pressure controls -->
+    <h3>Pressure Effects</h3>
+    <div class="form-check form-switch mb-2">
+        <input class="form-check-input"
+               type="checkbox"
+               id="enablePressure"
+               @bind="SimulationService.EnablePressure"
+               @bind:after="OnParameterChanged" />
+        <label class="form-check-label" for="enablePressure">
+            Enable Pressure Psychology
+        </label>
+    </div>
+
+    @if (SimulationService.EnablePressure)
+    {
+        <div class="alert alert-warning">
+            <small>
+                <i class="bi bi-info-circle"></i>
+                Pressure effects simulate psychological impact during high-stakes throws.
+                This will reduce accuracy based on game context.
+            </small>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public SimulationService SimulationService { get; set; } = null!;
+    [Parameter] public EventCallback OnThrowExecuted { get; set; }
+
+    private string SelectedTarget { get; set; } = "T20";
+
+    private async Task OnSkillLevelChanged()
+    {
+        SimulationService.RebuildSession();
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task OnParameterChanged()
+    {
+        SimulationService.RebuildSession();
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task ThrowDart()
+    {
+        var target = ParseTarget(SelectedTarget);
+        SimulationService.ThrowAt(target);
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task Throw10Darts()
+    {
+        var target = ParseTarget(SelectedTarget);
+        for (int i = 0; i < 10; i++)
+        {
+            SimulationService.ThrowAt(target);
+            await Task.Yield(); // Allow UI to update
+        }
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task Throw50Darts()
+    {
+        var target = ParseTarget(SelectedTarget);
+        for (int i = 0; i < 50; i++)
+        {
+            SimulationService.ThrowAt(target);
+            if (i % 5 == 0) // Update UI every 5 throws
+            {
+                await OnThrowExecuted.InvokeAsync();
+                await Task.Delay(50); // Small delay for visual feedback
+            }
+        }
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task ClearThrows()
+    {
+        SimulationService.ClearThrows();
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private Target ParseTarget(string targetStr)
+    {
+        return targetStr switch
+        {
+            "T20" => Target.Triple(20),
+            "T19" => Target.Triple(19),
+            "T18" => Target.Triple(18),
+            "Bull" => Target.Bullseye(),
+            "OuterBull" => Target.OuterBull(),
+            "D20" => Target.Double(20),
+            "D16" => Target.Double(16),
+            "S20" => Target.Single(20),
+            "S19" => Target.Single(19),
+            "S1" => Target.Single(1),
+            _ => Target.Triple(20)
+        };
+    }
+}
