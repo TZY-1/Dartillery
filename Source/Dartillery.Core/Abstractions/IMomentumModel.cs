@@ -13,5 +13,5 @@ public interface IMomentumModel
     /// </summary>
     /// <param name="recentHistory">Recent throws (typically last 3-10 throws).</param>
     /// <returns>Momentum multiplier (< 1.0 = hot hand/better, > 1.0 = cold streak/worse, 1.0 = neutral).</returns>
-    double CalculateMomentumModifier(List<ThrowResult> recentHistory);
+    double CalculateMomentumModifier(IReadOnlyList<ThrowResult> recentHistory);
 }

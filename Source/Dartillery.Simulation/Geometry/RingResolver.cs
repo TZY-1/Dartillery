@@ -1,5 +1,5 @@
-using Dartillery.Core.Constants;
 using Dartillery.Core.Enums;
+using Dartillery.Shared;
 
 namespace Dartillery.Simulation.Geometry;
 

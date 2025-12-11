@@ -1,3 +1,4 @@
+using Dartillery.Core.Constants;
 using Dartillery.Core.Enums;
 
 namespace Dartillery.Core.Models;
@@ -85,11 +86,11 @@ public sealed class Target : IEquatable<Target>
     /// <returns>The score value in points.</returns>
     public int GetScore() => SegmentType switch
     {
-        SegmentType.InnerBull => 50,
-        SegmentType.OuterBull => 25,
-        SegmentType.Triple => SectorNumber * 3,
-        SegmentType.Double => SectorNumber * 2,
-        SegmentType.Single => SectorNumber,
+        SegmentType.InnerBull => BoardScoring.InnerBullScore,
+        SegmentType.OuterBull => BoardScoring.OuterBullScore,
+        SegmentType.Triple    => SectorNumber * BoardScoring.TripleMultiplier,
+        SegmentType.Double    => SectorNumber * BoardScoring.DoubleMultiplier,
+        SegmentType.Single    => SectorNumber * BoardScoring.SingleMultiplier,
         _ => 0
     };
 

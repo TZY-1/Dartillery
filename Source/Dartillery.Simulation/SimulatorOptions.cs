@@ -1,39 +1,38 @@
 ﻿namespace Dartillery.Simulation.Configuration;
 
 /// <summary>
-/// Konfigurationsoptionen für die Wurf-Simulation.
+/// Configuration options for the throw simulation.
 /// </summary>
 public sealed class SimulatorOptions
 {
     /// <summary>
-    /// Standardabweichung der Streuung.
-    /// Kleinere Werte = präzisere Würfe.
-    /// Typische Werte: 0.02 (Profi) bis 0.08 (Anfänger).
+    /// Standard deviation of the throw dispersion.
+    /// Smaller values = more precise throws.
     /// </summary>
     public double Sigma { get; set; } = 0.03;
 
     /// <summary>
-    /// Seed für den Zufallsgenerator. Null = zufälliger Seed.
+    /// Seed for the random generator. Null = random seed.
     /// </summary>
     public int? Seed { get; set; }
 
     /// <summary>
-    /// Standard-Optionen mit moderater Streuung.
+    /// Default options with moderate dispersion.
     /// </summary>
     public static SimulatorOptions Default => new();
 
     /// <summary>
-    /// Optionen für einen Profi-Spieler (geringe Streuung).
+    /// Options for a professional player (low dispersion).
     /// </summary>
     public static SimulatorOptions Professional => new() { Sigma = 0.02 };
 
     /// <summary>
-    /// Optionen für einen Amateur (mittlere Streuung).
+    /// Options for an amateur (medium dispersion).
     /// </summary>
     public static SimulatorOptions Amateur => new() { Sigma = 0.05 };
 
     /// <summary>
-    /// Optionen für einen Anfänger (hohe Streuung).
+    /// Options for a beginner (high dispersion).
     /// </summary>
     public static SimulatorOptions Beginner => new() { Sigma = 0.08 };
 }

@@ -1,0 +1,17 @@
+using Dartillery.Core.Abstractions;
+
+namespace Dartillery.EventListeners;
+
+/// <summary>
+/// Simple console logging for throw events.
+/// Useful for debugging and real-time monitoring.
+/// </summary>
+public sealed class ConsoleLoggingListener : IThrowEventListener
+{
+    public void OnThrowCompleted(ThrowEvent evt)
+    {
+        Console.WriteLine($"[{evt.Timestamp:HH:mm:ss}] {evt.Profile.Name}: " +
+            $"{evt.Result.SegmentType} {evt.Result.SectorNumber} " +
+            $"(Score: {evt.Result.Score}, Tremor: {evt.Context.SessionTremor:F4})");
+    }
+}

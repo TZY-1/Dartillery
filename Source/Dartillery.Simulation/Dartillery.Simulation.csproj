@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dartillery.Core\Dartillery.Core.csproj" />
+    <ProjectReference Include="..\Dartillery.Shared\Dartillery.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
