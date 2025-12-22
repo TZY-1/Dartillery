@@ -1,10 +1,22 @@
 using System.Text;
+using Dartillery.Core.Models;
 using Dartillery.Shared;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Dartillery.Web.Components;
 
 public partial class DartboardVisualizer
 {
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
+
+    [Parameter] public List<ThrowResult>? Throws { get; set; }
+    [Parameter] public bool ShowDeviationLines { get; set; } = true;
+    [Parameter] public bool EnableManualTargeting { get; set; }
+    [Parameter] public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
+
+    private ElementReference svgElementRef;
     private const double InnerBullRadius = BoardDimensions.InnerBullRadius;
     private const double OuterBullRadius = BoardDimensions.OuterBullRadius;
     private const double TripleRingInner = BoardDimensions.TripleRingInner;
@@ -54,5 +66,41 @@ public partial class DartboardVisualizer
             Math.Cos(angle) * radius,
             Math.Sin(angle) * radius
         );
+    }
+
+    private async Task HandleSvgClick(MouseEventArgs e)
+    {
+        if (!EnableManualTargeting) return;
+
+        try
+        {
+            // Play throw sound
+            await JSRuntime.InvokeVoidAsync("playAudio", "/sounds/throw.mp3");
+
+            // Get SVG coordinates from screen coordinates
+            var coords = await JSRuntime.InvokeAsync<SvgCoordinates>(
+                "dartboardInterop.getSvgCoordinates",
+                svgElementRef,
+                e.ClientX,
+                e.ClientY
+            );
+
+            // Invoke callback with normalized coordinates
+            await OnManualTargetSelected.InvokeAsync((coords.X, coords.Y));
+
+            // Play impact sound after a short delay (simulating dart flight)
+            await Task.Delay(300);
+            await JSRuntime.InvokeVoidAsync("playAudio", "/sounds/impact.mp3");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling SVG click: {ex.Message}");
+        }
+    }
+
+    private class SvgCoordinates
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
     }
 }

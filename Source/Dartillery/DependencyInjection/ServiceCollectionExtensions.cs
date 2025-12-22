@@ -41,6 +41,7 @@ public static class DartilleryServiceCollectionExtensions
         // Register geometry services
         services.AddSingleton<ISegmentResolver, SegmentResolver>();
         services.AddSingleton<IAimPointCalculator, AimPointCalculator>();
+        services.AddSingleton<ITargetResolver, TargetResolver>();
 
         // Register main simulator
         services.AddSingleton(sp =>

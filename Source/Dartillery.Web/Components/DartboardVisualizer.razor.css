@@ -1,0 +1,19 @@
+.dartboard-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.dartboard-svg {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
+}
+
+.dartboard-svg.manual-targeting {
+    cursor: crosshair;
+}
+
+.dartboard-svg.manual-targeting:hover {
+    filter: brightness(1.1);
+}

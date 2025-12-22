@@ -1,7 +1,12 @@
 @using Dartillery.Core.Models
 
 <div class="dartboard-container">
-    <svg viewBox="-1.2 -1.2 2.4 2.4" class="dartboard-svg">
+    <svg @ref="svgElementRef"
+         viewBox="-1.2 -1.2 2.4 2.4"
+         class="dartboard-svg @(EnableManualTargeting ? "manual-targeting" : "")"
+         transform="scale(1, -1)"
+         style="transform-origin: center;"
+         @onclick="HandleSvgClick">
         <!-- Background -->
         <circle cx="0" cy="0" r="1.15" fill="#1a1a1a" />
 
@@ -57,7 +62,7 @@
         @for (int i = 0; i < SectorCount; i++)
         {
             var pos = GetSectorTextPosition(i);
-            <g>
+            <g transform="scale(1, -1)">
                 <text x="@pos.X.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
                       y="@pos.Y.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
                       text-anchor="middle"
@@ -70,25 +75,46 @@
                 </text>
             </g>
         }
-         
+
+        <!-- Throws Visualization -->
+        @if (Throws != null && Throws.Any())
+        {
+            <g class="throws-layer">
+                @foreach (var throw_ in Throws)
+                {
+                    var culture = System.Globalization.CultureInfo.InvariantCulture;
+
+                    @if (ShowDeviationLines)
+                    {
+                        <!-- Deviation line from aim to hit -->
+                        <line x1="@throw_.AimedPoint.X.ToString("F4", culture)"
+                              y1="@throw_.AimedPoint.Y.ToString("F4", culture)"
+                              x2="@throw_.HitPoint.X.ToString("F4", culture)"
+                              y2="@throw_.HitPoint.Y.ToString("F4", culture)"
+                              stroke="#fbbf24"
+                              stroke-width="0.007"
+                              stroke-dasharray="0.01,0.005"
+                              stroke-opacity="0.7" />
+                    }
+
+                    <!-- Aim Point (Yellow) -->
+                    <circle cx="@throw_.AimedPoint.X.ToString("F4", culture)"
+                            cy="@throw_.AimedPoint.Y.ToString("F4", culture)"
+                            r="0.015"
+                            fill="#fbbf24"
+                            stroke="#f59e0b"
+                            stroke-width="0.005" />
+
+                    <!-- Hit Point (Orange) -->
+                    <circle cx="@throw_.HitPoint.X.ToString("F4", culture)"
+                            cy="@throw_.HitPoint.Y.ToString("F4", culture)"
+                            r="0.015"
+                            fill="#f97316"
+                            stroke="#ea580c"
+                            stroke-width="0.005" />
+                }
+            </g>
+        }
+
     </svg>
 </div>
-
-<style>
-    .dartboard-container {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .dartboard-svg {
-        width: 100%;
-        height: 100%;
-        aspect-ratio: 1;
-    }
-</style>
-
-@code {
-    [Parameter] public List<ThrowResult>? Throws { get; set; }
-    [Parameter] public bool ShowDeviationLines { get; set; } = false;
-}

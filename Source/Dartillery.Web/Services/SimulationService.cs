@@ -1,16 +1,16 @@
+using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 
 namespace Dartillery.Web.Services;
 
 /// <summary>
 /// Scoped service for managing a player's simulation session lifecycle.
-/// SOLID: Single Responsibility Principle - manages session state and configuration
-/// SOLID: Dependency Inversion Principle - depends on abstractions (PlayerSession)
 /// </summary>
 public sealed class SimulationService
 {
     private PlayerSession? _session;
     private readonly List<ThrowResult> _throws = new();
+    private readonly ITargetResolver _targetResolver;
 
     // Configuration properties for UI binding
     public string SelectedSkillLevel { get; set; } = "Amateur";
@@ -18,6 +18,7 @@ public sealed class SimulationService
     public bool EnableFatigue { get; set; } = true;
     public bool EnablePressure { get; set; } = false;
     public double FatigueRate { get; set; } = 0.005;
+    public bool EnableManualTargeting { get; set; } = false;
 
     // Current state properties
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
@@ -27,6 +28,11 @@ public sealed class SimulationService
 
     // Event for UI updates
     public event Action? OnStateChanged;
+
+    public SimulationService(ITargetResolver targetResolver)
+    {
+        this._targetResolver = targetResolver;
+    }
 
     /// <summary>
     /// Rebuilds the session with current configuration settings.
@@ -128,6 +134,24 @@ public sealed class SimulationService
     /// Gets the most recent throw result, or null if no throws yet
     /// </summary>
     public ThrowResult? LastThrow => _throws.Count > 0 ? _throws[^1] : null;
+
+    /// <summary>
+    /// Executes a dart throw at specific normalized coordinates (for manual targeting).
+    /// Creates a target from the given coordinates and delegates to ThrowAt.
+    /// </summary>
+    /// <param name="x">Normalized X coordinate (-1.2 to 1.2)</param>
+    /// <param name="y">Normalized Y coordinate (-1.2 to 1.2)</param>
+    /// <param name="gameContext">Optional game context for pressure simulation</param>
+    /// <returns>The throw result</returns>
+    public ThrowResult ThrowAtCoordinates(double x, double y, GameContext? gameContext = null)
+    {
+        var target = _targetResolver.Resolve(new Point2D(x, y));
+
+        if (target == null)
+            throw new InvalidOperationException("Throwing outside the board is not allowed.");
+        
+        return ThrowAt(target, gameContext);
+    }
 
     /// <summary>
     /// Notifies subscribers that state has changed

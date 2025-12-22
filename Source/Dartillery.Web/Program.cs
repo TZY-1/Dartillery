@@ -7,6 +7,7 @@ builder.Services.AddServerSideBlazor();
 // Dartillery services
 builder.Services.AddScoped<Dartillery.Web.Services.SimulationService>();
 builder.Services.AddSingleton<Dartillery.Web.Services.DartboardGeometryService>();
+builder.Services.AddDartillerySimulation();
 
 var app = builder.Build();
 

@@ -2,33 +2,64 @@
 @using Dartillery.Web.Services
 @using Dartillery.Web.Components
 @inject SimulationService SimulationService
+@implements IDisposable
 
 <PageTitle>Dart Simulator - Dartillery</PageTitle>
 
-<DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
-                     ShowDeviationLines="@ShowDeviationLines" />
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Left Column: Controls -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <SimulationControls SimulationService="@SimulationService"
+                                OnThrowExecuted="@OnThrowExecuted" />
+        </div>
+
+        <!-- Middle Column: Dartboard -->
+        <div class="col-lg-6 col-md-8 mb-4">
+            <DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
+                                 ShowDeviationLines="@ShowDeviationLines"
+                                 EnableManualTargeting="@SimulationService.EnableManualTargeting"
+                                 OnManualTargetSelected="@HandleManualTargetSelected" />
+        </div>
+
+        <!-- Right Column: Results -->
+        <div class="col-lg-3 col-md-12">
+            <ThrowResultsDisplay SimulationService="@SimulationService" />
+        </div>
+    </div>
+</div>
 
 @code {
-    private bool ShowDeviationLines { get; set; } = false;
+    private bool ShowDeviationLines { get; set; } = true;
 
     protected override void OnInitialized()
     {
-        // Subscribe to state changes from the service
         SimulationService.OnStateChanged += StateHasChanged;
-
-        // Initialize session with default settings
         SimulationService.RebuildSession();
     }
 
     private void OnThrowExecuted()
     {
-        // Trigger UI update
         StateHasChanged();
+    }
+
+    private async Task HandleManualTargetSelected((double X, double Y) coordinates)
+    {
+        try
+        {
+            SimulationService.ThrowAtCoordinates(coordinates.X, coordinates.Y);
+        }
+        catch (InvalidOperationException)
+        {
+            //info to user, that aiming at miss is not allowed in manual mode
+            return;
+        }
+
+        OnThrowExecuted();
     }
 
     public void Dispose()
     {
-        // Unsubscribe from events to prevent memory leaks
         SimulationService.OnStateChanged -= StateHasChanged;
     }
 }
