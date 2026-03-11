@@ -1,0 +1,89 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# Namespace style — file-scoped is used consistently
+csharp_style_namespace_declarations = file_scoped:warning
+
+# var preferences
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# ---- Naming conventions ----
+
+# Symbols
+dotnet_naming_symbols.types_and_namespaces.applicable_kinds = class, struct, interface, enum, namespace, delegate
+dotnet_naming_symbols.types_and_namespaces.applicable_accessibilities = *
+
+dotnet_naming_symbols.methods_and_properties.applicable_kinds = method, property, event
+dotnet_naming_symbols.methods_and_properties.applicable_accessibilities = *
+
+dotnet_naming_symbols.local_variables.applicable_kinds = local, parameter
+dotnet_naming_symbols.local_variables.applicable_accessibilities = *
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, protected, private_protected
+
+dotnet_naming_symbols.non_private_fields.applicable_kinds = field
+dotnet_naming_symbols.non_private_fields.applicable_accessibilities = public, internal, protected_internal
+
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+
+# Styles
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+dotnet_naming_style.all_upper.capitalization = all_upper
+dotnet_naming_style.all_upper.word_separator = _
+
+# Rules
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types_and_namespaces
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
+
+dotnet_naming_rule.methods_should_be_pascal_case.symbols = methods_and_properties
+dotnet_naming_rule.methods_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.methods_should_be_pascal_case.severity = suggestion
+
+dotnet_naming_rule.locals_should_be_camel_case.symbols = local_variables
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case
+dotnet_naming_rule.locals_should_be_camel_case.severity = suggestion
+
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.style = underscore_camel_case
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.severity = suggestion
+
+dotnet_naming_rule.non_private_fields_should_be_pascal_case.symbols = non_private_fields
+dotnet_naming_rule.non_private_fields_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.non_private_fields_should_be_pascal_case.severity = suggestion
+
+# ---- Analyzer severity overrides ----
+
+# SA1101: Do not prefix local calls with 'this.' — not used in this codebase
+dotnet_diagnostic.SA1101.severity = none
+
+# SA1600: Elements should be documented — keep at suggestion for Phase 5 XML doc audit
+dotnet_diagnostic.SA1600.severity = suggestion
+
+[*.{csproj,props,targets,xml}]
+indent_style = space
+indent_size = 2
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
