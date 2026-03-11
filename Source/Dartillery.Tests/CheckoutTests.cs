@@ -6,16 +6,22 @@ using Dartillery.Core.Models;
 namespace Dartillery.Tests;
 
 [TestFixture]
+[Category("Analysis")]
 public class CheckoutTests
 {
+    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
+    {
+        return new DartboardSimulatorBuilder()
+            .WithPrecision(precision)
+            .WithSeed(seed)
+            .Build();
+    }
+
     [Test]
-    public void AnalyzeCheckouts_CommonFinishes_ShowsSuccessRate()
+    public void SimulateCheckout_CommonRoutes_AllAttemptsRecorded()
     {
         // Arrange
-        var simulator = new DartboardSimulatorBuilder()
-            .WithPrecision(SimulatorPrecision.Professional)
-            .WithSeed(42)
-            .Build();
+        var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 42);
 
         var checkouts = new List<CheckoutRoute>
         {
@@ -36,26 +42,23 @@ public class CheckoutTests
             new(40, Target.Double(20), null, null)
         };
 
-        Console.WriteLine("=== Checkout Analysis (Professional Player) ===");
-        Console.WriteLine($"{"Score",-6} {"Route",-30} {"Success %",-12} {"Avg Darts",-10}");
-        Console.WriteLine(new string('-', 62));
+        TestContext.Out.WriteLine("=== Checkout Analysis (Professional Player) ===");
+        TestContext.Out.WriteLine($"{"Score",-6} {"Route",-30} {"Success %",-12} {"Avg Darts",-10}");
+        TestContext.Out.WriteLine(new string('-', 62));
 
         foreach (var checkout in checkouts.OrderByDescending(c => c.Score))
         {
             var stats = SimulateCheckout(simulator, checkout.Targets, 100);
             var routeStr = string.Join(" -> ", checkout.Targets.Where(t => t != null));
-            Console.WriteLine($"{checkout.Score,-6} {routeStr,-30} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
+            TestContext.Out.WriteLine($"{checkout.Score,-6} {routeStr,-30} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
     }
 
     [Test]
-    public void CompareCheckoutStrategies_Score120_ShowsOptimalRoute()
+    public void SimulateCheckout_FourStrategiesFor120_AllStatsComputed()
     {
         // Arrange
-        var simulator = new DartboardSimulatorBuilder()
-            .WithPrecision(SimulatorPrecision.Professional)
-            .WithSeed(999)
-            .Build();
+        var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 999);
 
         var strategies = new List<(string Name, Target[] Route)>
         {
@@ -65,19 +68,19 @@ public class CheckoutTests
             ("T19-T19-D17", new[] { Target.Triple(19), Target.Triple(19), Target.Double(17) })
         };
 
-        Console.WriteLine("=== Strategy Comparison: 120 Checkout ===");
-        Console.WriteLine($"{"Strategy",-20} {"Success %",-12} {"Avg Darts",-10}");
-        Console.WriteLine(new string('-', 45));
+        TestContext.Out.WriteLine("=== Strategy Comparison: 120 Checkout ===");
+        TestContext.Out.WriteLine($"{"Strategy",-20} {"Success %",-12} {"Avg Darts",-10}");
+        TestContext.Out.WriteLine(new string('-', 45));
 
         foreach (var (name, route) in strategies)
         {
             var stats = SimulateCheckout(simulator, route, 200);
-            Console.WriteLine($"{name,-20} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
+            TestContext.Out.WriteLine($"{name,-20} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
     }
 
     [Test]
-    public void ComparePrecisionLevels_StandardCheckouts_ShowsDifference()
+    public void SimulateCheckout_AllPrecisionLevelsOn141_AllStatsComputed()
     {
         // Arrange
         var checkoutRoute = new[] { Target.Triple(20), Target.Triple(19), Target.Double(12) }; // 141
@@ -89,19 +92,16 @@ public class CheckoutTests
             (SimulatorPrecision.Beginner, "Beginner")
         };
 
-        Console.WriteLine("=== Precision Impact on 141 Checkout (T20-T19-D12) ===");
-        Console.WriteLine($"{"Level",-15} {"Success %",-12} {"Avg Darts",-10}");
-        Console.WriteLine(new string('-', 40));
+        TestContext.Out.WriteLine("=== Precision Impact on 141 Checkout (T20-T19-D12) ===");
+        TestContext.Out.WriteLine($"{"Level",-15} {"Success %",-12} {"Avg Darts",-10}");
+        TestContext.Out.WriteLine(new string('-', 40));
 
         foreach (var (level, name) in precisionLevels)
         {
-            var simulator = new DartboardSimulatorBuilder()
-                .WithPrecision(level)
-                .WithSeed(42)
-                .Build();
+            var simulator = CreateSeededSimulator(level, seed: 42);
 
             var stats = SimulateCheckout(simulator, checkoutRoute, 200);
-            Console.WriteLine($"{name,-15} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
+            TestContext.Out.WriteLine($"{name,-15} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
     }
 

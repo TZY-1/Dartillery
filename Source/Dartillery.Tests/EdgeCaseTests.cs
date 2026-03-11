@@ -194,7 +194,7 @@ public class EdgeCaseTests
     public class SpecialCaseTests
     {
         [Test]
-        public void Throw_AtSector1_AllSegmentTypesWork()
+        public void Throw_AtSector1AllSegmentTypes_ReturnsValidResults()
         {
             // Arrange - Sektor 1 ist der niedrigste Wert
             var simulator = new DartboardSimulatorBuilder()
@@ -213,7 +213,7 @@ public class EdgeCaseTests
         }
 
         [Test]
-        public void Throw_AtSector20_AllSegmentTypesWork()
+        public void Throw_AtSector20AllSegmentTypes_ReturnsValidResults()
         {
             // Arrange - Sektor 20 ist der höchste Wert
             var simulator = new DartboardSimulatorBuilder()
@@ -371,7 +371,7 @@ public class EdgeCaseTests
                 Assert.That(str, Is.Not.Empty);
 
                 // ToString sollte Typ und Nummer enthalten
-                Console.WriteLine($"Target: {str}");
+                TestContext.Out.WriteLine($"Target: {str}");
             }
         }
     }
@@ -472,7 +472,7 @@ public class EdgeCaseTests
 
             // Sollte gelegentlich daneben werfen bei Amateur-Präzision
             var missCount = samples.Count(s => s.SegmentType == SegmentType.Miss);
-            Console.WriteLine($"Hit rate: {hitCount}/1000, Unique scores: {uniqueScores}, Misses: {missCount}");
+            TestContext.Out.WriteLine($"Hit rate: {hitCount}/1000, Unique scores: {uniqueScores}, Misses: {missCount}");
         }
 
         [Test]

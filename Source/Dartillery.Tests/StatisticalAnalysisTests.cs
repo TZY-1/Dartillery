@@ -6,14 +6,30 @@ using Dartillery.Core.Models;
 namespace Dartillery.Tests;
 
 [TestFixture]
+[Category("Analysis")]
 public class StatisticalAnalysisTests
 {
+    private static IThrowSimulator CreateSeededSimulator(
+        SimulatorPrecision? precision = null,
+        double? standardDeviation = null,
+        int seed = 42)
+    {
+        var builder = new DartboardSimulatorBuilder().WithSeed(seed);
+
+        if (precision.HasValue)
+            builder = builder.WithPrecision(precision.Value);
+
+        if (standardDeviation.HasValue)
+            builder = builder.WithStandardDeviation(standardDeviation.Value);
+
+        return builder.Build();
+    }
+
     [Test]
-    public void AnalyzePrecisionLevels_Triple20_ShowsStatistics()
+    public void Throw_MultiplePrecisionLevelsAtTriple20_ScoresPositiveForAllLevels()
     {
         var target = Target.Triple(20);
         const int throwCount = 1000;
-        var seed = 42;
 
         var precisionLevels = new[]
         {
@@ -22,18 +38,14 @@ public class StatisticalAnalysisTests
             (Level: SimulatorPrecision.Beginner, Name: "Beginner")
         };
 
-        Console.WriteLine($"=== Precision Analysis: Aiming at {target} ===");
-        Console.WriteLine($"Throws per precision level: {throwCount}\n");
+        TestContext.Out.WriteLine($"=== Precision Analysis: Aiming at {target} ===");
+        TestContext.Out.WriteLine($"Throws per precision level: {throwCount}\n");
 
         foreach (var (level, name) in precisionLevels)
         {
-            var simulator = new DartboardSimulatorBuilder()
-                .WithPrecision(level)
-                .WithSeed(seed)
-                .Build();
-
+            var simulator = CreateSeededSimulator(precision: level);
             var stats = AnalyzeThrows(simulator, target, throwCount);
-            Console.WriteLine($"--- {name} ---");
+            TestContext.Out.WriteLine($"--- {name} ---");
             PrintStatistics(stats, throwCount);
 
             Assert.That(stats.AverageScorePerDart, Is.GreaterThan(0));
@@ -41,15 +53,15 @@ public class StatisticalAnalysisTests
     }
 
     [Test]
-    public void AnalyzeDistributions_Bullseye_ComparesGaussianVsUniform()
+    public void Throw_GaussianVsUniformAtBullseye_BothProducePositiveScores()
     {
         // Arrange
         var target = Target.Bullseye();
         const int throwCount = 1000;
         var seed = 123;
 
-        Console.WriteLine($"=== Distribution Comparison: Aiming at {target} ===");
-        Console.WriteLine($"Throws per distribution: {throwCount}\n");
+        TestContext.Out.WriteLine($"=== Distribution Comparison: Aiming at {target} ===");
+        TestContext.Out.WriteLine($"Throws per distribution: {throwCount}\n");
 
         // Gaussian
         var gaussianSim = new DartboardSimulatorBuilder()
@@ -60,7 +72,7 @@ public class StatisticalAnalysisTests
 
         var gaussianStats = AnalyzeThrows(gaussianSim, target, throwCount);
 
-        Console.WriteLine("--- Gaussian Distribution (σ=0.03) ---");
+        TestContext.Out.WriteLine("--- Gaussian Distribution (σ=0.03) ---");
         PrintStatistics(gaussianStats, throwCount);
 
         // Uniform
@@ -72,7 +84,7 @@ public class StatisticalAnalysisTests
 
         var uniformStats = AnalyzeThrows(uniformSim, target, throwCount);
 
-        Console.WriteLine("--- Uniform Distribution (max radius=0.06) ---");
+        TestContext.Out.WriteLine("--- Uniform Distribution (max radius=0.06) ---");
         PrintStatistics(uniformStats, throwCount);
 
         // Assert
@@ -81,46 +93,43 @@ public class StatisticalAnalysisTests
     }
 
     [Test]
-    public void AnalyzeAllTargets_Professional_ShowsHeatmap()
+    public void Throw_AllTargetTypesWithProfessional_AllScoresNonNegative()
     {
         // Arrange
-        var simulator = new DartboardSimulatorBuilder()
-            .WithPrecision(SimulatorPrecision.Professional)
-            .WithSeed(999)
-            .Build();
+        var simulator = CreateSeededSimulator(precision: SimulatorPrecision.Professional, seed: 999);
 
         const int throwsPerTarget = 100;
 
-        Console.WriteLine("=== Target Analysis: Professional Player ===");
-        Console.WriteLine($"Throws per target: {throwsPerTarget}\n");
+        TestContext.Out.WriteLine("=== Target Analysis: Professional Player ===");
+        TestContext.Out.WriteLine($"Throws per target: {throwsPerTarget}\n");
 
         var results = new List<(string Target, double HitRate, double AvgScore)>();
 
         // Test all doubles
-        Console.WriteLine("--- Doubles (Checkout Practice) ---");
+        TestContext.Out.WriteLine("--- Doubles (Checkout Practice) ---");
         foreach (var sector in new[] { 20, 18, 16, 8, 4 })
         {
             var target = Target.Double(sector);
             var stats = AnalyzeThrows(simulator, target, throwsPerTarget);
             results.Add(($"D{sector}", stats.HitRate, stats.AverageScorePerDart));
-            Console.WriteLine($"D{sector}: Hit Rate {stats.HitRate:P1}, Avg Score {stats.AverageScorePerDart:F1}");
+            TestContext.Out.WriteLine($"D{sector}: Hit Rate {stats.HitRate:P1}, Avg Score {stats.AverageScorePerDart:F1}");
         }
 
-        Console.WriteLine("\n--- Triples (Scoring Practice) ---");
+        TestContext.Out.WriteLine("\n--- Triples (Scoring Practice) ---");
         foreach (var sector in new[] { 20, 19, 18, 17, 16 })
         {
             var target = Target.Triple(sector);
             var stats = AnalyzeThrows(simulator, target, throwsPerTarget);
             results.Add(($"T{sector}", stats.HitRate, stats.AverageScorePerDart));
-            Console.WriteLine($"T{sector}: Hit Rate {stats.HitRate:P1}, Avg Score {stats.AverageScorePerDart:F1}");
+            TestContext.Out.WriteLine($"T{sector}: Hit Rate {stats.HitRate:P1}, Avg Score {stats.AverageScorePerDart:F1}");
         }
 
-        Console.WriteLine("\n--- Bulls ---");
+        TestContext.Out.WriteLine("\n--- Bulls ---");
         var bullseye = AnalyzeThrows(simulator, Target.Bullseye(), throwsPerTarget);
-        Console.WriteLine($"Bullseye: Hit Rate {bullseye.HitRate:P1}, Avg Score {bullseye.AverageScorePerDart:F1}");
+        TestContext.Out.WriteLine($"Bullseye: Hit Rate {bullseye.HitRate:P1}, Avg Score {bullseye.AverageScorePerDart:F1}");
 
         var outerBull = AnalyzeThrows(simulator, Target.OuterBull(), throwsPerTarget);
-        Console.WriteLine($"Outer Bull: Hit Rate {outerBull.HitRate:P1}, Avg Score {outerBull.AverageScorePerDart:F1}");
+        TestContext.Out.WriteLine($"Outer Bull: Hit Rate {outerBull.HitRate:P1}, Avg Score {outerBull.AverageScorePerDart:F1}");
 
         // Assert
         Assert.That(results, Is.Not.Empty);
@@ -128,7 +137,7 @@ public class StatisticalAnalysisTests
     }
 
     [Test]
-    public void ComparePrecisionImpact_ShowsRelationship()
+    public void Throw_VaryingStandardDeviations_AllScoresNonNegative()
     {
         // Arrange
         var target = Target.Triple(20);
@@ -136,22 +145,18 @@ public class StatisticalAnalysisTests
 
         var standardDeviations = new[] { 0.01, 0.02, 0.03, 0.05, 0.08, 0.10 };
 
-        Console.WriteLine($"=== Standard Deviation Impact on {target} ===");
-        Console.WriteLine($"Throws per σ value: {throwCount}\n");
-        Console.WriteLine($"{"σ Value",-10} {"Hit Rate",-12} {"Avg Score",-12} {"Triple %",-12}");
-        Console.WriteLine(new string('-', 50));
+        TestContext.Out.WriteLine($"=== Standard Deviation Impact on {target} ===");
+        TestContext.Out.WriteLine($"Throws per σ value: {throwCount}\n");
+        TestContext.Out.WriteLine($"{"σ Value",-10} {"Hit Rate",-12} {"Avg Score",-12} {"Triple %",-12}");
+        TestContext.Out.WriteLine(new string('-', 50));
 
         foreach (var sigma in standardDeviations)
         {
-            var simulator = new DartboardSimulatorBuilder()
-                .WithStandardDeviation(sigma)
-                .WithSeed(555)
-                .Build();
-
+            var simulator = CreateSeededSimulator(standardDeviation: sigma, seed: 555);
             var stats = AnalyzeThrows(simulator, target, throwCount);
             var triplePercent = stats.TripleHits * 100.0 / throwCount;
 
-            Console.WriteLine($"{sigma,-10:F2} {stats.HitRate,-12:P1} {stats.AverageScorePerDart,-12:F2} {triplePercent,-12:F1}%");
+            TestContext.Out.WriteLine($"{sigma,-10:F2} {stats.HitRate,-12:P1} {stats.AverageScorePerDart,-12:F2} {triplePercent,-12:F1}%");
 
             Assert.That(stats.AverageScorePerDart, Is.GreaterThanOrEqualTo(0));
         }
@@ -196,38 +201,38 @@ public class StatisticalAnalysisTests
 
     private void PrintStatistics(ThrowStatistics stats, int throwCount)
     {
-        Console.WriteLine($"Board Hit Rate: {stats.HitRate:P1} ({stats.SuccessfulThrows}/{throwCount})");
+        TestContext.Out.WriteLine($"Board Hit Rate: {stats.HitRate:P1} ({stats.SuccessfulThrows}/{throwCount})");
 
-        Console.WriteLine($"Average Score per Dart: {stats.AverageScorePerDart:F1}");
+        TestContext.Out.WriteLine($"Average Score per Dart: {stats.AverageScorePerDart:F1}");
 
-        Console.WriteLine($"Three Dart Average: {stats.ThreeDartAverage:F1}");
+        TestContext.Out.WriteLine($"Three Dart Average: {stats.ThreeDartAverage:F1}");
 
-        Console.WriteLine($"Max Score: {stats.MaxScore}");
+        TestContext.Out.WriteLine($"Max Score: {stats.MaxScore}");
 
-        Console.WriteLine($"Triple Hits: {stats.TripleHits} ({stats.TripleHits * 100.0 / throwCount:F1}%)");
+        TestContext.Out.WriteLine($"Triple Hits: {stats.TripleHits} ({stats.TripleHits * 100.0 / throwCount:F1}%)");
 
-        Console.WriteLine($"Misses: {stats.Misses} ({stats.Misses * 100.0 / throwCount:F1}%)");
+        TestContext.Out.WriteLine($"Misses: {stats.Misses} ({stats.Misses * 100.0 / throwCount:F1}%)");
 
-        Console.WriteLine($"Top Scores:");
+        TestContext.Out.WriteLine($"Top Scores:");
 
         foreach (var (score, count) in stats.ScoreDistribution.OrderByDescending(x => x.Value).Take(3))
         {
-            Console.WriteLine($"  {score} points: {count} times");
+            TestContext.Out.WriteLine($"  {score} points: {count} times");
         }
 
-        Console.WriteLine($"Score Distribution:");
+        TestContext.Out.WriteLine($"Score Distribution:");
         foreach (var (score, count) in stats.ScoreDistribution.OrderByDescending(x => x.Value))
         {
-            Console.WriteLine($"  {score} points: {count} times ({count * 100.0 / throwCount:F1}%)");
+            TestContext.Out.WriteLine($"  {score} points: {count} times ({count * 100.0 / throwCount:F1}%)");
         }
 
-        Console.WriteLine($"Field Distribution:");
+        TestContext.Out.WriteLine($"Field Distribution:");
         foreach (var ((segmenttype, score), count) in stats.FieldDistribution.OrderByDescending(x => x.Value))
         {
-            Console.WriteLine($"  {segmenttype} {score}: {count} ({count * 100.0 / throwCount:F1}%)");
+            TestContext.Out.WriteLine($"  {segmenttype} {score}: {count} ({count * 100.0 / throwCount:F1}%)");
         }
 
-        Console.WriteLine();
+        TestContext.Out.WriteLine();
     }
 
     private class ThrowStatistics

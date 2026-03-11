@@ -5,30 +5,36 @@ using Dartillery.Core.Models;
 namespace Dartillery.Tests;
 
 [TestFixture]
+[Category("Analysis")]
 public class EnhancedSimulatorAnalysisTests
 {
+    internal static PlayerSession CreateSession(
+        Action<EnhancedDartboardSimulatorBuilder>? configure = null,
+        int seed = 42)
+    {
+        var builder = new EnhancedDartboardSimulatorBuilder().WithSeed(seed);
+        configure?.Invoke(builder);
+        return builder.BuildSession();
+    }
+
     [TestFixture]
     public class TremorAnalysisTests
     {
         [Test]
-        public void AnalyzeTremorImpact_LinearModel_ShowsPerformanceDegradation()
+        public void Throw_LinearTremorOverManyThrows_TremorExceedsThreshold()
         {
-            // Arrange
             const int throwsPerCheckpoint = 50;
             const int checkpoints = 10;
             var target = Target.Triple(20);
 
-            var session = new EnhancedDartboardSimulatorBuilder()
+            var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer("TremorTest")
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
+                .WithLinearTremor());
 
-            Console.WriteLine("=== Tremor Impact Analysis on T20 (Linear Model) ===\n");
-            Console.WriteLine($"{"Checkpoint",-12} {"Throws",-8} {"Tremor",-12} {"Avg Score",-12} {"Target Hit %",-12}");
-            Console.WriteLine(new string('-', 60));
+            TestContext.Out.WriteLine("=== Tremor Impact Analysis on T20 (Linear Model) ===\n");
+            TestContext.Out.WriteLine($"{"Checkpoint",-12} {"Throws",-8} {"Tremor",-12} {"Avg Score",-12} {"Target Hit %",-12}");
+            TestContext.Out.WriteLine(new string('-', 60));
 
-            // Act & Assert
             for (int checkpoint = 0; checkpoint < checkpoints; checkpoint++)
             {
                 var scores = new List<int>();
@@ -47,35 +53,30 @@ public class EnhancedSimulatorAnalysisTests
                 var tremor = session.CurrentTremor;
                 var totalThrows = (checkpoint + 1) * throwsPerCheckpoint;
 
-                Console.WriteLine($"{checkpoint + 1,-12} {totalThrows,-8} {tremor,-12:F6} {avgScore,-12:F2} {hitRate,-11:F1}%");
+                TestContext.Out.WriteLine($"{checkpoint + 1,-12} {totalThrows,-8} {tremor,-12:F6} {avgScore,-12:F2} {hitRate,-11:F1}%");
             }
 
-            // Tremor sollte deutlich angestiegen sein
             Assert.That(session.CurrentTremor, Is.GreaterThan(0.01));
         }
 
         [Test]
-        public void AnalyzeTremorImpact_RealisticVsLinear_CompareModels()
+        public void Throw_RealisticVsLinearTremor_BothAccumulatePositively()
         {
             // Arrange
             const int totalThrows = 500;
             var target = Target.Triple(20);
 
-            var linearSession = new EnhancedDartboardSimulatorBuilder()
+            var linearSession = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
+                .WithLinearTremor());
 
-            var realisticSession = new EnhancedDartboardSimulatorBuilder()
+            var realisticSession = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithRealisticTremor()
-                .WithSeed(42)
-                .BuildSession();
+                .WithRealisticTremor());
 
-            Console.WriteLine("=== Tremor Model Comparison ===\n");
-            Console.WriteLine($"{"Throws",-10} {"Linear",-15} {"Realistic",-15}");
-            Console.WriteLine(new string('-', 45));
+            TestContext.Out.WriteLine("=== Tremor Model Comparison ===\n");
+            TestContext.Out.WriteLine($"{"Throws",-10} {"Linear",-15} {"Realistic",-15}");
+            TestContext.Out.WriteLine(new string('-', 45));
 
             var checkpoints = new[] { 50, 100, 200, 300, 400, 500 };
 
@@ -86,7 +87,7 @@ public class EnhancedSimulatorAnalysisTests
 
                 if (checkpoints.Contains(i + 1))
                 {
-                    Console.WriteLine($"{i + 1,-10} {linearSession.CurrentTremor,-15:F6} {realisticSession.CurrentTremor,-15:F6}");
+                    TestContext.Out.WriteLine($"{i + 1,-10} {linearSession.CurrentTremor,-15:F6} {realisticSession.CurrentTremor,-15:F6}");
                 }
             }
 
@@ -95,39 +96,37 @@ public class EnhancedSimulatorAnalysisTests
         }
 
         [Test]
-        public void AnalyzeFatigueRecovery_AfterReset_ShowsRecovery()
+        public void Reset_AfterFatigue_TremorDecreases()
         {
             // Arrange
-            var session = new EnhancedDartboardSimulatorBuilder()
+            var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithAmateurPlayer()
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
+                .WithLinearTremor());
 
-            Console.WriteLine("=== Fatigue and Recovery Analysis ===\n");
+            TestContext.Out.WriteLine("=== Fatigue and Recovery Analysis ===\n");
 
-            // Act - Spiel 1
+            // Act - Game 1
             for (int i = 0; i < 100; i++)
             {
                 session.Throw(Target.Triple(20));
             }
             var tremorAfterGame1 = session.CurrentTremor;
-            Console.WriteLine($"After Game 1 (100 throws): Tremor = {tremorAfterGame1:F6}");
+            TestContext.Out.WriteLine($"After Game 1 (100 throws): Tremor = {tremorAfterGame1:F6}");
 
             // Reset (Pause)
             session.Reset();
             var tremorAfterReset = session.CurrentTremor;
-            Console.WriteLine($"After Reset: Tremor = {tremorAfterReset:F6}");
+            TestContext.Out.WriteLine($"After Reset: Tremor = {tremorAfterReset:F6}");
 
-            // Spiel 2
+            // Game 2
             for (int i = 0; i < 100; i++)
             {
                 session.Throw(Target.Triple(20));
             }
             var tremorAfterGame2 = session.CurrentTremor;
-            Console.WriteLine($"After Game 2 (100 throws): Tremor = {tremorAfterGame2:F6}");
+            TestContext.Out.WriteLine($"After Game 2 (100 throws): Tremor = {tremorAfterGame2:F6}");
 
-            // Assert - Reset sollte Tremor zurücksetzen
+            // Assert - Reset should lower tremor
             Assert.That(tremorAfterReset, Is.LessThan(tremorAfterGame1));
         }
     }
@@ -136,19 +135,17 @@ public class EnhancedSimulatorAnalysisTests
     public class PressureAnalysisTests
     {
         [Test]
-        public void AnalyzePressure_CheckoutVsNormal_ShowsImpact()
+        public void Throw_CheckoutPressureVsNormal_AllScoresInValidRange()
         {
             // Arrange
             const int throwsPerScenario = 200;
             var target = Target.Double(20);
 
-            var session = new EnhancedDartboardSimulatorBuilder()
+            var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithAmateurPlayer()
-                .WithCheckoutPsychology()
-                .WithSeed(42)
-                .BuildSession();
+                .WithCheckoutPsychology());
 
-            Console.WriteLine("=== Pressure Impact Analysis ===\n");
+            TestContext.Out.WriteLine("=== Pressure Impact Analysis ===\n");
 
             var normalScores = new List<int>();
             var normalHits = 0;
@@ -163,7 +160,7 @@ public class EnhancedSimulatorAnalysisTests
 
             session.Reset();
 
-            // Act - Checkout-Druck
+            // Act - Checkout pressure
             var checkoutContext = new GameContext
             {
                 RemainingScore = 40,
@@ -188,24 +185,24 @@ public class EnhancedSimulatorAnalysisTests
             var pressureAvg = pressureScores.Average();
             var pressureHitRate = pressureHits * 100.0 / throwsPerScenario;
 
-            Console.WriteLine($"Normal Situation:");
-            Console.WriteLine($"  Average Score: {normalAvg:F2}");
-            Console.WriteLine($"  Hit Rate (D20): {normalHitRate:F1}%");
-            Console.WriteLine();
-            Console.WriteLine($"Checkout Pressure:");
-            Console.WriteLine($"  Average Score: {pressureAvg:F2}");
-            Console.WriteLine($"  Hit Rate (D20): {pressureHitRate:F1}%");
-            Console.WriteLine();
-            Console.WriteLine($"Impact:");
-            Console.WriteLine($"  Score Difference: {pressureAvg - normalAvg:F2} ({(pressureAvg - normalAvg) / normalAvg * 100:F1}%)");
-            Console.WriteLine($"  Hit Rate Difference: {pressureHitRate - normalHitRate:F1}%");
+            TestContext.Out.WriteLine($"Normal Situation:");
+            TestContext.Out.WriteLine($"  Average Score: {normalAvg:F2}");
+            TestContext.Out.WriteLine($"  Hit Rate (D20): {normalHitRate:F1}%");
+            TestContext.Out.WriteLine();
+            TestContext.Out.WriteLine($"Checkout Pressure:");
+            TestContext.Out.WriteLine($"  Average Score: {pressureAvg:F2}");
+            TestContext.Out.WriteLine($"  Hit Rate (D20): {pressureHitRate:F1}%");
+            TestContext.Out.WriteLine();
+            TestContext.Out.WriteLine($"Impact:");
+            TestContext.Out.WriteLine($"  Score Difference: {pressureAvg - normalAvg:F2} ({(pressureAvg - normalAvg) / normalAvg * 100:F1}%)");
+            TestContext.Out.WriteLine($"  Hit Rate Difference: {pressureHitRate - normalHitRate:F1}%");
 
             Assert.That(pressureScores.All(s => s >= 0 && s <= 40), Is.True);
             Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
         }
 
         [Test]
-        public void AnalyzePressureResistance_DifferentProfiles_ShowsVariation()
+        public void Throw_AllProfilesUnderPressure_ScoresAndHitRatesPositive()
         {
             // Arrange
             const int throwsPerPlayer = 100;
@@ -217,26 +214,14 @@ public class EnhancedSimulatorAnalysisTests
 
             var profiles = new[]
             {
-                ("Professional", new EnhancedDartboardSimulatorBuilder()
-                    .WithProfessionalPlayer()
-                    .WithStandardPressure()
-                    .WithSeed(42)
-                    .BuildSession()),
-                ("Amateur", new EnhancedDartboardSimulatorBuilder()
-                    .WithAmateurPlayer()
-                    .WithStandardPressure()
-                    .WithSeed(42)
-                    .BuildSession()),
-                ("Beginner", new EnhancedDartboardSimulatorBuilder()
-                    .WithBeginnerPlayer()
-                    .WithStandardPressure()
-                    .WithSeed(42)
-                    .BuildSession())
+                ("Professional", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithProfessionalPlayer().WithStandardPressure())),
+                ("Amateur", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithAmateurPlayer().WithStandardPressure())),
+                ("Beginner", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithBeginnerPlayer().WithStandardPressure()))
             };
 
-            Console.WriteLine("=== Pressure Resistance by Player Level ===\n");
-            Console.WriteLine($"{"Level",-15} {"Resistance",-15} {"Avg Score",-12} {"Hit %",-12}");
-            Console.WriteLine(new string('-', 60));
+            TestContext.Out.WriteLine("=== Pressure Resistance by Player Level ===\n");
+            TestContext.Out.WriteLine($"{"Level",-15} {"Resistance",-15} {"Avg Score",-12} {"Hit %",-12}");
+            TestContext.Out.WriteLine(new string('-', 60));
 
             // Act & Assert
             foreach (var (name, session) in profiles)
@@ -256,7 +241,10 @@ public class EnhancedSimulatorAnalysisTests
                 var hitRate = hits * 100.0 / throwsPerPlayer;
                 var resistance = session.Profile.PressureResistance;
 
-                Console.WriteLine($"{name,-15} {resistance,-15:F2} {avgScore,-12:F2} {hitRate,-11:F1}%");
+                TestContext.Out.WriteLine($"{name,-15} {resistance,-15:F2} {avgScore,-12:F2} {hitRate,-11:F1}%");
+
+                Assert.That(avgScore, Is.GreaterThanOrEqualTo(0));
+                Assert.That(hitRate, Is.GreaterThanOrEqualTo(0));
             }
         }
     }
@@ -265,7 +253,7 @@ public class EnhancedSimulatorAnalysisTests
     public class PlayerProfileComparisonTests
     {
         [Test]
-        public void ComparePlayerLevels_MultipleTargets_ShowsSkillDifferences()
+        public void Throw_ThreeProfilesAcrossTargets_AllProduceValidResults()
         {
             // Arrange
             const int throwsPerTarget = 200;
@@ -279,27 +267,18 @@ public class EnhancedSimulatorAnalysisTests
 
             var players = new[]
             {
-                ("Pro", new EnhancedDartboardSimulatorBuilder()
-                    .WithProfessionalPlayer()
-                    .WithSeed(42)
-                    .BuildSession()),
-                ("Amateur", new EnhancedDartboardSimulatorBuilder()
-                    .WithAmateurPlayer()
-                    .WithSeed(42)
-                    .BuildSession()),
-                ("Beginner", new EnhancedDartboardSimulatorBuilder()
-                    .WithBeginnerPlayer()
-                    .WithSeed(42)
-                    .BuildSession())
+                ("Pro", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithProfessionalPlayer())),
+                ("Amateur", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithAmateurPlayer())),
+                ("Beginner", EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithBeginnerPlayer()))
             };
 
-            Console.WriteLine("=== Player Level Comparison Across Targets ===\n");
+            TestContext.Out.WriteLine("=== Player Level Comparison Across Targets ===\n");
 
             foreach (var (targetName, target) in targets)
             {
-                Console.WriteLine($"Target: {targetName}");
-                Console.WriteLine($"{"Player",-12} {"Avg Score",-12} {"Max Score",-12} {"Hit %",-12}");
-                Console.WriteLine(new string('-', 50));
+                TestContext.Out.WriteLine($"Target: {targetName}");
+                TestContext.Out.WriteLine($"{"Player",-12} {"Avg Score",-12} {"Max Score",-12} {"Hit %",-12}");
+                TestContext.Out.WriteLine(new string('-', 50));
 
                 foreach (var (playerName, session) in players)
                 {
@@ -313,7 +292,6 @@ public class EnhancedSimulatorAnalysisTests
                         var result = session.Throw(target);
                         scores.Add(result.Score);
 
-                        // Zähle exakte Treffer
                         bool isHit = target.SegmentType switch
                         {
                             SegmentType.InnerBull => result.SegmentType == SegmentType.InnerBull,
@@ -328,28 +306,28 @@ public class EnhancedSimulatorAnalysisTests
                     var maxScore = scores.Max();
                     var hitRate = hits * 100.0 / throwsPerTarget;
 
-                    Console.WriteLine($"{playerName,-12} {avgScore,-12:F2} {maxScore,-12} {hitRate,-11:F1}%");
+                    TestContext.Out.WriteLine($"{playerName,-12} {avgScore,-12:F2} {maxScore,-12} {hitRate,-11:F1}%");
+
+                    Assert.That(avgScore, Is.GreaterThanOrEqualTo(0));
                 }
-                Console.WriteLine();
+                TestContext.Out.WriteLine();
             }
         }
 
         [Test]
-        public void Analyze3DartAverage_ExtendedSession_ShowsTrends()
+        public void Throw_ProfessionalWith50Visits_AverageScorePositive()
         {
             // Arrange
             const int totalVisits = 50;
             var target = Target.Triple(20);
 
-            var session = new EnhancedDartboardSimulatorBuilder()
+            var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
+                .WithLinearTremor());
 
-            Console.WriteLine("=== 3-Dart Average Progression ===\n");
-            Console.WriteLine($"{"Visit",-8} {"Dart 1",-8} {"Dart 2",-8} {"Dart 3",-8} {"Total",-8} {"Avg",-10}");
-            Console.WriteLine(new string('-', 60));
+            TestContext.Out.WriteLine("=== 3-Dart Average Progression ===\n");
+            TestContext.Out.WriteLine($"{"Visit",-8} {"Dart 1",-8} {"Dart 2",-8} {"Dart 3",-8} {"Total",-8} {"Avg",-10}");
+            TestContext.Out.WriteLine(new string('-', 60));
 
             var allVisitScores = new List<int>();
 
@@ -371,14 +349,14 @@ public class EnhancedSimulatorAnalysisTests
                 if (visit < 10 || visit % 5 == 0)
                 {
                     var runningAvg = allVisitScores.Average();
-                    Console.WriteLine($"{visit + 1,-8} {dartScores[0],-8} {dartScores[1],-8} {dartScores[2],-8} {visitScore,-8} {runningAvg,-10:F2}");
+                    TestContext.Out.WriteLine($"{visit + 1,-8} {dartScores[0],-8} {dartScores[1],-8} {dartScores[2],-8} {visitScore,-8} {runningAvg,-10:F2}");
                 }
             }
 
             // Assert
             var overallAvg = allVisitScores.Average();
-            Console.WriteLine($"\nOverall 3-dart average: {overallAvg:F2}");
-            Console.WriteLine($"Final tremor level: {session.CurrentTremor:F6}");
+            TestContext.Out.WriteLine($"\nOverall 3-dart average: {overallAvg:F2}");
+            TestContext.Out.WriteLine($"Final tremor level: {session.CurrentTremor:F6}");
 
             Assert.That(overallAvg, Is.GreaterThan(0));
         }
@@ -388,7 +366,7 @@ public class EnhancedSimulatorAnalysisTests
     public class FeatureCombinationTests
     {
         [Test]
-        public void AnalyzeFullFeatureSet_Complete501Game_DetailedStatistics()
+        public void Throw_FullFeatureSetIn501Game_TotalDartsPositive()
         {
             // Arrange
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -405,9 +383,9 @@ public class EnhancedSimulatorAnalysisTests
             int remainingScore = 501;
             var visitStats = new List<(int Visit, int Score, int Darts, int Remaining, double Tremor)>();
 
-            Console.WriteLine("=== Full Feature 501 Game Analysis ===\n");
-            Console.WriteLine($"{"Visit",-8} {"Darts",-8} {"Score",-8} {"Remain",-10} {"Tremor",-12}");
-            Console.WriteLine(new string('-', 55));
+            TestContext.Out.WriteLine("=== Full Feature 501 Game Analysis ===\n");
+            TestContext.Out.WriteLine($"{"Visit",-8} {"Darts",-8} {"Score",-8} {"Remain",-10} {"Tremor",-12}");
+            TestContext.Out.WriteLine(new string('-', 55));
 
             int visitNumber = 0;
 
@@ -435,7 +413,7 @@ public class EnhancedSimulatorAnalysisTests
 
                     var newRemaining = remainingScore - visitScore - result.Score;
 
-                    // Bust-Prüfung
+                    // Bust check
                     if (newRemaining == 1 || newRemaining < 0 ||
                         (newRemaining == 0 && !result.IsDouble))
                     {
@@ -445,7 +423,7 @@ public class EnhancedSimulatorAnalysisTests
 
                     visitScore += result.Score;
 
-                    // Erfolgreicher Checkout
+                    // Successful checkout
                     if (newRemaining == 0 && result.IsDouble)
                     {
                         remainingScore = 0;
@@ -463,7 +441,7 @@ public class EnhancedSimulatorAnalysisTests
 
                 if (visitNumber <= 10 || visitNumber % 5 == 0 || remainingScore == 0)
                 {
-                    Console.WriteLine($"{visitNumber,-8} {dartsInVisit,-8} {visitScore,-8} {remainingScore,-10} {tremor,-12:F6}");
+                    TestContext.Out.WriteLine($"{visitNumber,-8} {dartsInVisit,-8} {visitScore,-8} {remainingScore,-10} {tremor,-12:F6}");
                 }
 
                 if (remainingScore == 0)
@@ -475,28 +453,25 @@ public class EnhancedSimulatorAnalysisTests
             var totalScore = 501 - remainingScore;
             var threeDartAvg = totalScore * 3.0 / totalDarts;
 
-            Console.WriteLine();
-            Console.WriteLine("=== Game Summary ===");
-            Console.WriteLine($"Game finished: {(remainingScore == 0 ? "YES" : "NO")}");
-            Console.WriteLine($"Total darts: {totalDarts}");
-            Console.WriteLine($"Total visits: {visitNumber}");
-            Console.WriteLine($"3-dart average: {threeDartAvg:F2}");
-            Console.WriteLine($"Final tremor: {session.CurrentTremor:F6}");
+            TestContext.Out.WriteLine();
+            TestContext.Out.WriteLine("=== Game Summary ===");
+            TestContext.Out.WriteLine($"Game finished: {(remainingScore == 0 ? "YES" : "NO")}");
+            TestContext.Out.WriteLine($"Total darts: {totalDarts}");
+            TestContext.Out.WriteLine($"Total visits: {visitNumber}");
+            TestContext.Out.WriteLine($"3-dart average: {threeDartAvg:F2}");
+            TestContext.Out.WriteLine($"Final tremor: {session.CurrentTremor:F6}");
 
             Assert.That(totalDarts, Is.GreaterThan(0));
         }
 
         [Test]
-        public void CompareFeatureSets_WithAndWithoutEnhancements_ShowsDifference()
+        public void Throw_BasicVsEnhancedSession_BothAveragesPositive()
         {
             // Arrange
             const int throwsPerSession = 300;
             var target = Target.Triple(20);
 
-            var basic = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer()
-                .WithSeed(42)
-                .BuildSession();
+            var basic = EnhancedSimulatorAnalysisTests.CreateSession(b => b.WithProfessionalPlayer());
 
             var enhanced = new EnhancedDartboardSimulatorBuilder()
                 .WithProfessionalPlayer()
@@ -508,9 +483,9 @@ public class EnhancedSimulatorAnalysisTests
                 .WithSeed(42)
                 .BuildSession();
 
-            Console.WriteLine("=== Feature Set Comparison ===\n");
-            Console.WriteLine($"{"Session",-15} {"Avg Score",-12} {"Hits",-8} {"Hit %",-10}");
-            Console.WriteLine(new string('-', 50));
+            TestContext.Out.WriteLine("=== Feature Set Comparison ===\n");
+            TestContext.Out.WriteLine($"{"Session",-15} {"Avg Score",-12} {"Hits",-8} {"Hit %",-10}");
+            TestContext.Out.WriteLine(new string('-', 50));
 
             // Act - Basic
             var basicScores = new List<int>();
@@ -543,52 +518,25 @@ public class EnhancedSimulatorAnalysisTests
             var enhancedAvg = enhancedScores.Average();
             var enhancedHitRate = enhancedHits * 100.0 / throwsPerSession;
 
-            Console.WriteLine($"{"Basic",-15} {basicAvg,-12:F2} {basicHits,-8} {basicHitRate,-9:F1}%");
-            Console.WriteLine($"{"Enhanced",-15} {enhancedAvg,-12:F2} {enhancedHits,-8} {enhancedHitRate,-9:F1}%");
+            TestContext.Out.WriteLine($"{"Basic",-15} {basicAvg,-12:F2} {basicHits,-8} {basicHitRate,-9:F1}%");
+            TestContext.Out.WriteLine($"{"Enhanced",-15} {enhancedAvg,-12:F2} {enhancedHits,-8} {enhancedHitRate,-9:F1}%");
 
             Assert.That(basicAvg, Is.GreaterThan(0));
             Assert.That(enhancedAvg, Is.GreaterThan(0));
         }
 
-        private Target SelectSmartTarget(int remaining)
-        {
-            // Einfache aber intelligente Strategie
-            if (remaining <= 40 && remaining % 2 == 0 && remaining >= 2)
-            {
-                int doubleTarget = remaining / 2;
-                if (doubleTarget <= 20)
-                    return Target.Double(doubleTarget);
-            }
-
-            if (remaining == 50)
-                return Target.Bullseye();
-
-            // Unter 60: auf Single zielen um Setup zu schaffen
-            if (remaining < 60 && remaining % 2 != 0)
-                return Target.Single(1);
-
-            // Standard: T20
-            return Target.Triple(20);
-        }
-    }
-
-    [TestFixture]
-    public class GroupingAnalysisTests
-    {
         [Test]
-        public void AnalyzeGrouping_ConsecutiveThrowsSameTarget_ShowsClustering()
+        public void Throw_GroupingOnSameTarget_VariancePositive()
         {
             // Arrange
-            var session = new EnhancedDartboardSimulatorBuilder()
+            var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithSimpleGrouping()
-                .WithSeed(42)
-                .BuildSession();
+                .WithSimpleGrouping());
 
             var target = Target.Triple(20);
             const int throwCount = 100;
 
-            Console.WriteLine("=== Grouping Analysis ===\n");
+            TestContext.Out.WriteLine("=== Grouping Analysis ===\n");
 
             // Act
             var coordinates = new List<(double X, double Y)>();
@@ -598,7 +546,7 @@ public class EnhancedSimulatorAnalysisTests
                 coordinates.Add((result.HitPoint.X, result.HitPoint.Y));
             }
 
-            // Berechne Streuung
+            // Calculate spread
             var avgX = coordinates.Average(c => c.X);
             var avgY = coordinates.Average(c => c.Y);
 
@@ -611,13 +559,31 @@ public class EnhancedSimulatorAnalysisTests
 
             var stdDev = Math.Sqrt(variance);
 
-            Console.WriteLine($"Throws: {throwCount}");
-            Console.WriteLine($"Center: ({avgX:F6}, {avgY:F6})");
-            Console.WriteLine($"Standard Deviation: {stdDev:F6}");
+            TestContext.Out.WriteLine($"Throws: {throwCount}");
+            TestContext.Out.WriteLine($"Center: ({avgX:F6}, {avgY:F6})");
+            TestContext.Out.WriteLine($"Standard Deviation: {stdDev:F6}");
 
             // Assert
             Assert.That(coordinates, Has.Count.EqualTo(throwCount));
             Assert.That(stdDev, Is.GreaterThan(0));
+        }
+
+        private Target SelectSmartTarget(int remaining)
+        {
+            if (remaining <= 40 && remaining % 2 == 0 && remaining >= 2)
+            {
+                int doubleTarget = remaining / 2;
+                if (doubleTarget <= 20)
+                    return Target.Double(doubleTarget);
+            }
+
+            if (remaining == 50)
+                return Target.Bullseye();
+
+            if (remaining < 60 && remaining % 2 != 0)
+                return Target.Single(1);
+
+            return Target.Triple(20);
         }
     }
 }

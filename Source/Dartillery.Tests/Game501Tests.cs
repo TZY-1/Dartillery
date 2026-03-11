@@ -5,37 +5,43 @@ using Dartillery.Core.Models;
 namespace Dartillery.Tests;
 
 [TestFixture]
+[Category("Analysis")]
 public class Game501Tests
-{ 
+{
+    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int? seed = null)
+    {
+        var builder = new DartboardSimulatorBuilder().WithPrecision(precision);
+        if (seed.HasValue)
+            builder = builder.WithSeed(seed.Value);
+        return builder.Build();
+    }
+
     [Test]
-    public void Simulate501Game_Seeded_Professional_ShowsDetailedStatistics()
+    public void Simulate501_ProfessionalPrecision_CompletesWithPositiveDartCount()
     {
         // Arrange
-        var simulator = new DartboardSimulatorBuilder()
-            .WithPrecision(SimulatorPrecision.Professional)
-            //.WithSeed(42)
-            .Build();
+        var simulator = CreateSeededSimulator(SimulatorPrecision.Professional);
 
         // Act
         var gameStats = Simulate501Game(simulator);
 
         // Assert & Report
-        Console.WriteLine("=== 501 Game Simulation (Professional) ===\n");
-        Console.WriteLine($"Game finished: {(gameStats.GameWon ? "YES" : "NO")}");
-        Console.WriteLine($"Total darts thrown: {gameStats.TotalDarts}");
-        Console.WriteLine($"3-dart average: {gameStats.ThreeDartAverage:F2}");
-        Console.WriteLine($"Highest score (3 darts): {gameStats.HighestThreeDartScore}");
-        Console.WriteLine($"Checkout attempts: {gameStats.CheckoutAttempts}");
-        Console.WriteLine($"Checkout success: {(gameStats.CheckoutAttempts > 0 ? $"{gameStats.CheckoutSuccess}/{gameStats.CheckoutAttempts}" : "N/A")}");
-        Console.WriteLine($"\n--- Score Progression ---");
+        TestContext.Out.WriteLine("=== 501 Game Simulation (Professional) ===\n");
+        TestContext.Out.WriteLine($"Game finished: {(gameStats.GameWon ? "YES" : "NO")}");
+        TestContext.Out.WriteLine($"Total darts thrown: {gameStats.TotalDarts}");
+        TestContext.Out.WriteLine($"3-dart average: {gameStats.ThreeDartAverage:F2}");
+        TestContext.Out.WriteLine($"Highest score (3 darts): {gameStats.HighestThreeDartScore}");
+        TestContext.Out.WriteLine($"Checkout attempts: {gameStats.CheckoutAttempts}");
+        TestContext.Out.WriteLine($"Checkout success: {(gameStats.CheckoutAttempts > 0 ? $"{gameStats.CheckoutSuccess}/{gameStats.CheckoutAttempts}" : "N/A")}");
+        TestContext.Out.WriteLine($"\n--- Score Progression ---");
 
         for (int i = 0; i < gameStats.Visits.Count; i++)
         {
             var visit = gameStats.Visits[i];
-            Console.WriteLine($"Visit {i + 1}: {FormatVisit(visit)} = {visit.TotalScore} points (Remaining: {visit.RemainingAfter})");
+            TestContext.Out.WriteLine($"Visit {i + 1}: {FormatVisit(visit)} = {visit.TotalScore} points (Remaining: {visit.RemainingAfter})");
         }
 
-        Console.WriteLine($"\n--- Target Distribution ---");
+        TestContext.Out.WriteLine($"\n--- Target Distribution ---");
         var topTargets = gameStats.TargetsAimed
             .GroupBy(t => t.ToString())
             .Select(g => new { Target = g.Key, Count = g.Count() })
@@ -44,10 +50,10 @@ public class Game501Tests
 
         foreach (var target in topTargets)
         {
-            Console.WriteLine($"{target.Target}: {target.Count} times");
+            TestContext.Out.WriteLine($"{target.Target}: {target.Count} times");
         }
 
-        Console.WriteLine($"\n--- Hit Distribution ---");
+        TestContext.Out.WriteLine($"\n--- Hit Distribution ---");
         var topHits = gameStats.ActualHits
             .GroupBy(r => $"{r.SegmentType} {(r.SectorNumber > 0 ? r.SectorNumber.ToString() : "")}")
             .Select(g => new { Hit = g.Key, Count = g.Count(), TotalScore = g.Sum(r => r.Score) })
@@ -56,14 +62,14 @@ public class Game501Tests
 
         foreach (var hit in topHits)
         {
-            Console.WriteLine($"{hit.Hit}: {hit.Count} times (Total: {hit.TotalScore} points)");
+            TestContext.Out.WriteLine($"{hit.Hit}: {hit.Count} times (Total: {hit.TotalScore} points)");
         }
 
         Assert.That(gameStats.TotalDarts, Is.GreaterThan(0));
     }
 
     [Test]
-    public void Compare501Games_DifferentPrecisions_ShowsPerformance()
+    public void Simulate501_AllPrecisionLevels_ProduceValidStatistics()
     {
         // Arrange
         var precisionLevels = new[]
@@ -73,28 +79,25 @@ public class Game501Tests
             (SimulatorPrecision.Beginner, "Beginner")
         };
 
-        Console.WriteLine("=== 501 Game Comparison Across Precision Levels ===\n");
-        Console.WriteLine($"{"Level",-15} {"Avg",-8} {"Darts",-8} {"Finished",-10} {"Checkout %",-12}");
-        Console.WriteLine(new string('-', 55));
+        TestContext.Out.WriteLine("=== 501 Game Comparison Across Precision Levels ===\n");
+        TestContext.Out.WriteLine($"{"Level",-15} {"Avg",-8} {"Darts",-8} {"Finished",-10} {"Checkout %",-12}");
+        TestContext.Out.WriteLine(new string('-', 55));
 
         foreach (var (level, name) in precisionLevels)
         {
-            var simulator = new DartboardSimulatorBuilder()
-                .WithPrecision(level)
-                .WithSeed(123)
-                .Build();
+            var simulator = CreateSeededSimulator(level, seed: 123);
 
             var stats = Simulate501Game(simulator, maxDarts: 100);
             var checkoutPct = stats.CheckoutAttempts > 0
                 ? stats.CheckoutSuccess * 100.0 / stats.CheckoutAttempts
                 : 0;
 
-            Console.WriteLine($"{name,-15} {stats.ThreeDartAverage,-7:F2} {stats.TotalDarts,-8} {(stats.GameWon ? "Yes" : "No"),-10} {checkoutPct,-11:F1}%");
+            TestContext.Out.WriteLine($"{name,-15} {stats.ThreeDartAverage,-7:F2} {stats.TotalDarts,-8} {(stats.GameWon ? "Yes" : "No"),-10} {checkoutPct,-11:F1}%");
         }
     }
 
     [Test]
-    public void SimulateMultiple501Games_CalculateAverages()
+    public void Simulate501_TenGamesPerLevel_AllGamesRecorded()
     {
         var precisionLevels = new[]
         {
@@ -110,18 +113,16 @@ public class Game501Tests
             var allGames = new List<Game501Statistics>();
 
             // Arrange
-            var simulator = new DartboardSimulatorBuilder()
-                .WithPrecision(level)
-                .Build();
+            var simulator = CreateSeededSimulator(level);
 
-            Console.WriteLine($"=== Simulating {gameCount} Games of 501 for {name} Level ===\n");
+            TestContext.Out.WriteLine($"=== Simulating {gameCount} Games of 501 for {name} Level ===\n");
 
             // Act
             for (int i = 0; i < gameCount; i++)
             {
                 var stats = Simulate501Game(simulator, maxDarts: 100);
                 allGames.Add(stats);
-                Console.WriteLine($"Game {i + 1}: {stats.TotalDarts} darts, Avg {stats.ThreeDartAverage:F2}, {(stats.GameWon ? "Won" : "Not finished")}");
+                TestContext.Out.WriteLine($"Game {i + 1}: {stats.TotalDarts} darts, Avg {stats.ThreeDartAverage:F2}, {(stats.GameWon ? "Won" : "Not finished")}");
             }
 
             // Calculate overall statistics
@@ -130,13 +131,11 @@ public class Game501Tests
             var avgThreeDartAvg = finishedGames.Any() ? finishedGames.Average(g => g.ThreeDartAverage) : 0;
             var finishRate = finishedGames.Count * 100.0 / gameCount;
 
-            Console.WriteLine($"\n--- Overall Statistics ---");
-            Console.WriteLine($"Games finished: {finishedGames.Count}/{gameCount} ({finishRate:F1}%)");
-            Console.WriteLine($"Average darts per game: {avgDarts:F1}");
-            Console.WriteLine($"Average 3-dart average: {avgThreeDartAvg:F2}");
-            Console.WriteLine($"Best game: {finishedGames.Min(g => g.TotalDarts)} darts");
-            Console.WriteLine($"Worst game: {finishedGames.Max(g => g.TotalDarts)} darts");
-            
+            TestContext.Out.WriteLine($"\n--- Overall Statistics ---");
+            TestContext.Out.WriteLine($"Games finished: {finishedGames.Count}/{gameCount} ({finishRate:F1}%)");
+            TestContext.Out.WriteLine($"Average darts per game: {avgDarts:F1}");
+            TestContext.Out.WriteLine($"Average 3-dart average: {avgThreeDartAvg:F2}");
+
             Assert.That(allGames.Count, Is.EqualTo(gameCount));
         }
     }

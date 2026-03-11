@@ -6,6 +6,15 @@ namespace Dartillery.Tests;
 [TestFixture]
 public class EnhancedSimulatorBuilderTests
 {
+    private static PlayerSession CreateSession(
+        Action<EnhancedDartboardSimulatorBuilder>? configure = null,
+        int seed = 42)
+    {
+        var builder = new EnhancedDartboardSimulatorBuilder().WithSeed(seed);
+        configure?.Invoke(builder);
+        return builder.BuildSession();
+    }
+
     [TestFixture]
     public class BasicBuilderTests
     {
@@ -26,13 +35,8 @@ public class EnhancedSimulatorBuilderTests
         public void BuildSession_WithSeed_ProducesConsistentResults()
         {
             // Arrange
-            var session1 = new EnhancedDartboardSimulatorBuilder()
-                .WithSeed(42)
-                .BuildSession();
-
-            var session2 = new EnhancedDartboardSimulatorBuilder()
-                .WithSeed(42)
-                .BuildSession();
+            var session1 = CreateSession(seed: 42);
+            var session2 = CreateSession(seed: 42);
 
             var target = Target.Triple(20);
 
@@ -50,17 +54,12 @@ public class EnhancedSimulatorBuilderTests
         public void BuildSession_WithDifferentSeeds_ProducesDifferentResults()
         {
             // Arrange
-            var session1 = new EnhancedDartboardSimulatorBuilder()
-                .WithSeed(1)
-                .BuildSession();
-
-            var session2 = new EnhancedDartboardSimulatorBuilder()
-                .WithSeed(2)
-                .BuildSession();
+            var session1 = CreateSession(seed: 1);
+            var session2 = CreateSession(seed: 2);
 
             var target = Target.Triple(20);
 
-            // Act - sammle mehrere Würfe
+            // Act - collect multiple throws
             var results1 = new List<int>();
             var results2 = new List<int>();
 
@@ -70,7 +69,7 @@ public class EnhancedSimulatorBuilderTests
                 results2.Add(session2.Throw(target).Score);
             }
 
-            // Assert - Sequenzen sollten unterschiedlich sein
+            // Assert - sequences should be different
             var identicalCount = results1.Zip(results2, (a, b) => a == b).Count(x => x);
             Assert.That(identicalCount, Is.LessThan(50));
         }
@@ -80,13 +79,10 @@ public class EnhancedSimulatorBuilderTests
     public class PlayerProfileTests
     {
         [Test]
-        public void WithProfessionalPlayer_CreatesSessionWithProProfile()
+        public void BuildSession_WithProfessionalPlayer_ProfileHasLowBaseSkill()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer("Michael")
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithProfessionalPlayer("Michael"));
 
             // Assert
             Assert.That(session.Profile.Name, Is.EqualTo("Michael"));
@@ -95,7 +91,7 @@ public class EnhancedSimulatorBuilderTests
         }
 
         [Test]
-        public void WithAmateurPlayer_CreatesSessionWithAmateurProfile()
+        public void BuildSession_WithAmateurPlayer_ProfileMatchesAmateurSkill()
         {
             // Arrange & Act
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -109,7 +105,7 @@ public class EnhancedSimulatorBuilderTests
         }
 
         [Test]
-        public void WithBeginnerPlayer_CreatesSessionWithBeginnerProfile()
+        public void BuildSession_WithBeginnerPlayer_ProfileHasHighBaseSkill()
         {
             // Arrange & Act
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -123,7 +119,7 @@ public class EnhancedSimulatorBuilderTests
         }
 
         [Test]
-        public void WithCustomPlayerProfile_UsesProvidedProfile()
+        public void BuildSession_WithCustomProfile_ProfileMatchesInput()
         {
             // Arrange
             var customProfile = new PlayerProfile
@@ -149,21 +145,14 @@ public class EnhancedSimulatorBuilderTests
         }
 
         [Test]
-        public void ProfessionalPlayer_PerformsBetterThanAmateur()
+        public void Throw_ProfessionalVsAmateur_ProfessionalAverageHigher()
         {
             // Arrange
             const int throwCount = 500;
             var target = Target.Triple(20);
 
-            var proSession = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer()
-                .WithSeed(42)
-                .BuildSession();
-
-            var amateurSession = new EnhancedDartboardSimulatorBuilder()
-                .WithAmateurPlayer()
-                .WithSeed(42)
-                .BuildSession();
+            var proSession = CreateSession(b => b.WithProfessionalPlayer());
+            var amateurSession = CreateSession(b => b.WithAmateurPlayer());
 
             // Act
             var proScores = new List<int>();
@@ -179,8 +168,8 @@ public class EnhancedSimulatorBuilderTests
             var proAverage = proScores.Average();
             var amateurAverage = amateurScores.Average();
 
-            Console.WriteLine($"Professional average: {proAverage:F2}");
-            Console.WriteLine($"Amateur average: {amateurAverage:F2}");
+            TestContext.Out.WriteLine($"Professional average: {proAverage:F2}");
+            TestContext.Out.WriteLine($"Amateur average: {amateurAverage:F2}");
 
             Assert.That(proAverage, Is.GreaterThan(amateurAverage),
                 "Professional should have higher average score");
@@ -191,18 +180,15 @@ public class EnhancedSimulatorBuilderTests
     public class TremorModelTests
     {
         [Test]
-        public void WithLinearTremor_BuildsSuccessfully()
+        public void BuildSession_WithLinearTremor_TremorIncreasesOverThrows()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithLinearTremor());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Werfe einige Darts und prüfe, dass Tremor zunimmt
+            // Throw some darts and check that tremor increases
             var initialTremor = session.CurrentTremor;
             for (int i = 0; i < 50; i++)
             {
@@ -210,26 +196,23 @@ public class EnhancedSimulatorBuilderTests
             }
             var finalTremor = session.CurrentTremor;
 
-            Console.WriteLine($"Initial tremor: {initialTremor:F6}");
-            Console.WriteLine($"Final tremor after 50 throws: {finalTremor:F6}");
+            TestContext.Out.WriteLine($"Initial tremor: {initialTremor:F6}");
+            TestContext.Out.WriteLine($"Final tremor after 50 throws: {finalTremor:F6}");
 
             Assert.That(finalTremor, Is.GreaterThan(initialTremor),
                 "Tremor should increase with linear model");
         }
 
         [Test]
-        public void WithRealisticTremor_BuildsSuccessfully()
+        public void BuildSession_WithRealisticTremor_TremorIncreasesOrStable()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithRealisticTremor()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithRealisticTremor());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Logarithmisches Tremor sollte sich auch aufbauen
+            // Logarithmic tremor should also build up
             var initialTremor = session.CurrentTremor;
             for (int i = 0; i < 100; i++)
             {
@@ -237,19 +220,17 @@ public class EnhancedSimulatorBuilderTests
             }
             var finalTremor = session.CurrentTremor;
 
-            Console.WriteLine($"Initial tremor: {initialTremor:F6}");
-            Console.WriteLine($"Final tremor after 100 throws: {finalTremor:F6}");
+            TestContext.Out.WriteLine($"Initial tremor: {initialTremor:F6}");
+            TestContext.Out.WriteLine($"Final tremor after 100 throws: {finalTremor:F6}");
 
             Assert.That(finalTremor, Is.GreaterThanOrEqualTo(initialTremor));
         }
 
         [Test]
-        public void NoTremorModel_TremorStaysConstant()
+        public void BuildSession_WithoutTremor_TremorRemainsConstant()
         {
-            // Arrange - Default Builder verwendet NoTremorModel
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithSeed(42)
-                .BuildSession();
+            // Arrange - Default Builder uses NoTremorModel
+            var session = CreateSession();
 
             // Act
             var tremorValues = new List<double>();
@@ -259,7 +240,7 @@ public class EnhancedSimulatorBuilderTests
                 tremorValues.Add(session.CurrentTremor);
             }
 
-            // Assert - ohne explizites Tremor-Modell sollte Tremor konstant bleiben
+            // Assert - without explicit tremor model, tremor should remain constant
             var distinctValues = tremorValues.Distinct().Count();
             Assert.That(distinctValues, Is.LessThanOrEqualTo(2),
                 "Without tremor model, tremor should remain relatively constant");
@@ -273,18 +254,15 @@ public class EnhancedSimulatorBuilderTests
         public void WithStandardPressure_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithStandardPressure()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithStandardPressure());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste mit Drucksituation
+            // Test with pressure situation
             var gameContext = new GameContext
             {
-                RemainingScore = 32, // Checkout-Situation
+                RemainingScore = 32, // Checkout situation
                 CurrentVisitResults = new List<ThrowResult>()
             };
 
@@ -296,16 +274,12 @@ public class EnhancedSimulatorBuilderTests
         public void WithCheckoutPsychology_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithCheckoutPsychology()
-                .WithProfessionalPlayer()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithCheckoutPsychology().WithProfessionalPlayer());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste Checkout-Psychologie
+            // Test checkout psychology
             var checkoutContext = new GameContext
             {
                 RemainingScore = 40,
@@ -324,15 +298,12 @@ public class EnhancedSimulatorBuilderTests
         public void WithStandardMomentum_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithStandardMomentum()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithStandardMomentum());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Werfe mehrere Darts um Momentum zu testen
+            // Throw multiple darts to test momentum
             var results = new List<ThrowResult>();
             for (int i = 0; i < 20; i++)
             {
@@ -350,15 +321,12 @@ public class EnhancedSimulatorBuilderTests
         public void WithSimpleGrouping_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithSimpleGrouping()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithSimpleGrouping());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste Grouping - wirf mehrmals auf dasselbe Ziel
+            // Test grouping - throw multiple times at the same target
             var target = Target.Triple(20);
             var results = new List<ThrowResult>();
 
@@ -367,7 +335,7 @@ public class EnhancedSimulatorBuilderTests
                 results.Add(session.Throw(target));
             }
 
-            // Prüfe, dass Würfe Koordinaten haben
+            // Check that throws have coordinates
             Assert.That(results.All(r => r.HitPoint != null), Is.True);
         }
     }
@@ -379,15 +347,12 @@ public class EnhancedSimulatorBuilderTests
         public void WithStandardTargetDifficulty_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithStandardTargetDifficulty()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithStandardTargetDifficulty());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste verschiedene Ziele mit unterschiedlichen Schwierigkeiten
+            // Test various targets with different difficulties
             var easyTarget = Target.Single(20);
             var mediumTarget = Target.Double(20);
             var hardTarget = Target.Triple(20);
@@ -409,22 +374,19 @@ public class EnhancedSimulatorBuilderTests
         public void WithTruncation_DefaultMaxDeviation_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithTruncation()
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithTruncation());
 
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste, dass alle Würfe innerhalb einer vernünftigen Distanz bleiben
+            // Test that all throws stay within a reasonable distance
             var results = new List<ThrowResult>();
             for (int i = 0; i < 100; i++)
             {
                 results.Add(session.Throw(Target.Triple(20)));
             }
 
-            // Mit Truncation sollten extreme Abweichungen begrenzt sein
+            // With truncation, extreme deviations should be limited
             Assert.That(results.All(r => r.Score >= 0), Is.True);
         }
 
@@ -432,10 +394,7 @@ public class EnhancedSimulatorBuilderTests
         public void WithTruncation_CustomMaxDeviation_BuildsSuccessfully()
         {
             // Arrange & Act
-            var session = new EnhancedDartboardSimulatorBuilder()
-                .WithTruncation(0.15)
-                .WithSeed(42)
-                .BuildSession();
+            var session = CreateSession(b => b.WithTruncation(0.15));
 
             // Assert
             Assert.That(session, Is.Not.Null);
@@ -454,7 +413,7 @@ public class EnhancedSimulatorBuilderTests
     public class FluentBuilderTests
     {
         [Test]
-        public void FluentBuilder_ChainMultipleConfigurations_BuildsSuccessfully()
+        public void BuildSession_AllFeaturesChained_SessionCreatedSuccessfully()
         {
             // Arrange & Act
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -472,13 +431,13 @@ public class EnhancedSimulatorBuilderTests
             Assert.That(session, Is.Not.Null);
             Assert.That(session.Profile.Name, Is.EqualTo("TestPro"));
 
-            // Teste, dass alles funktioniert
+            // Test that everything works
             var result = session.Throw(Target.Triple(20));
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
-        public void FluentBuilder_MinimalConfiguration_UsesDefaults()
+        public void BuildSession_MinimalConfig_DefaultsApplied()
         {
             // Arrange & Act
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -489,15 +448,15 @@ public class EnhancedSimulatorBuilderTests
             Assert.That(session.Profile, Is.Not.Null);
             Assert.That(session.ThrowCount, Is.EqualTo(0));
 
-            // Sollte mit Defaults funktionieren
+            // Should work with defaults
             var result = session.Throw(Target.Triple(20));
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
-        public void FluentBuilder_AllFeatures_BuildsCompleteSession()
+        public void BuildSession_AllFeaturesWithGameContext_ThreeThrowsSucceed()
         {
-            // Arrange & Act - teste alle verfügbaren Features
+            // Arrange & Act - test all available features
             var session = new EnhancedDartboardSimulatorBuilder()
                 .WithAmateurPlayer("Complete Test")
                 .WithRealisticTremor()
@@ -512,7 +471,7 @@ public class EnhancedSimulatorBuilderTests
             // Assert
             Assert.That(session, Is.Not.Null);
 
-            // Teste eine vollständige Wurf-Sequenz
+            // Test a complete throw sequence
             var gameContext = new GameContext
             {
                 RemainingScore = 141,
@@ -537,22 +496,14 @@ public class EnhancedSimulatorBuilderTests
     public class ComparisonTests
     {
         [Test]
-        public void CompareConfigurations_WithAndWithoutTremor_ShowsDifference()
+        public void Throw_WithAndWithoutTremor_AllScoresInValidRange()
         {
             // Arrange
             const int throwCount = 100;
             var target = Target.Triple(20);
 
-            var withTremor = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer()
-                .WithLinearTremor()
-                .WithSeed(42)
-                .BuildSession();
-
-            var withoutTremor = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer()
-                .WithSeed(42)
-                .BuildSession();
+            var withTremor = CreateSession(b => b.WithProfessionalPlayer().WithLinearTremor());
+            var withoutTremor = CreateSession(b => b.WithProfessionalPlayer());
 
             // Act
             var scoresWithTremor = new List<int>();
@@ -564,39 +515,28 @@ public class EnhancedSimulatorBuilderTests
                 scoresWithoutTremor.Add(withoutTremor.Throw(target).Score);
             }
 
-            // Assert - mit Tremor könnte die Leistung im Laufe der Zeit abnehmen
+            // Assert - with tremor, performance might decrease over time
             var firstHalfWithTremor = scoresWithTremor.Take(50).Average();
             var secondHalfWithTremor = scoresWithTremor.Skip(50).Average();
 
-            Console.WriteLine($"With Tremor - First half: {firstHalfWithTremor:F2}, Second half: {secondHalfWithTremor:F2}");
-            Console.WriteLine($"Without Tremor - Average: {scoresWithoutTremor.Average():F2}");
+            TestContext.Out.WriteLine($"With Tremor - First half: {firstHalfWithTremor:F2}, Second half: {secondHalfWithTremor:F2}");
+            TestContext.Out.WriteLine($"Without Tremor - Average: {scoresWithoutTremor.Average():F2}");
 
-            // Beide Konfigurationen sollten gültige Ergebnisse liefern
+            // Both configurations should deliver valid results
             Assert.That(scoresWithTremor.All(s => s >= 0 && s <= 60), Is.True);
             Assert.That(scoresWithoutTremor.All(s => s >= 0 && s <= 60), Is.True);
         }
 
         [Test]
-        public void ComparePlayerLevels_AllThreeProfiles_ShowsSkillGradient()
+        public void Throw_ThreeProfileLevels_AveragesFormDescendingGradient()
         {
             // Arrange
             const int throwCount = 300;
             var target = Target.Triple(20);
 
-            var pro = new EnhancedDartboardSimulatorBuilder()
-                .WithProfessionalPlayer()
-                .WithSeed(42)
-                .BuildSession();
-
-            var amateur = new EnhancedDartboardSimulatorBuilder()
-                .WithAmateurPlayer()
-                .WithSeed(42)
-                .BuildSession();
-
-            var beginner = new EnhancedDartboardSimulatorBuilder()
-                .WithBeginnerPlayer()
-                .WithSeed(42)
-                .BuildSession();
+            var pro = CreateSession(b => b.WithProfessionalPlayer());
+            var amateur = CreateSession(b => b.WithAmateurPlayer());
+            var beginner = CreateSession(b => b.WithBeginnerPlayer());
 
             // Act
             var proScores = new List<int>();
@@ -615,9 +555,9 @@ public class EnhancedSimulatorBuilderTests
             var amateurAvg = amateurScores.Average();
             var beginnerAvg = beginnerScores.Average();
 
-            Console.WriteLine($"Professional average: {proAvg:F2}");
-            Console.WriteLine($"Amateur average: {amateurAvg:F2}");
-            Console.WriteLine($"Beginner average: {beginnerAvg:F2}");
+            TestContext.Out.WriteLine($"Professional average: {proAvg:F2}");
+            TestContext.Out.WriteLine($"Amateur average: {amateurAvg:F2}");
+            TestContext.Out.WriteLine($"Beginner average: {beginnerAvg:F2}");
 
             Assert.That(proAvg, Is.GreaterThan(amateurAvg));
             Assert.That(amateurAvg, Is.GreaterThan(beginnerAvg));
