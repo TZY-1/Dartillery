@@ -1,4 +1,5 @@
 using Dartillery.Core.Abstractions;
+using Dartillery.Core.Models;
 
 namespace Dartillery.EventListeners;
 
