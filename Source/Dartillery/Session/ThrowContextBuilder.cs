@@ -1,10 +1,5 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
-using Dartillery.Simulation.Models.GroupingModels;
-using Dartillery.Simulation.Models.MomentumModels;
-using Dartillery.Simulation.Models.PressureModels;
-using Dartillery.Simulation.Models.TargetDifficultyModels;
-using Dartillery.Simulation.Models.TremorModels;
 
 namespace Dartillery.Session;
 
@@ -35,26 +30,31 @@ public sealed class ThrowContextBuilder
     /// Initializes a new throw context builder with the specified behavioral models.
     /// </summary>
     /// <param name="profile">The player profile for base characteristics.</param>
-    /// <param name="tremorModel">Model for calculating tremor/fatigue effects. If null, uses NoTremorModel.</param>
-    /// <param name="pressureModel">Model for calculating pressure/psychological effects. If null, uses NoPressureModel.</param>
-    /// <param name="momentumModel">Model for calculating momentum/streak effects. If null, uses NoMomentumModel.</param>
-    /// <param name="groupingModel">Model for calculating dart clustering effects. If null, uses NoGroupingModel.</param>
-    /// <param name="targetDifficultyModel">Model for calculating target-specific difficulty. If null, uses NoTargetDifficultyModel.</param>
+    /// <param name="tremorModel">Model for calculating tremor/fatigue effects.</param>
+    /// <param name="pressureModel">Model for calculating pressure/psychological effects.</param>
+    /// <param name="momentumModel">Model for calculating momentum/streak effects.</param>
+    /// <param name="groupingModel">Model for calculating dart clustering effects.</param>
+    /// <param name="targetDifficultyModel">Model for calculating target-specific difficulty.</param>
     /// <exception cref="ArgumentNullException">Thrown when profile is null.</exception>
     public ThrowContextBuilder(
         PlayerProfile profile,
-        ITremorModel? tremorModel = null,
-        IPressureModel? pressureModel = null,
-        IMomentumModel? momentumModel = null,
-        IGroupingModel? groupingModel = null,
-        ITargetDifficultyModel? targetDifficultyModel = null)
+        ITremorModel tremorModel,
+        IPressureModel pressureModel,
+        IMomentumModel momentumModel,
+        IGroupingModel groupingModel,
+        ITargetDifficultyModel targetDifficultyModel)
     {
         _profile = profile ?? throw new ArgumentNullException(nameof(profile));
-        _tremorModel = tremorModel ?? new NoTremorModel();
-        _pressureModel = pressureModel ?? new NoPressureModel();
-        _momentumModel = momentumModel ?? new NoMomentumModel();
-        _groupingModel = groupingModel ?? new NoGroupingModel();
-        _targetDifficultyModel = targetDifficultyModel ?? new NoTargetDifficultyModel();
+        ArgumentNullException.ThrowIfNull(tremorModel);
+        ArgumentNullException.ThrowIfNull(pressureModel);
+        ArgumentNullException.ThrowIfNull(momentumModel);
+        ArgumentNullException.ThrowIfNull(groupingModel);
+        ArgumentNullException.ThrowIfNull(targetDifficultyModel);
+        _tremorModel = tremorModel;
+        _pressureModel = pressureModel;
+        _momentumModel = momentumModel;
+        _groupingModel = groupingModel;
+        _targetDifficultyModel = targetDifficultyModel;
     }
 
     /// <summary>

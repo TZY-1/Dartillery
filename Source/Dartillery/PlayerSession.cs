@@ -1,11 +1,6 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 using Dartillery.Session;
-using Dartillery.Simulation.Models.GroupingModels;
-using Dartillery.Simulation.Models.MomentumModels;
-using Dartillery.Simulation.Models.PressureModels;
-using Dartillery.Simulation.Models.TargetDifficultyModels;
-using Dartillery.Simulation.Models.TremorModels;
 
 namespace Dartillery;
 
@@ -51,11 +46,11 @@ public sealed class PlayerSession
     /// </summary>
     /// <param name="simulator">The contextual throw simulator for executing throws.</param>
     /// <param name="profile">The player profile containing skill characteristics.</param>
-    /// <param name="tremorModel">Optional tremor model for fatigue simulation. Defaults to <see cref="NoTremorModel"/>.</param>
-    /// <param name="pressureModel">Optional pressure model for psychological effects. Defaults to <see cref="NoPressureModel"/>.</param>
-    /// <param name="momentumModel">Optional momentum model for streak effects. Defaults to <see cref="NoMomentumModel"/>.</param>
-    /// <param name="groupingModel">Optional grouping model for dart clustering. Defaults to <see cref="NoGroupingModel"/>.</param>
-    /// <param name="targetDifficultyModel">Optional difficulty model for target-specific challenges. Defaults to <see cref="NoTargetDifficultyModel"/>.</param>
+    /// <param name="tremorModel">The tremor model for fatigue simulation.</param>
+    /// <param name="pressureModel">The pressure model for psychological effects.</param>
+    /// <param name="momentumModel">The momentum model for streak effects.</param>
+    /// <param name="groupingModel">The grouping model for dart clustering.</param>
+    /// <param name="targetDifficultyModel">The difficulty model for target-specific challenges.</param>
     /// <param name="eventListeners">Optional collection of event listeners for throw notifications.</param>
     /// <exception cref="ArgumentNullException">Thrown when simulator or profile is null.</exception>
     /// <remarks>
@@ -69,11 +64,11 @@ public sealed class PlayerSession
     public PlayerSession(
         IContextualThrowSimulator simulator,
         PlayerProfile profile,
-        ITremorModel? tremorModel = null,
-        IPressureModel? pressureModel = null,
-        IMomentumModel? momentumModel = null,
-        IGroupingModel? groupingModel = null,
-        ITargetDifficultyModel? targetDifficultyModel = null,
+        ITremorModel tremorModel,
+        IPressureModel pressureModel,
+        IMomentumModel momentumModel,
+        IGroupingModel groupingModel,
+        ITargetDifficultyModel targetDifficultyModel,
         IEnumerable<IThrowEventListener>? eventListeners = null)
     {
         _simulator = simulator ?? throw new ArgumentNullException(nameof(simulator));
@@ -85,11 +80,11 @@ public sealed class PlayerSession
 
         _contextBuilder = new ThrowContextBuilder(
             profile,
-            tremorModel ?? new NoTremorModel(),
-            pressureModel ?? new NoPressureModel(),
-            momentumModel ?? new NoMomentumModel(),
-            groupingModel ?? new NoGroupingModel(),
-            targetDifficultyModel ?? new NoTargetDifficultyModel());
+            tremorModel,
+            pressureModel,
+            momentumModel,
+            groupingModel,
+            targetDifficultyModel);
 
         _eventPublisher = new ThrowEventPublisher(eventListeners);
     }

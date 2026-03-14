@@ -1,7 +1,6 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
-using Dartillery.Simulation.Adapters;
-using Dartillery.Simulation.Calculators;
+using Dartillery.Session;
 using Dartillery.Simulation.Models.GroupingModels;
 using Dartillery.Simulation.Models.MomentumModels;
 using Dartillery.Simulation.Models.PressureModels;
@@ -559,51 +558,34 @@ public sealed class EnhancedDartboardSimulatorBuilder
     /// </example>
     public PlayerSession BuildSession()
     {
-        // Defaults
-        _profile ??= PlayerProfile.Amateur();
-        _tremorModel ??= new LinearTremorModel();
-        _pressureModel ??= new NoPressureModel();
-        _momentumModel ??= new NoMomentumModel();
-        _groupingModel ??= new NoGroupingModel();
-        _targetDifficultyModel ??= new NoTargetDifficultyModel();
+        // Capture all builder state into an immutable config — no ??= mutation of builder fields.
+        // Each call produces a fresh config, so multiple BuildSession() calls are fully independent.
+        var config = new SessionConfiguration
+        {
+            Profile = _profile ?? PlayerProfile.Amateur(),
+            TremorModel = _tremorModel ?? new LinearTremorModel(),
+            PressureModel = _pressureModel ?? new NoPressureModel(),
+            MomentumModel = _momentumModel ?? new NoMomentumModel(),
+            GroupingModel = _groupingModel ?? new NoGroupingModel(),
+            TargetDifficultyModel = _targetDifficultyModel ?? new NoTargetDifficultyModel(),
+            BaseDeviationCalculator = _baseDeviationCalculator,
+            UseTruncation = _useTruncation,
+            MaxDeviation = _maxDeviation,
+            Seed = _seed,
+            EventListeners = _eventListeners.AsReadOnly()
+        };
 
-        var randomProvider = _seed.HasValue
-            ? new DefaultRandomProvider(_seed.Value)
+        var rng = config.Seed.HasValue
+            ? new DefaultRandomProvider(config.Seed.Value)
             : new DefaultRandomProvider();
 
-        // Create base deviation calculator
-        _baseDeviationCalculator ??= new GaussianDeviationCalculator(randomProvider);
+        var baseCalc = config.BaseDeviationCalculator
+            ?? new GaussianDeviationCalculator(rng);
 
-        // Build decorator chain
-        IContextualDeviationCalculator deviationCalculator =
-            new SystematicBiasDeviationCalculator(_baseDeviationCalculator);
+        var chain = new DeviationCalculatorChainBuilder(baseCalc)
+            .WithTruncation(config.UseTruncation, config.MaxDeviation)
+            .Build();
 
-        deviationCalculator = new PressureModifiedDeviationCalculator(deviationCalculator);
-
-        deviationCalculator = new MomentumModifiedDeviationCalculator(deviationCalculator);
-
-        if (_useTruncation)
-        {
-            deviationCalculator = new TruncatedDeviationCalculator(
-                deviationCalculator, _maxDeviation);
-        }
-
-        // Create contextual simulator
-        var contextualSimulator = new ContextualSimulatorAdapter(
-            deviationCalculator,
-            _profile,
-            _groupingModel,
-            _targetDifficultyModel);
-
-        // Create session
-        return new PlayerSession(
-            contextualSimulator,
-            _profile,
-            _tremorModel,
-            _pressureModel,
-            _momentumModel,
-            _groupingModel,
-            _targetDifficultyModel,
-            _eventListeners);
+        return PlayerSessionFactory.Create(config, chain);
     }
 }
