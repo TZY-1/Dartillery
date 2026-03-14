@@ -25,5 +25,5 @@ public sealed record SessionState
     /// Current tremor magnitude from previous calculation.
     /// Used by recovery models to track tremor decay.
     /// </summary>
-    public double CurrentTremor { get; set; }
+    public double CurrentTremor { get; init; }
 }

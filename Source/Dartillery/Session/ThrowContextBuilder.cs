@@ -87,8 +87,8 @@ public sealed class ThrowContextBuilder
         GameContext? gameContext = null)
     {
         // Update tremor based on session progress
-        sessionState.CurrentTremor = _currentTremor;
-        _currentTremor = _tremorModel.CalculateTremor(sessionState, _profile);
+        var stateWithTremor = sessionState with { CurrentTremor = _currentTremor };
+        _currentTremor = _tremorModel.CalculateTremor(stateWithTremor, _profile);
 
         // Calculate pressure modifier (>= 1.0, where higher = more pressure = worse performance)
         double pressureModifier = gameContext != null

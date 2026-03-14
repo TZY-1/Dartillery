@@ -576,7 +576,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
 
         // Build decorator chain
         IContextualDeviationCalculator deviationCalculator =
-            new BiasedDeviationCalculator(_baseDeviationCalculator);
+            new SystematicBiasDeviationCalculator(_baseDeviationCalculator);
 
         deviationCalculator = new PressureModifiedDeviationCalculator(deviationCalculator);
 

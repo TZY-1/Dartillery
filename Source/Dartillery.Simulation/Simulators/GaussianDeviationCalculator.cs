@@ -32,7 +32,7 @@ internal sealed class GaussianDeviationCalculator : IDeviationCalculator
     /// </list>
     /// Recommended values: 0.02 (professional) to 0.08 (beginner).
     /// </remarks>
-    public (double DX, double DY) CalculatePolarDeviation(double precision)
+    public (double DX, double DY) CalculateDeviation(double precision)
     {
         double standardDeviation = precision;
 

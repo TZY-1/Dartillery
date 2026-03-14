@@ -7,11 +7,11 @@ namespace Dartillery.Simulation.Calculators;
 /// Decorator that adds systematic player bias to throw deviation.
 /// First decorator in chain - applies player-specific constant offset.
 /// </summary>
-internal sealed class BiasedDeviationCalculator : IContextualDeviationCalculator
+internal sealed class SystematicBiasDeviationCalculator : IContextualDeviationCalculator
 {
     private readonly IDeviationCalculator _baseCalculator;
 
-    public BiasedDeviationCalculator(IDeviationCalculator baseCalculator)
+    public SystematicBiasDeviationCalculator(IDeviationCalculator baseCalculator)
     {
         _baseCalculator = baseCalculator ?? throw new ArgumentNullException(nameof(baseCalculator));
     }
@@ -22,7 +22,7 @@ internal sealed class BiasedDeviationCalculator : IContextualDeviationCalculator
         double effectiveSkill = profile.BaseSkill + context.SessionTremor;
 
         // Get random deviation from base calculator
-        var (dx, dy) = _baseCalculator.CalculatePolarDeviation(effectiveSkill);
+        var (dx, dy) = _baseCalculator.CalculateDeviation(effectiveSkill);
 
         // Add systematic bias
         double biasedDx = dx + profile.SystematicBiasX;

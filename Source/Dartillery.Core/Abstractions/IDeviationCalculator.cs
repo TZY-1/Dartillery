@@ -25,8 +25,6 @@ public interface IDeviationCalculator
     /// <item><description>DX: Horizontal deviation (positive = right, negative = left)</description></item>
     /// <item><description>DY: Vertical deviation (positive = up, negative = down)</description></item>
     /// </list>
-    /// Note: Despite the method name "PolarDeviation", this returns Cartesian coordinates (dx, dy).
-    /// The name reflects that the internal generation may use polar coordinates.
     /// </returns>
-    (double DX, double DY) CalculatePolarDeviation(double precision);
+    (double DX, double DY) CalculateDeviation(double precision);
 }

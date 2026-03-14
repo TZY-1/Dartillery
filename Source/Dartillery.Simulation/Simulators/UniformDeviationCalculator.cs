@@ -26,7 +26,7 @@ internal sealed class UniformDeviationCalculator : IDeviationCalculator
     /// All throws land uniformly distributed within a circle of this radius from the aim point.
     /// To match Gaussian ~95% accuracy, use: uniformRadius = gaussianSigma * 2.0
     /// </remarks>
-    public (double DX, double DY) CalculatePolarDeviation(double precision)
+    public (double DX, double DY) CalculateDeviation(double precision)
     {
         double maxRadius = precision;
 
