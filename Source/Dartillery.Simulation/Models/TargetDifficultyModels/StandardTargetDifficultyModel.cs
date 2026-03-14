@@ -8,7 +8,7 @@ namespace Dartillery.Simulation.Models.TargetDifficultyModels;
 /// Standard target difficulty model.
 /// Bulls are harder than triples, doubles harder than singles (smaller targets).
 /// </summary>
-public sealed class StandardTargetDifficultyModel : ITargetDifficultyModel
+internal sealed class StandardTargetDifficultyModel : ITargetDifficultyModel
 {
     public double GetDifficultyModifier(Target target)
     {

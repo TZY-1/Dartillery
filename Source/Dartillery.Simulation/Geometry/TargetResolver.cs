@@ -8,7 +8,7 @@ namespace Dartillery.Simulation.Geometry;
 /// <summary>
 /// Resolves dartboard coordinates to targets.
 /// </summary>
-public sealed class TargetResolver : ITargetResolver
+internal sealed class TargetResolver : ITargetResolver
 {
     private readonly ISectorResolver _sectorResolver;
     private readonly IRingResolver _ringResolver;

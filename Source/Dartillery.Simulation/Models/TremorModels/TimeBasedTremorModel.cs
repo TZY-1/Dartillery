@@ -8,7 +8,7 @@ namespace Dartillery.Simulation.Models.TremorModels;
 /// Fatigue accumulates based on actual session duration.
 /// More realistic for long practice sessions.
 /// </summary>
-public sealed class TimeBasedTremorModel : ITremorModel
+internal sealed class TimeBasedTremorModel : ITremorModel
 {
     private readonly double _fatiguePerMinute;
 

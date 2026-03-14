@@ -7,7 +7,7 @@ namespace Dartillery.Simulation.Models.TremorModels;
 /// Realistic logarithmic tremor model.
 /// Fast initial fatigue, then plateau effect (more realistic).
 /// </summary>
-public sealed class LogarithmicTremorModel : ITremorModel
+internal sealed class LogarithmicTremorModel : ITremorModel
 {
     private readonly double _growthRate;
 

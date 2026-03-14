@@ -8,7 +8,7 @@ namespace Dartillery.Simulation.Models.TremorModels;
 /// Tremor decreases during pauses (between visits).
 /// Decorator pattern - wraps another tremor model.
 /// </summary>
-public sealed class RecoveryTremorModel : ITremorModel
+internal sealed class RecoveryTremorModel : ITremorModel
 {
     private readonly ITremorModel _baseTremorModel;
     private readonly double _recoveryRate;

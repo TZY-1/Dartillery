@@ -17,11 +17,7 @@ public static class SimulatorPresets
     {
         var builder = new EnhancedDartboardSimulatorBuilder()
             .WithAmateurPlayer(playerName);
-
-        if (seed.HasValue)
-            builder.WithSeed(seed.Value);
-
-        return builder.BuildSession();
+        return BuildWithSeed(builder, seed);
     }
 
     /// <summary>
@@ -39,11 +35,7 @@ public static class SimulatorPresets
             .WithStandardMomentum()
             .WithSimpleGrouping()
             .WithStandardTargetDifficulty();
-
-        if (seed.HasValue)
-            builder.WithSeed(seed.Value);
-
-        return builder.BuildSession();
+        return BuildWithSeed(builder, seed);
     }
 
     /// <summary>
@@ -59,11 +51,7 @@ public static class SimulatorPresets
             .WithRealisticTremor()
             .WithStandardPressure()
             .WithStandardMomentum();
-
-        if (seed.HasValue)
-            builder.WithSeed(seed.Value);
-
-        return builder.BuildSession();
+        return BuildWithSeed(builder, seed);
     }
 
     /// <summary>
@@ -86,10 +74,13 @@ public static class SimulatorPresets
             .WithSimpleGrouping()
             .WithStandardTargetDifficulty()
             .AddEventListener(logger);
+        return BuildWithSeed(builder, seed);
+    }
 
+    private static PlayerSession BuildWithSeed(EnhancedDartboardSimulatorBuilder builder, int? seed)
+    {
         if (seed.HasValue)
             builder.WithSeed(seed.Value);
-
         return builder.BuildSession();
     }
 }

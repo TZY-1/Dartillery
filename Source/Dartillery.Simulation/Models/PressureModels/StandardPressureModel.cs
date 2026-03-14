@@ -6,7 +6,7 @@ namespace Dartillery.Simulation.Models.PressureModels;
 /// <summary>
 /// Standard pressure model based on checkout attempts and score proximity.
 /// </summary>
-public sealed class StandardPressureModel : IPressureModel
+internal sealed class StandardPressureModel : IPressureModel
 {
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context)
     {

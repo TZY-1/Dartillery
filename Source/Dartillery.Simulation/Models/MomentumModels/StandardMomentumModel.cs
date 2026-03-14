@@ -8,7 +8,7 @@ namespace Dartillery.Simulation.Models.MomentumModels;
 /// Standard momentum model tracking hot hand / cold streak effects.
 /// Analyzes recent throw history to detect performance trends.
 /// </summary>
-public sealed class StandardMomentumModel : IMomentumModel
+internal sealed class StandardMomentumModel : IMomentumModel
 {
     private readonly int _windowSize;
     private readonly double _hotHandBonus;

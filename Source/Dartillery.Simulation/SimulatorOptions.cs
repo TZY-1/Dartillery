@@ -3,7 +3,7 @@
 /// <summary>
 /// Configuration options for the throw simulation.
 /// </summary>
-public sealed class SimulatorOptions
+internal sealed class SimulatorOptions
 {
     /// <summary>
     /// Standard deviation of the throw dispersion.

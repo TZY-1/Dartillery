@@ -7,7 +7,7 @@ namespace Dartillery.Simulation.Models.TremorModels;
 /// No-op tremor model for testing or simple simulations.
 /// Always returns zero tremor (no fatigue effect).
 /// </summary>
-public sealed class NoTremorModel : ITremorModel
+internal sealed class NoTremorModel : ITremorModel
 {
     public double CalculateTremor(SessionState state, PlayerProfile profile) => 0.0;
 }

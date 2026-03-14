@@ -7,7 +7,7 @@ namespace Dartillery.Simulation.Models.PressureModels;
 /// Advanced pressure model including bogey numbers and score anxiety.
 /// Models psychological effects of difficult checkout situations.
 /// </summary>
-public sealed class CheckoutPsychologyModel : IPressureModel
+internal sealed class CheckoutPsychologyModel : IPressureModel
 {
     private static readonly HashSet<int> BogeyNumbers = new()
     {

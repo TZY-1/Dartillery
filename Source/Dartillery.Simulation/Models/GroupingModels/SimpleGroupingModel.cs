@@ -7,7 +7,7 @@ namespace Dartillery.Simulation.Models.GroupingModels;
 /// Simple dart grouping model.
 /// If 2+ darts are close to aim point, increase deviation for next dart (blocking effect).
 /// </summary>
-public sealed class SimpleGroupingModel : IGroupingModel
+internal sealed class SimpleGroupingModel : IGroupingModel
 {
     private readonly double _clusterRadius;
     private readonly double _blockingPenalty;

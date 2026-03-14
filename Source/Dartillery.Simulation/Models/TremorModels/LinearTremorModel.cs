@@ -7,7 +7,7 @@ namespace Dartillery.Simulation.Models.TremorModels;
 /// Simple linear tremor accumulation model.
 /// Tremor increases linearly with throw count.
 /// </summary>
-public sealed class LinearTremorModel : ITremorModel
+internal sealed class LinearTremorModel : ITremorModel
 {
     public double CalculateTremor(SessionState state, PlayerProfile profile)
     {
