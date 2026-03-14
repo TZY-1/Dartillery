@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectDlls</TargetsForTfmSpecificBuildOutput>
 
     <!-- NuGet Package Metadata -->
     <PackageId>Dartillery</PackageId>
@@ -15,10 +16,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dartillery.Core\Dartillery.Core.csproj" />
-    <ProjectReference Include="..\Dartillery.Simulation\Dartillery.Simulation.csproj" />
+    <ProjectReference Include="..\Dartillery.Core\Dartillery.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Dartillery.Simulation\Dartillery.Simulation.csproj" PrivateAssets="all" />
 
     <!-- For DI support -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
+
+  <!-- Include internal project DLLs in NuGet package -->
+  <Target Name="IncludeReferencedProjectDlls">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutputPath)Dartillery.Core.dll" />
+      <BuildOutputInPackage Include="$(OutputPath)Dartillery.Shared.dll" />
+      <BuildOutputInPackage Include="$(OutputPath)Dartillery.Simulation.dll" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 #Claude folder
 **/*claude*/
+
+# GSD planning documents
+.planning/
