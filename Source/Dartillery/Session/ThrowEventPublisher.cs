@@ -38,10 +38,11 @@ public sealed class ThrowEventPublisher
     /// <param name="sessionId">The session identifier.</param>
     /// <param name="timestamp">The timestamp when the throw was completed.</param>
     /// <remarks>
-    /// This method creates a ThrowEvent and notifies all listeners sequentially.
-    /// If a listener throws an exception, it will propagate to the caller.
-    /// Consider adding error handling if listener failures should not affect throw execution.
+    /// All registered listeners are called regardless of individual failures.
+    /// If any listener throws, exceptions are collected and rethrown as an
+    /// <see cref="AggregateException"/> after all listeners have been invoked.
     /// </remarks>
+    /// <exception cref="AggregateException">Thrown when one or more listeners throw during event notification.</exception>
     public void Publish(
         ThrowResult result,
         ThrowContext context,
@@ -58,10 +59,22 @@ public sealed class ThrowEventPublisher
             Timestamp = timestamp
         };
 
+        List<Exception>? errors = null;
         foreach (var listener in _eventListeners)
         {
-            listener.OnThrowCompleted(evt);
+            try
+            {
+                listener.OnThrowCompleted(evt);
+            }
+            catch (Exception ex)
+            {
+                errors ??= new List<Exception>();
+                errors.Add(ex);
+            }
         }
+
+        if (errors is { Count: > 0 })
+            throw new AggregateException("One or more throw event listeners threw an exception.", errors);
     }
 
     /// <summary>

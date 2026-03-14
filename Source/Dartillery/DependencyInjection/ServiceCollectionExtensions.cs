@@ -1,6 +1,11 @@
 using Dartillery;
 using Dartillery.Core.Abstractions;
 using Dartillery.Simulation.Geometry;
+using Dartillery.Simulation.Models.GroupingModels;
+using Dartillery.Simulation.Models.MomentumModels;
+using Dartillery.Simulation.Models.PressureModels;
+using Dartillery.Simulation.Models.TargetDifficultyModels;
+using Dartillery.Simulation.Models.TremorModels;
 using Dartillery.Simulation.Services;
 using Dartillery.Simulation.Simulators;
 
@@ -43,8 +48,8 @@ public static class DartilleryServiceCollectionExtensions
         services.AddSingleton<IAimPointCalculator, AimPointCalculator>();
         services.AddSingleton<ITargetResolver, TargetResolver>();
 
-        // Register main simulator
-        services.AddSingleton(sp =>
+        // Register main simulator directly as IThrowSimulator
+        services.AddSingleton<IThrowSimulator>(sp =>
         {
             var builder = new DartboardSimulatorBuilder()
                 .UseDeviationCalculator(sp.GetRequiredService<IDeviationCalculator>())
@@ -55,9 +60,28 @@ public static class DartilleryServiceCollectionExtensions
             return builder.Build();
         });
 
-        // Register as interface for DI consumers
-        services.AddSingleton<IThrowSimulator>(sp =>
-            sp.GetRequiredService<DartboardSimulator>());
+        return services;
+    }
+
+    /// <summary>
+    /// Registers Dartillery simulation services plus enhanced session services
+    /// (default behavioral models for tremor, pressure, momentum, grouping, target difficulty).
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Optional configuration action.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDartilleryEnhanced(
+        this IServiceCollection services,
+        Action<DartilleryOptions>? configure = null)
+    {
+        AddDartillerySimulation(services, configure);
+
+        // Register default behavioral models (can be overridden by consumer)
+        services.AddSingleton<ITremorModel, LinearTremorModel>();
+        services.AddSingleton<IPressureModel, NoPressureModel>();
+        services.AddSingleton<IMomentumModel, NoMomentumModel>();
+        services.AddSingleton<IGroupingModel, NoGroupingModel>();
+        services.AddSingleton<ITargetDifficultyModel, NoTargetDifficultyModel>();
 
         return services;
     }

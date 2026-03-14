@@ -31,29 +31,4 @@ public sealed class DartilleryOptions
     /// Custom deviation calculator (only used when DistributionType is Custom).
     /// </summary>
     internal IDeviationCalculator? CustomDeviationCalculator { get; set; }
-
-    /// <summary>
-    /// Configures the simulator to use Gaussian distribution.
-    /// </summary>
-    public void UseGaussianDistribution() => DistributionType = DeviationDistribution.Gaussian;
-
-    /// <summary>
-    /// Configures the simulator to use uniform distribution.
-    /// </summary>
-    public void UseUniformDistribution() => DistributionType = DeviationDistribution.Uniform;
-
-    /// <summary>
-    /// Sets precision to professional level (sigma = 0.02).
-    /// </summary>
-    public void UseProfessionalPrecision() => StandardDeviation = 0.02;
-
-    /// <summary>
-    /// Sets precision to amateur level (sigma = 0.05).
-    /// </summary>
-    public void UseAmateurPrecision() => StandardDeviation = 0.05;
-
-    /// <summary>
-    /// Sets precision to beginner level (sigma = 0.08).
-    /// </summary>
-    public void UseBeginnerPrecision() => StandardDeviation = 0.08;
 }
