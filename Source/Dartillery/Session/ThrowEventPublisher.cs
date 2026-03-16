@@ -4,18 +4,9 @@ using Dartillery.Core.Models;
 namespace Dartillery.Session;
 
 /// <summary>
-/// Publishes throw events to registered listeners for logging, analysis, or other side effects.
-/// Responsible for coordinating event notifications to all registered listeners.
+/// Dispatches <see cref="ThrowEvent"/> notifications to all registered <see cref="IThrowEventListener"/> instances after each throw.
+/// All listeners are invoked regardless of individual failures; exceptions are collected and rethrown as <see cref="AggregateException"/>.
 /// </summary>
-/// <remarks>
-/// This class follows the Observer pattern, notifying all registered listeners
-/// when a throw is completed. Listeners can be used for:
-/// - Console logging
-/// - CSV/file logging
-/// - Real-time statistics
-/// - UI updates
-/// - Analytics/telemetry
-/// </remarks>
 public sealed class ThrowEventPublisher
 {
     private readonly List<IThrowEventListener> _eventListeners;
@@ -30,24 +21,19 @@ public sealed class ThrowEventPublisher
     }
 
     /// <summary>
-    /// Publishes a throw completed event to all registered listeners.
+    /// Constructs a <see cref="ThrowEvent"/> and dispatches it to all registered listeners.
     /// </summary>
     /// <param name="result">The result of the throw.</param>
     /// <param name="context">The context in which the throw was executed.</param>
     /// <param name="profile">The player profile associated with the throw.</param>
     /// <param name="sessionId">The session identifier.</param>
     /// <param name="timestamp">The timestamp when the throw was completed.</param>
-    /// <remarks>
-    /// All registered listeners are called regardless of individual failures.
-    /// If any listener throws, exceptions are collected and rethrown as an
-    /// <see cref="AggregateException"/> after all listeners have been invoked.
-    /// </remarks>
     /// <exception cref="AggregateException">Thrown when one or more listeners throw during event notification.</exception>
     public void Publish(
         ThrowResult result,
         ThrowContext context,
         PlayerProfile profile,
-        long sessionId,
+        Guid sessionId,
         DateTime timestamp)
     {
         var evt = new ThrowEvent
@@ -84,8 +70,7 @@ public sealed class ThrowEventPublisher
     /// <exception cref="ArgumentNullException">Thrown when listener is null.</exception>
     public void AddListener(IThrowEventListener listener)
     {
-        if (listener == null)
-            throw new ArgumentNullException(nameof(listener));
+        ArgumentNullException.ThrowIfNull(listener);
 
         if (!_eventListeners.Contains(listener))
         {
@@ -104,7 +89,7 @@ public sealed class ThrowEventPublisher
     }
 
     /// <summary>
-    /// Gets the count of registered event listeners.
+    /// Gets the number of currently registered event listeners.
     /// </summary>
     public int ListenerCount => _eventListeners.Count;
 }

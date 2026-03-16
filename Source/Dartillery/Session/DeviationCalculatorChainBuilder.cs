@@ -14,7 +14,8 @@ internal sealed class DeviationCalculatorChainBuilder
 
     public DeviationCalculatorChainBuilder(IDeviationCalculator baseCalculator)
     {
-        _baseCalculator = baseCalculator ?? throw new ArgumentNullException(nameof(baseCalculator));
+        ArgumentNullException.ThrowIfNull(baseCalculator);
+        _baseCalculator = baseCalculator;
     }
 
     /// <summary>

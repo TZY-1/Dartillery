@@ -1,32 +1,22 @@
 namespace Dartillery.Core.Models;
 
 /// <summary>
-/// Event data for completed throws.
+/// Immutable event payload dispatched to <see cref="Dartillery.Core.Abstractions.IThrowEventListener"/> instances after each simulated throw.
 /// </summary>
 public sealed record ThrowEvent
 {
-    /// <summary>
-    /// The throw result (required).
-    /// </summary>
+    /// <summary>The outcome of the throw: segment hit, score, and coordinates.</summary>
     public required ThrowResult Result { get; init; }
 
-    /// <summary>
-    /// The throw context (required).
-    /// </summary>
+    /// <summary>The behavioral modifiers (tremor, pressure, momentum) active when the throw was made.</summary>
     public required ThrowContext Context { get; init; }
 
-    /// <summary>
-    /// The player profile (required).
-    /// </summary>
+    /// <summary>The player profile used for the throw.</summary>
     public required PlayerProfile Profile { get; init; }
 
-    /// <summary>
-    /// Timestamp when throw was executed.
-    /// </summary>
+    /// <summary>UTC timestamp recorded when the throw was simulated.</summary>
     public DateTime Timestamp { get; init; }
 
-    /// <summary>
-    /// Session identifier.
-    /// </summary>
-    public long SessionId { get; init; }
+    /// <summary>Session identifier matching the owning session's ID for cross-throw correlation.</summary>
+    public Guid SessionId { get; init; }
 }

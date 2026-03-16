@@ -3,32 +3,33 @@ using Dartillery.Core.Models;
 namespace Dartillery.Session;
 
 /// <summary>
-/// Manages the state of a player's throwing session including history, counts, and timing.
-/// Responsible for tracking throw count, maintaining throw history, and managing session lifecycle.
+/// Tracks throw history, counts, and session timing for a single player session.
 /// </summary>
-/// <remarks>
-/// This class handles the Single Responsibility of state management, separated from
-/// throw execution and context building for better testability and maintainability.
-/// </remarks>
 public sealed class SessionStateManager
 {
     private readonly PlayerProfile _profile;
     private readonly List<ThrowResult> _throwHistory = new();
-    private readonly long _sessionId;
+    private readonly TimeProvider _timeProvider;
+    private readonly Guid _sessionId;
 
     private int _throwCount = 0;
-    private DateTime _sessionStart = DateTime.UtcNow;
-    private DateTime _lastThrowTime = DateTime.UtcNow;
+    private DateTime _sessionStart;
+    private DateTime _lastThrowTime;
 
     /// <summary>
     /// Initializes a new session state manager for the specified player profile.
     /// </summary>
     /// <param name="profile">The player profile containing player characteristics and skill level.</param>
+    /// <param name="timeProvider">Optional time provider for testability. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <exception cref="ArgumentNullException">Thrown when profile is null.</exception>
-    public SessionStateManager(PlayerProfile profile)
+    public SessionStateManager(PlayerProfile profile, TimeProvider? timeProvider = null)
     {
-        _profile = profile ?? throw new ArgumentNullException(nameof(profile));
-        _sessionId = GenerateSessionId();
+        ArgumentNullException.ThrowIfNull(profile);
+        _profile = profile;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _sessionId = Guid.NewGuid();
+        _sessionStart = _timeProvider.GetUtcNow().UtcDateTime;
+        _lastThrowTime = _sessionStart;
     }
 
     /// <summary>
@@ -47,13 +48,9 @@ public sealed class SessionStateManager
     public IReadOnlyList<ThrowResult> ThrowHistory => _throwHistory.AsReadOnly();
 
     /// <summary>
-    /// Gets the unique identifier for this session.
+    /// Gets the unique identifier assigned to this session at creation time.
     /// </summary>
-    /// <remarks>
-    /// Session ID is generated at session creation time using UTC ticks,
-    /// ensuring uniqueness across different sessions.
-    /// </remarks>
-    public long SessionId => _sessionId;
+    public Guid SessionId => _sessionId;
 
     /// <summary>
     /// Gets the time when the session was started.
@@ -73,34 +70,26 @@ public sealed class SessionStateManager
     /// <summary>
     /// Gets the time elapsed since the last throw.
     /// </summary>
-    public TimeSpan TimeSinceLastThrow => DateTime.UtcNow - _lastThrowTime;
+    public TimeSpan TimeSinceLastThrow => _timeProvider.GetUtcNow().UtcDateTime - _lastThrowTime;
 
     /// <summary>
-    /// Records a throw result in the session history.
+    /// Appends a throw result to the session history and updates the throw count and last-throw timestamp.
     /// </summary>
     /// <param name="result">The throw result to record.</param>
-    /// <remarks>
-    /// This method updates the throw count, adds the result to history,
-    /// and updates the last throw timestamp.
-    /// </remarks>
     public void RecordThrow(ThrowResult result)
     {
         _throwHistory.Add(result);
         _throwCount++;
-        _lastThrowTime = DateTime.UtcNow;
+        _lastThrowTime = _timeProvider.GetUtcNow().UtcDateTime;
     }
 
     /// <summary>
-    /// Creates a session state snapshot for the current moment.
+    /// Returns a point-in-time snapshot of the current session metrics for use by tremor and other time-dependent models.
     /// </summary>
-    /// <returns>A SessionState object containing current session metrics.</returns>
-    /// <remarks>
-    /// Used by tremor models and other time-dependent calculations to get
-    /// the current state of the session without exposing internal state directly.
-    /// </remarks>
+    /// <returns>A <see cref="SessionState"/> with current throw count, duration, and time since last throw.</returns>
     public SessionState GetCurrentState()
     {
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
         return new SessionState
         {
             ThrowCount = _throwCount,
@@ -111,23 +100,13 @@ public sealed class SessionStateManager
     }
 
     /// <summary>
-    /// Resets the session state to initial values, clearing all history and counters.
+    /// Clears all throw history and resets counters and timestamps without replacing the player profile.
     /// </summary>
-    /// <remarks>
-    /// Useful for starting a new game or practice session without creating a new
-    /// SessionStateManager instance. Preserves the player profile and generates a new session ID.
-    /// </remarks>
     public void Reset()
     {
         _throwCount = 0;
         _throwHistory.Clear();
-        _sessionStart = DateTime.UtcNow;
-        _lastThrowTime = DateTime.UtcNow;
+        _sessionStart = _timeProvider.GetUtcNow().UtcDateTime;
+        _lastThrowTime = _timeProvider.GetUtcNow().UtcDateTime;
     }
-
-    /// <summary>
-    /// Generates a unique session identifier based on current UTC ticks.
-    /// </summary>
-    /// <returns>A unique long value representing the session ID.</returns>
-    private static long GenerateSessionId() => DateTime.UtcNow.Ticks;
 }

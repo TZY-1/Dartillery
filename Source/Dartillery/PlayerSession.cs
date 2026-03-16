@@ -5,41 +5,17 @@ using Dartillery.Session;
 namespace Dartillery;
 
 /// <summary>
-/// Coordinates a player's throwing session by orchestrating throw execution,
-/// state management, context building, and event publishing.
+/// Coordinates a player's throwing session: executes throws, manages session state, and publishes events.
+/// Obtain instances via <see cref="EnhancedDartboardSimulatorBuilder.BuildSession"/> or <see cref="SimulatorPresets"/>.
 /// </summary>
-/// <remarks>
-/// <para>
-/// PlayerSession acts as a Facade that coordinates three main responsibilities:
-/// </para>
-/// <list type="bullet">
-/// <item><description><see cref="SessionStateManager"/> - Manages throw history, counts, and timing</description></item>
-/// <item><description><see cref="ThrowContextBuilder"/> - Builds throw contexts from behavioral models</description></item>
-/// <item><description><see cref="ThrowEventPublisher"/> - Publishes events to registered listeners</description></item>
-/// </list>
-/// <para>
-/// This design follows the Single Responsibility Principle by delegating specific
-/// concerns to dedicated components, making the code more testable and maintainable.
-/// </para>
-/// </remarks>
-/// <example>
-/// <code>
-/// var session = new EnhancedDartboardSimulatorBuilder()
-///     .WithProfessionalPlayer("Alice")
-///     .WithLinearTremor()
-///     .WithCheckoutPsychology()
-///     .BuildSession();
-///
-/// var result = session.Throw(Target.Triple(20));
-/// Console.WriteLine($"Score: {result.Score}, Tremor: {session.CurrentTremor}");
-/// </code>
-/// </example>
+/// <remarks>This type is not thread-safe. Create separate instances for concurrent use.</remarks>
 public sealed class PlayerSession
 {
     private readonly IContextualThrowSimulator _simulator;
     private readonly SessionStateManager _stateManager;
     private readonly ThrowContextBuilder _contextBuilder;
     private readonly ThrowEventPublisher _eventPublisher;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new player session with the specified simulator and behavioral models.
@@ -52,15 +28,8 @@ public sealed class PlayerSession
     /// <param name="groupingModel">The grouping model for dart clustering.</param>
     /// <param name="targetDifficultyModel">The difficulty model for target-specific challenges.</param>
     /// <param name="eventListeners">Optional collection of event listeners for throw notifications.</param>
-    /// <exception cref="ArgumentNullException">Thrown when simulator or profile is null.</exception>
-    /// <remarks>
-    /// The constructor creates three internal components:
-    /// <list type="number">
-    /// <item><description>SessionStateManager to track session state</description></item>
-    /// <item><description>ThrowContextBuilder to aggregate behavioral model effects</description></item>
-    /// <item><description>ThrowEventPublisher to notify event listeners</description></item>
-    /// </list>
-    /// </remarks>
+    /// <param name="timeProvider">Optional time provider for testability. Defaults to <see cref="TimeProvider.System"/>.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="simulator"/> or <paramref name="profile"/> is null.</exception>
     public PlayerSession(
         IContextualThrowSimulator simulator,
         PlayerProfile profile,
@@ -69,14 +38,14 @@ public sealed class PlayerSession
         IMomentumModel momentumModel,
         IGroupingModel groupingModel,
         ITargetDifficultyModel targetDifficultyModel,
-        IEnumerable<IThrowEventListener>? eventListeners = null)
+        IEnumerable<IThrowEventListener>? eventListeners = null,
+        TimeProvider? timeProvider = null)
     {
-        _simulator = simulator ?? throw new ArgumentNullException(nameof(simulator));
-
-        if (profile == null)
-            throw new ArgumentNullException(nameof(profile));
-
-        _stateManager = new SessionStateManager(profile);
+        ArgumentNullException.ThrowIfNull(simulator);
+        ArgumentNullException.ThrowIfNull(profile);
+        _simulator = simulator;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _stateManager = new SessionStateManager(profile, _timeProvider);
 
         _contextBuilder = new ThrowContextBuilder(
             profile,
@@ -90,107 +59,34 @@ public sealed class PlayerSession
     }
 
     /// <summary>
-    /// Executes a dart throw with full context awareness including tremor, pressure, and momentum effects.
+    /// Executes a dart throw at the specified target, applying all configured behavioral modifiers.
     /// </summary>
     /// <param name="target">The target segment to aim at (e.g., Triple 20, Double 16, Bullseye).</param>
     /// <param name="gameContext">
-    /// Optional game context containing game-specific state such as remaining score,
-    /// checkout status, and previous throws in the current visit. Required for pressure calculations.
+    /// Optional game context for pressure calculations (remaining score, checkout status, visit history).
+    /// When null, pressure modifier is 1.0 (neutral).
     /// </param>
-    /// <returns>
-    /// A <see cref="ThrowResult"/> containing the scored segment, points, and hit coordinates.
-    /// </returns>
-    /// <remarks>
-    /// <para>
-    /// This method orchestrates the complete throw workflow:
-    /// </para>
-    /// <list type="number">
-    /// <item><description>Get current session state from SessionStateManager</description></item>
-    /// <item><description>Build throw context from behavioral models via ThrowContextBuilder</description></item>
-    /// <item><description>Execute throw using the contextual simulator</description></item>
-    /// <item><description>Record result in SessionStateManager</description></item>
-    /// <item><description>Publish throw event to all registered listeners</description></item>
-    /// </list>
-    /// <para>
-    /// The throw context includes modifiers for:
-    /// - <strong>Tremor</strong>: Accumulated fatigue (increases over session)
-    /// - <strong>Pressure</strong>: Psychological effects (higher in checkout situations)
-    /// - <strong>Momentum</strong>: Hot/cold streak effects (based on recent performance)
-    /// - <strong>Grouping</strong>: Dart clustering effects (previous darts in same visit)
-    /// </para>
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// // Simple throw without game context
-    /// var result = session.Throw(Target.Triple(20));
-    ///
-    /// // Throw with checkout pressure
-    /// var gameContext = new GameContext
-    /// {
-    ///     RemainingScore = 40,
-    ///     CurrentVisitResults = new List&lt;ThrowResult&gt;()
-    /// };
-    /// var checkoutResult = session.Throw(Target.Double(20), gameContext);
-    /// </code>
-    /// </example>
+    /// <returns>A <see cref="ThrowResult"/> containing the scored segment, points, and hit coordinates.</returns>
     public ThrowResult Throw(Target target, GameContext? gameContext = null)
     {
-        // Step 1: Get current session state
         var sessionState = _stateManager.GetCurrentState();
-
-        // Step 2: Build throw context from all behavioral models
         var context = _contextBuilder.BuildContext(sessionState, _stateManager.ThrowHistory, gameContext);
-
-        // Step 3: Execute throw with simulator
         var result = _simulator.Throw(target, context);
-
-        // Step 4: Record throw in state manager
         _stateManager.RecordThrow(result);
-
-        // Step 5: Publish event to listeners
         _eventPublisher.Publish(
             result,
             context,
             _stateManager.Profile,
             _stateManager.SessionId,
-            DateTime.UtcNow);
+            _timeProvider.GetUtcNow().UtcDateTime);
 
         return result;
     }
 
     /// <summary>
-    /// Resets the session state to initial values, clearing all history and accumulated effects.
+    /// Resets the session to initial state: clears throw history, resets throw count and tremor accumulation.
+    /// The player profile and behavioral models are preserved.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This method is useful for starting a new game or practice session without
-    /// creating a new PlayerSession instance.
-    /// </para>
-    /// <para>
-    /// The reset operation:
-    /// </para>
-    /// <list type="bullet">
-    /// <item><description>Clears throw history</description></item>
-    /// <item><description>Resets throw count to zero</description></item>
-    /// <item><description>Resets tremor accumulation to zero</description></item>
-    /// <item><description>Resets session timing (start time, last throw time)</description></item>
-    /// <item><description>Preserves the player profile and behavioral models</description></item>
-    /// </list>
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// // Play first game
-    /// for (int i = 0; i &lt; 50; i++)
-    ///     session.Throw(Target.Triple(20));
-    ///
-    /// Console.WriteLine($"Game 1 tremor: {session.CurrentTremor}");
-    ///
-    /// // Start new game with fresh state
-    /// session.Reset();
-    ///
-    /// Console.WriteLine($"After reset tremor: {session.CurrentTremor}"); // 0
-    /// </code>
-    /// </example>
     public void Reset()
     {
         _stateManager.Reset();
@@ -198,67 +94,29 @@ public sealed class PlayerSession
     }
 
     /// <summary>
-    /// Gets the read-only collection of all throw results in chronological order.
+    /// All throw results in chronological order. Cleared on <see cref="Reset"/>.
     /// </summary>
-    /// <value>
-    /// An <see cref="IReadOnlyList{T}"/> of <see cref="ThrowResult"/> objects,
-    /// ordered from first throw to most recent throw in the session.
-    /// </value>
-    /// <remarks>
-    /// The history is cleared when <see cref="Reset"/> is called.
-    /// This collection is read-only to prevent external modification of session state.
-    /// </remarks>
     public IReadOnlyList<ThrowResult> ThrowHistory => _stateManager.ThrowHistory;
 
     /// <summary>
-    /// Gets the total number of throws executed in this session.
+    /// Total throws executed in this session. Resets to zero on <see cref="Reset"/>.
     /// </summary>
-    /// <value>
-    /// A non-negative integer representing the count of throws.
-    /// Resets to zero when <see cref="Reset"/> is called.
-    /// </value>
     public int ThrowCount => _stateManager.ThrowCount;
 
     /// <summary>
-    /// Gets the current tremor magnitude as calculated by the tremor model.
+    /// Current accumulated tremor magnitude as calculated by the configured tremor model.
+    /// Increases over the session based on throw count and fatigue rate; resets to zero on <see cref="Reset"/>.
     /// </summary>
-    /// <value>
-    /// A non-negative double value representing accumulated tremor/fatigue.
-    /// Typically increases over the session duration based on the tremor model's algorithm.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// The tremor value is model-dependent:
-    /// </para>
-    /// <list type="bullet">
-    /// <item><description><see cref="LinearTremorModel"/>: Increases linearly with throw count</description></item>
-    /// <item><description><see cref="LogarithmicTremorModel"/>: Increases logarithmically (fast at first, then plateaus)</description></item>
-    /// <item><description><see cref="NoTremorModel"/>: Always returns zero</description></item>
-    /// </list>
-    /// </remarks>
     public double CurrentTremor => _contextBuilder.CurrentTremor;
 
     /// <summary>
-    /// Gets the player profile associated with this session.
+    /// The player profile defining skill characteristics for this session.
     /// </summary>
-    /// <value>
-    /// The <see cref="PlayerProfile"/> containing player characteristics such as
-    /// base skill level, systematic biases, fatigue rate, and pressure resistance.
-    /// </value>
-    /// <remarks>
-    /// The profile is immutable and set during session construction.
-    /// </remarks>
     public PlayerProfile Profile => _stateManager.Profile;
 
     /// <summary>
-    /// Gets the unique identifier for this session instance.
+    /// Unique identifier for this session instance, generated at construction time.
+    /// Used to correlate throw events across multiple listeners.
     /// </summary>
-    /// <value>
-    /// A unique long value based on UTC ticks at session creation time.
-    /// </value>
-    /// <remarks>
-    /// The session ID is useful for correlating throw events across different listeners
-    /// and distinguishing between multiple concurrent sessions.
-    /// </remarks>
-    public long SessionId => _stateManager.SessionId;
+    public Guid SessionId => _stateManager.SessionId;
 }

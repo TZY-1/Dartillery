@@ -1,48 +1,31 @@
 namespace Dartillery.Core.Models;
 
 /// <summary>
-/// Optional metadata for throw analytics and debugging.
-/// Useful for bot training and statistical analysis.
+/// Optional per-throw snapshot of all modifier values applied during simulation, intended for analytics and bot training.
 /// </summary>
 public sealed record ThrowMetadata
 {
-    /// <summary>
-    /// Systematic bias applied to this throw (X component).
-    /// </summary>
+    /// <summary>Net horizontal systematic bias (meters) applied by <c>SystematicBiasDeviationCalculator</c>.</summary>
     public double SystematicBiasApplied { get; init; }
 
-    /// <summary>
-    /// Tremor magnitude at time of throw.
-    /// </summary>
+    /// <summary>Tremor magnitude (sigma increase) active at the moment of the throw.</summary>
     public double TremorMagnitude { get; init; }
 
-    /// <summary>
-    /// Pressure modifier applied to this throw.
-    /// </summary>
+    /// <summary>Pressure multiplier applied to deviation (&gt;1.0 = worse accuracy under pressure).</summary>
     public double PressureModifier { get; init; }
 
-    /// <summary>
-    /// Momentum modifier applied to this throw.
-    /// </summary>
+    /// <summary>Momentum multiplier applied to deviation (&lt;1.0 = hot streak, &gt;1.0 = cold streak).</summary>
     public double MomentumModifier { get; init; }
 
-    /// <summary>
-    /// Name of player who made the throw.
-    /// </summary>
+    /// <summary>Name of the player who made the throw, sourced from <see cref="PlayerProfile.Name"/>.</summary>
     public string? PlayerName { get; init; }
 
-    /// <summary>
-    /// Session identifier for grouping throws.
-    /// </summary>
-    public long SessionId { get; init; }
+    /// <summary>Session identifier matching the owning session's ID for cross-throw correlation.</summary>
+    public Guid SessionId { get; init; }
 
-    /// <summary>
-    /// Timestamp when throw was executed.
-    /// </summary>
+    /// <summary>UTC timestamp recorded when the throw was simulated.</summary>
     public DateTime Timestamp { get; init; }
 
-    /// <summary>
-    /// Extensibility dictionary for custom data.
-    /// </summary>
+    /// <summary>Optional extensibility bag for consumer-defined throw data. Keys are strings; values are arbitrary objects.</summary>
     public Dictionary<string, object>? CustomData { get; init; }
 }
