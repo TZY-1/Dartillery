@@ -41,7 +41,7 @@ public class ThrowEventPublisherTests
 
         // Act
         Assert.Throws<AggregateException>(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: 1L, DateTime.UtcNow));
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
 
         // Assert
         Assert.That(secondListenerCalled, Is.True, "Second listener should have been called even though first listener threw");
@@ -61,7 +61,7 @@ public class ThrowEventPublisherTests
 
         // Act
         var aggregate = Assert.Throws<AggregateException>(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: 1L, DateTime.UtcNow));
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
 
         // Assert
         Assert.That(aggregate, Is.Not.Null);
@@ -82,7 +82,7 @@ public class ThrowEventPublisherTests
 
         // Act & Assert
         Assert.DoesNotThrow(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: 1L, DateTime.UtcNow));
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
 
         Assert.That(callCount, Is.EqualTo(2), "Both listeners should have been called");
     }

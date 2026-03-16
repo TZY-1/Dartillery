@@ -1,41 +1,24 @@
 namespace Dartillery.Core.Models;
 
 /// <summary>
-/// Represents a point in 2D coordinates on the dartboard.
-/// Coordinate system: (0,0) = center, positive Y = up.
+/// Immutable 2D coordinate on the dartboard. Origin (0,0) is the board center; positive Y is up.
+/// Equality is tolerance-based (<c>1e-10</c>) to avoid floating-point precision issues.
 /// </summary>
-public readonly struct Point2D : IEquatable<Point2D>
+public readonly record struct Point2D(double X, double Y)
 {
     /// <summary>Floating-point equality tolerance.</summary>
     private const double EqualityTolerance = 1e-10;
 
-    /// <summary>X coordinate.</summary>
-    public double X { get; }
-
-    /// <summary>Y coordinate.</summary>
-    public double Y { get; }
-
     /// <summary>
-    /// Initializes a new point with the specified coordinates.
-    /// </summary>
-    /// <param name="x">The X coordinate.</param>
-    /// <param name="y">The Y coordinate.</param>
-    public Point2D(double x, double y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    /// <summary>
-    /// Calculates the distance from the origin (0,0).
+    /// Euclidean distance from the board center (0,0), i.e., the radial position.
     /// </summary>
     public double DistanceFromOrigin => Math.Sqrt(X * X + Y * Y);
 
     /// <summary>
-    /// Calculates the distance to another point.
+    /// Returns the Euclidean distance to another point.
     /// </summary>
-    /// <param name="other">The other point.</param>
-    /// <returns>Euclidean distance to the other point.</returns>
+    /// <param name="other">The point to measure to.</param>
+    /// <returns>Euclidean distance in the same units as the coordinates.</returns>
     public double DistanceTo(Point2D other)
     {
         double dx = X - other.X;
@@ -44,11 +27,11 @@ public readonly struct Point2D : IEquatable<Point2D>
     }
 
     /// <summary>
-    /// Creates a point from polar coordinates.
+    /// Creates a point from polar coordinates using dartboard angular convention (0 rad = 12 o'clock, positive = clockwise).
     /// </summary>
-    /// <param name="radius">Distance from center.</param>
-    /// <param name="angleFromUp">Angle in radians, 0 = up, positive = clockwise.</param>
-    /// <returns>Point in Cartesian coordinates.</returns>
+    /// <param name="radius">Radial distance from the center.</param>
+    /// <param name="angleFromUp">Angle in radians; 0 = up (12 o'clock), positive values rotate clockwise.</param>
+    /// <returns>Equivalent Cartesian <see cref="Point2D"/>.</returns>
     public static Point2D FromPolar(double radius, double angleFromUp)
     {
         double standardAngle = Math.PI / 2.0 - angleFromUp;
@@ -68,21 +51,12 @@ public readonly struct Point2D : IEquatable<Point2D>
     /// <summary>Subtracts two points component-wise.</summary>
     public static Point2D operator -(Point2D a, Point2D b) => new(a.X - b.X, a.Y - b.Y);
 
-    /// <summary>Tests two points for equality.</summary>
-    public static bool operator ==(Point2D a, Point2D b) => a.Equals(b);
-
-    /// <summary>Tests two points for inequality.</summary>
-    public static bool operator !=(Point2D a, Point2D b) => !a.Equals(b);
-
     /// <summary>
     /// Determines whether this point is equal to another within floating-point tolerance.
     /// </summary>
     public bool Equals(Point2D other) =>
         Math.Abs(X - other.X) < EqualityTolerance &&
         Math.Abs(Y - other.Y) < EqualityTolerance;
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) => obj is Point2D other && Equals(other);
 
     /// <inheritdoc />
     public override int GetHashCode() => HashCode.Combine(X, Y);
