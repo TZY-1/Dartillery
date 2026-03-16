@@ -1,4 +1,5 @@
 using Dartillery;
+using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 
 namespace Dartillery.Tests;
@@ -229,8 +230,8 @@ public class EnhancedSimulatorBuilderTests
         [Test]
         public void BuildSession_WithoutTremor_TremorRemainsConstant()
         {
-            // Arrange - Default Builder uses NoTremorModel
-            var session = CreateSession();
+            // Arrange - Explicitly disable tremor (default builder uses LinearTremorModel)
+            var session = CreateSession(b => b.WithTremorModel(new NoOpTremorModel()));
 
             // Act
             var tremorValues = new List<double>();
@@ -562,5 +563,10 @@ public class EnhancedSimulatorBuilderTests
             Assert.That(proAvg, Is.GreaterThan(amateurAvg));
             Assert.That(amateurAvg, Is.GreaterThan(beginnerAvg));
         }
+    }
+
+    private sealed class NoOpTremorModel : ITremorModel
+    {
+        public double CalculateTremor(SessionState state, PlayerProfile profile) => 0.0;
     }
 }

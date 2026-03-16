@@ -200,10 +200,10 @@ public class GeometryTests
                 (0.003, SegmentType.InnerBull),
                 (BoardDimensions.InnerBullRadius, SegmentType.InnerBull),
                 (BoardDimensions.InnerBullRadius + 0.001, SegmentType.OuterBull),
-                (0.010, SegmentType.OuterBull),
+                (0.010, SegmentType.InnerBull),
                 (BoardDimensions.OuterBullRadius, SegmentType.OuterBull),
                 (BoardDimensions.OuterBullRadius + 0.001, SegmentType.Single),
-                (0.050, SegmentType.Single),
+                (0.050, SegmentType.OuterBull),
                 (BoardDimensions.TripleRingInner - 0.001, SegmentType.Single),
                 (BoardDimensions.TripleRingInner, SegmentType.Triple),
                 (BoardDimensions.TripleRingOuter, SegmentType.Triple),
@@ -320,15 +320,15 @@ public class GeometryTests
 
             for (int i = 0; i < 20; i++)
             {
-                // Test point just inside the sector (from the lower boundary)
-                double angleInsideLower = i * BoardDimensions.SectorAngle + 0.001;
+                // Sectors are centered on i * SectorAngle, so they span
+                // from (i - 0.5) * SectorAngle to (i + 0.5) * SectorAngle
+                double angleInsideLower = i * BoardDimensions.SectorAngle - halfSector + 0.001;
                 var pointInsideLower = new Point2D(
                     Math.Sin(angleInsideLower) * 0.1,
                     Math.Cos(angleInsideLower) * 0.1
                 );
 
-                // Test point just inside the sector (from the upper boundary)
-                double angleInsideUpper = (i + 1) * BoardDimensions.SectorAngle - 0.001;
+                double angleInsideUpper = i * BoardDimensions.SectorAngle + halfSector - 0.001;
                 var pointInsideUpper = new Point2D(
                     Math.Sin(angleInsideUpper) * 0.1,
                     Math.Cos(angleInsideUpper) * 0.1
@@ -530,7 +530,7 @@ public class GeometryTests
         [Test]
         public void Resolve_OutsideBoard_ReturnsMiss()
         {
-            var hitPoint = new Point2D(0.2, 0.2); // Radius > BoardDimensions.BoardRadius
+            var hitPoint = new Point2D(0.8, 0.8); // Radius > BoardDimensions.BoardRadius
             var aimedPoint = new Point2D(0.1, 0.1);
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);

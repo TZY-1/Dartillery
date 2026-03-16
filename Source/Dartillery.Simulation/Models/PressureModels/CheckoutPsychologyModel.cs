@@ -11,7 +11,7 @@ internal sealed class CheckoutPsychologyModel : IPressureModel
 {
     private static readonly HashSet<int> BogeyNumbers = new()
     {
-        169, 168, 166, 165, 163, 162, 159 // Awkward finishes (no easy double-out)
+        169, 168, 166, 165, 163, 162, 159, // Awkward finishes (no easy double-out)
     };
 
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context)
