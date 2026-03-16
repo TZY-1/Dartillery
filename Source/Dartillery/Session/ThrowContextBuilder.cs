@@ -4,17 +4,8 @@ using Dartillery.Core.Models;
 namespace Dartillery.Session;
 
 /// <summary>
-/// Builds ThrowContext objects by coordinating various behavioral models (tremor, pressure, momentum).
-/// Responsible for aggregating modifiers from different sources into a single context for throw execution.
+/// Aggregates tremor, pressure, momentum, and grouping modifiers from behavioral models into a <see cref="ThrowContext"/> for each throw.
 /// </summary>
-/// <remarks>
-/// This class encapsulates the logic for calculating and combining effects from:
-/// - Tremor models (fatigue over time)
-/// - Pressure models (psychological effects in high-stakes situations)
-/// - Momentum models (hot/cold streaks)
-/// - Grouping models (dart clustering effects)
-/// - Target difficulty models (difficulty variations by target type)
-/// </remarks>
 public sealed class ThrowContextBuilder
 {
     private readonly PlayerProfile _profile;
@@ -44,12 +35,13 @@ public sealed class ThrowContextBuilder
         IGroupingModel groupingModel,
         ITargetDifficultyModel targetDifficultyModel)
     {
-        _profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(tremorModel);
         ArgumentNullException.ThrowIfNull(pressureModel);
         ArgumentNullException.ThrowIfNull(momentumModel);
         ArgumentNullException.ThrowIfNull(groupingModel);
         ArgumentNullException.ThrowIfNull(targetDifficultyModel);
+        _profile = profile;
         _tremorModel = tremorModel;
         _pressureModel = pressureModel;
         _momentumModel = momentumModel;
@@ -58,35 +50,22 @@ public sealed class ThrowContextBuilder
     }
 
     /// <summary>
-    /// Gets the current tremor magnitude calculated by the tremor model.
+    /// Gets the tremor magnitude computed during the most recent <see cref="BuildContext"/> call. Resets to 0 on session reset.
     /// </summary>
-    /// <remarks>
-    /// This value accumulates over the session based on the tremor model's algorithm
-    /// and is reset when the session is reset.
-    /// </remarks>
     public double CurrentTremor => _currentTremor;
 
     /// <summary>
-    /// Builds a complete ThrowContext by evaluating all behavioral models.
+    /// Evaluates all behavioral models and returns a <see cref="ThrowContext"/> containing the combined modifiers for the next throw.
     /// </summary>
     /// <param name="sessionState">Current session state including throw count and timing.</param>
-    /// <param name="throwHistory">Complete history of throws for momentum/grouping calculations.</param>
+    /// <param name="throwHistory">Complete throw history used for momentum calculations.</param>
     /// <param name="gameContext">Optional game context for pressure calculations (e.g., remaining score).</param>
-    /// <returns>A fully populated ThrowContext ready for throw execution.</returns>
-    /// <remarks>
-    /// This method orchestrates the following steps:
-    /// 1. Calculate current tremor based on session state
-    /// 2. Calculate pressure modifier based on game situation
-    /// 3. Calculate momentum modifier based on recent performance
-    /// 4. Extract previous throws in current visit from game context
-    /// 5. Combine all modifiers into a ThrowContext
-    /// </remarks>
+    /// <returns>A fully populated <see cref="ThrowContext"/> ready for throw execution.</returns>
     public ThrowContext BuildContext(
         SessionState sessionState,
         IReadOnlyList<ThrowResult> throwHistory,
         GameContext? gameContext = null)
     {
-        // Update tremor based on session progress
         var stateWithTremor = sessionState with { CurrentTremor = _currentTremor };
         _currentTremor = _tremorModel.CalculateTremor(stateWithTremor, _profile);
 
@@ -113,12 +92,8 @@ public sealed class ThrowContextBuilder
     }
 
     /// <summary>
-    /// Resets the tremor state to zero.
+    /// Resets accumulated tremor to zero. Call when the session is reset to clear fatigue state.
     /// </summary>
-    /// <remarks>
-    /// Called when a session is reset to clear accumulated fatigue.
-    /// Other models are stateless and don't require reset.
-    /// </remarks>
     public void Reset()
     {
         _currentTremor = 0.0;

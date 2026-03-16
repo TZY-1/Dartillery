@@ -22,6 +22,7 @@ public sealed class DartboardSimulatorBuilder
     /// Configures the simulator to use Gaussian (normal) distribution for throw deviation.
     /// This is the recommended distribution for realistic dart throw simulation.
     /// </summary>
+    /// <returns>The builder instance for method chaining.</returns>
     public DartboardSimulatorBuilder UseGaussianDistribution()
     {
         _distributionType = DeviationDistribution.Gaussian;
@@ -33,6 +34,7 @@ public sealed class DartboardSimulatorBuilder
     /// Configures the simulator to use uniform circular distribution for throw deviation.
     /// All throws land uniformly within a circle around the aim point.
     /// </summary>
+    /// <returns>The builder instance for method chaining.</returns>
     public DartboardSimulatorBuilder UseUniformDistribution()
     {
         _distributionType = DeviationDistribution.Uniform;
@@ -45,19 +47,21 @@ public sealed class DartboardSimulatorBuilder
     /// </summary>
     internal DartboardSimulatorBuilder UseDeviationCalculator(IDeviationCalculator calculator)
     {
-        _deviationCalculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+        ArgumentNullException.ThrowIfNull(calculator);
+        _deviationCalculator = calculator;
         _distributionType = DeviationDistribution.Custom;
         return this;
     }
 
     /// <summary>
-    /// Sets the standard deviation (precision) for throws.
-    /// Lower values = more precise throws. Typical range: 0.02 (pro) to 0.08 (beginner).
+    /// Sets the standard deviation (sigma) for throw deviation. Lower values produce more precise throws.
+    /// Typical range: 0.02 (professional) to 0.08 (beginner).
     /// </summary>
+    /// <param name="sigma">Standard deviation in normalized board units. Must be positive and finite.</param>
+    /// <returns>The builder instance for method chaining.</returns>
     public DartboardSimulatorBuilder WithStandardDeviation(double sigma)
     {
-        if (sigma <= 0)
-            throw new ArgumentOutOfRangeException(nameof(sigma), "Standard deviation must be positive.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sigma);
         if (double.IsNaN(sigma))
             throw new ArgumentException("Standard deviation cannot be NaN.", nameof(sigma));
         if (double.IsInfinity(sigma))
@@ -68,8 +72,10 @@ public sealed class DartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Sets the precision using a predefined skill level.
+    /// Sets the standard deviation from a named skill-level preset (Professional, Amateur, or Beginner).
     /// </summary>
+    /// <param name="precision">The target skill tier.</param>
+    /// <returns>The builder instance for method chaining.</returns>
     public DartboardSimulatorBuilder WithPrecision(SimulatorPrecision precision)
     {
         _standardDeviation = precision switch
@@ -83,9 +89,10 @@ public sealed class DartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Sets a fixed seed for reproducible random number generation.
-    /// Useful for testing and replay scenarios.
+    /// Sets a fixed seed for reproducible random number generation. Useful for testing and replay scenarios.
     /// </summary>
+    /// <param name="seed">The RNG seed value.</param>
+    /// <returns>The builder instance for method chaining.</returns>
     public DartboardSimulatorBuilder WithSeed(int seed)
     {
         _seed = seed;
@@ -97,7 +104,8 @@ public sealed class DartboardSimulatorBuilder
     /// </summary>
     internal DartboardSimulatorBuilder UseRandomProvider(IRandomProvider randomProvider)
     {
-        _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
+        ArgumentNullException.ThrowIfNull(randomProvider);
+        _randomProvider = randomProvider;
         return this;
     }
 
@@ -106,7 +114,8 @@ public sealed class DartboardSimulatorBuilder
     /// </summary>
     internal DartboardSimulatorBuilder UseSegmentResolver(ISegmentResolver segmentResolver)
     {
-        _segmentResolver = segmentResolver ?? throw new ArgumentNullException(nameof(segmentResolver));
+        ArgumentNullException.ThrowIfNull(segmentResolver);
+        _segmentResolver = segmentResolver;
         return this;
     }
 
@@ -115,21 +124,21 @@ public sealed class DartboardSimulatorBuilder
     /// </summary>
     internal DartboardSimulatorBuilder UseAimPointCalculator(IAimPointCalculator aimPointCalculator)
     {
-        _aimPointCalculator = aimPointCalculator ?? throw new ArgumentNullException(nameof(aimPointCalculator));
+        ArgumentNullException.ThrowIfNull(aimPointCalculator);
+        _aimPointCalculator = aimPointCalculator;
         return this;
     }
 
     /// <summary>
-    /// Builds the configured dartboard simulator.
+    /// Builds and returns a configured <see cref="IThrowSimulator"/> using the current builder state.
     /// </summary>
+    /// <returns>A ready-to-use <see cref="IThrowSimulator"/> instance.</returns>
     public IThrowSimulator Build()
     {
-        // Create random provider if not provided
         _randomProvider ??= _seed.HasValue
             ? new DefaultRandomProvider(_seed.Value)
             : new DefaultRandomProvider();
 
-        // Create deviation calculator if not provided
         if (_deviationCalculator == null)
         {
             _deviationCalculator = _distributionType switch
@@ -140,7 +149,6 @@ public sealed class DartboardSimulatorBuilder
             };
         }
 
-        // Create default geometry services if not provided
         _segmentResolver ??= new SegmentResolver();
         _aimPointCalculator ??= new AimPointCalculator();
 

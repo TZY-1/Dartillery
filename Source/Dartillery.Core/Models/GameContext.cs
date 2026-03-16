@@ -1,7 +1,7 @@
 namespace Dartillery.Core.Models;
 
 /// <summary>
-/// Game state information for pressure calculation and strategy decisions.
+/// Snapshot of the current game state passed to pressure models and context builders to drive pressure and strategy calculations.
 /// </summary>
 public sealed record GameContext
 {
@@ -27,8 +27,7 @@ public sealed record GameContext
     public bool IsMatchPoint { get; init; } = false;
 
     /// <summary>
-    /// Number of throws remaining in current visit (turn).
-    /// Typically 0-2 for standard darts.
+    /// Throws remaining in the current visit (0-3 for standard darts; default 3 = start of visit).
     /// </summary>
     public int ThrowsRemainingInVisit { get; init; } = 3;
 

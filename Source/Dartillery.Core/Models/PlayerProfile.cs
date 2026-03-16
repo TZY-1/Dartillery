@@ -51,13 +51,15 @@ public sealed record PlayerProfile
     public double MaxTremor { get; init; } = 0.05;
 
     /// <summary>
-    /// Creates a default player profile with moderate skill.
+    /// Initializes a player profile with default moderate-skill values (equivalent to <see cref="Amateur()"/>).
     /// </summary>
     public PlayerProfile() { }
 
     /// <summary>
-    /// Creates a professional player profile.
+    /// Creates a professional-level profile (BaseSkill 0.02, FatigueRate 0.003, PressureResistance 0.8, MaxTremor 0.03).
     /// </summary>
+    /// <param name="name">Player name. Defaults to "Pro".</param>
+    /// <returns>A <see cref="PlayerProfile"/> configured for a top-tier player.</returns>
     public static PlayerProfile Professional(string name = "Pro") => new()
     {
         Name = name,
@@ -68,8 +70,10 @@ public sealed record PlayerProfile
     };
 
     /// <summary>
-    /// Creates an amateur player profile.
+    /// Creates an amateur-level profile (BaseSkill 0.05, FatigueRate 0.007, PressureResistance 0.5, MaxTremor 0.05).
     /// </summary>
+    /// <param name="name">Player name. Defaults to "Amateur".</param>
+    /// <returns>A <see cref="PlayerProfile"/> configured for a recreational club player.</returns>
     public static PlayerProfile Amateur(string name = "Amateur") => new()
     {
         Name = name,
@@ -80,8 +84,10 @@ public sealed record PlayerProfile
     };
 
     /// <summary>
-    /// Creates a beginner player profile.
+    /// Creates a beginner-level profile (BaseSkill 0.08, FatigueRate 0.01, PressureResistance 0.3, MaxTremor 0.08).
     /// </summary>
+    /// <param name="name">Player name. Defaults to "Beginner".</param>
+    /// <returns>A <see cref="PlayerProfile"/> configured for a novice player.</returns>
     public static PlayerProfile Beginner(string name = "Beginner") => new()
     {
         Name = name,
