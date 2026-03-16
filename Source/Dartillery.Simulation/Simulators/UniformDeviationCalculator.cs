@@ -17,7 +17,8 @@ internal sealed class UniformDeviationCalculator : IDeviationCalculator
     /// <param name="randomProvider">Random number provider for sampling.</param>
     public UniformDeviationCalculator(IRandomProvider randomProvider)
     {
-        _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
+        ArgumentNullException.ThrowIfNull(randomProvider);
+        _randomProvider = randomProvider;
     }
 
     /// <inheritdoc />
@@ -30,11 +31,11 @@ internal sealed class UniformDeviationCalculator : IDeviationCalculator
     {
         double maxRadius = precision;
 
-        // Uniform distribution within a circle (polar generation)
+        // Uniform distribution within a circle requires sqrt(uniform) for radius to avoid
+        // clustering at center — see area-preserving polar coordinate sampling
         double angle = 2.0 * Math.PI * _randomProvider.NextDouble();
         double radius = maxRadius * Math.Sqrt(_randomProvider.NextDouble());
 
-        // Convert to Cartesian coordinates (dx, dy)
         double dx = radius * Math.Cos(angle);
         double dy = radius * Math.Sin(angle);
 

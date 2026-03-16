@@ -17,7 +17,8 @@ internal sealed class GaussianDeviationCalculator : IDeviationCalculator
     /// <param name="randomProvider">Random number provider for sampling.</param>
     public GaussianDeviationCalculator(IRandomProvider randomProvider)
     {
-        _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
+        ArgumentNullException.ThrowIfNull(randomProvider);
+        _randomProvider = randomProvider;
     }
 
     /// <inheritdoc />
@@ -36,7 +37,6 @@ internal sealed class GaussianDeviationCalculator : IDeviationCalculator
     {
         double standardDeviation = precision;
 
-        // Box-Muller transformation for 2D normal distribution
         double uniformRandom1 = _randomProvider.NextDouble();
         double uniformRandom2 = _randomProvider.NextDouble();
 
@@ -48,11 +48,9 @@ internal sealed class GaussianDeviationCalculator : IDeviationCalculator
         double radius = Math.Sqrt(-2.0 * Math.Log(uniformRandom1));
         double theta = 2.0 * Math.PI * uniformRandom2;
 
-        // Convert to independent X and Y components (Cartesian)
         double standardNormalX = radius * Math.Cos(theta);
         double standardNormalY = radius * Math.Sin(theta);
 
-        // Apply standard deviation to both components
         double dx = standardNormalX * standardDeviation;
         double dy = standardNormalY * standardDeviation;
 

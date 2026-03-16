@@ -27,8 +27,10 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         IAimPointCalculator? aimPointCalculator = null,
         ISegmentResolver? segmentResolver = null)
     {
-        _deviationCalculator = deviationCalculator ?? throw new ArgumentNullException(nameof(deviationCalculator));
-        _profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        ArgumentNullException.ThrowIfNull(deviationCalculator);
+        ArgumentNullException.ThrowIfNull(profile);
+        _deviationCalculator = deviationCalculator;
+        _profile = profile;
         _groupingModel = groupingModel ?? new NoGroupingModel();
         _targetDifficultyModel = targetDifficultyModel ?? new NoTargetDifficultyModel();
         _aimPointCalculator = aimPointCalculator ?? new AimPointCalculator();
@@ -37,28 +39,22 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
 
     public ThrowResult Throw(Target target, ThrowContext context)
     {
-        // Calculate base aim point
         Point2D baseAimPoint = _aimPointCalculator.CalculateAimPoint(target);
 
-        // Apply grouping adjustment
         var (adjustedAimPoint, groupingMultiplier) = _groupingModel.AdjustForGrouping(
             baseAimPoint,
             context.PreviousThrowsInVisit);
 
-        // Apply target difficulty
         double difficultyMultiplier = _targetDifficultyModel.GetDifficultyModifier(target);
 
-        // Get context-aware deviation
         var (dx, dy) = _deviationCalculator.CalculateDeviation(_profile, context);
 
-        // Apply multipliers
         dx *= groupingMultiplier * difficultyMultiplier;
         dy *= groupingMultiplier * difficultyMultiplier;
 
-        // Calculate hit point
         Point2D hitPoint = new(adjustedAimPoint.X + dx, adjustedAimPoint.Y + dy);
 
-        // Resolve segment (use original aim point for deviation calculation)
+        // use original aim point for deviation reference (not grouping-adjusted)
         return _segmentResolver.Resolve(hitPoint, baseAimPoint);
     }
 }

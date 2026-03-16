@@ -13,14 +13,14 @@ internal sealed class PressureModifiedDeviationCalculator : IContextualDeviation
 
     public PressureModifiedDeviationCalculator(IContextualDeviationCalculator inner)
     {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        ArgumentNullException.ThrowIfNull(inner);
+        _inner = inner;
     }
 
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);
 
-        // Apply pressure modifier
         // pressureModifier > 1.0 = more scatter (worse under pressure)
         // pressureModifier < 1.0 = less scatter (better when relaxed) - rare
         double modifier = context.PressureModifier;

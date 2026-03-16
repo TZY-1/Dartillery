@@ -16,7 +16,8 @@ internal sealed class TruncatedDeviationCalculator : IContextualDeviationCalcula
         IContextualDeviationCalculator inner,
         double maxDeviationMeters = 0.25)
     {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        ArgumentNullException.ThrowIfNull(inner);
+        _inner = inner;
         _maxDeviationMeters = maxDeviationMeters;
     }
 

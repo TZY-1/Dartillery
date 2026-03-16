@@ -20,23 +20,21 @@ internal sealed class RecoveryTremorModel : ITremorModel
     /// <param name="recoveryRate">Recovery rate per second of pause (default: 0.1).</param>
     public RecoveryTremorModel(ITremorModel baseTremorModel, double recoveryRate = 0.1)
     {
-        _baseTremorModel = baseTremorModel ?? throw new ArgumentNullException(nameof(baseTremorModel));
+        ArgumentNullException.ThrowIfNull(baseTremorModel);
+        _baseTremorModel = baseTremorModel;
         _recoveryRate = recoveryRate;
     }
 
     public double CalculateTremor(SessionState state, PlayerProfile profile)
     {
-        // Calculate base tremor
         double baseTremor = _baseTremorModel.CalculateTremor(state, profile);
 
-        // Apply recovery based on time since last throw
         double recoverySeconds = state.TimeSinceLastThrow.TotalSeconds;
         double recovery = recoverySeconds * _recoveryRate * profile.FatigueRate;
 
-        // Current tremor with recovery applied
         double recoveredTremor = Math.Max(0, state.CurrentTremor - recovery);
 
-        // Return max of recovered tremor and base tremor (fatigue can still increase)
+        // Take the higher of recovered tremor and accumulated tremor — fatigue can still increase mid-session
         return Math.Max(recoveredTremor, baseTremor);
     }
 }

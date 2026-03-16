@@ -30,35 +30,31 @@ internal sealed class SegmentResolver : ISegmentResolver
         IRingResolver ringResolver,
         IScoreCalculator scoreCalculator)
     {
-        _sectorResolver = sectorResolver ?? throw new ArgumentNullException(nameof(sectorResolver));
-        _ringResolver = ringResolver ?? throw new ArgumentNullException(nameof(ringResolver));
-        _scoreCalculator = scoreCalculator ?? throw new ArgumentNullException(nameof(scoreCalculator));
+        ArgumentNullException.ThrowIfNull(sectorResolver);
+        ArgumentNullException.ThrowIfNull(ringResolver);
+        ArgumentNullException.ThrowIfNull(scoreCalculator);
+        _sectorResolver = sectorResolver;
+        _ringResolver = ringResolver;
+        _scoreCalculator = scoreCalculator;
     }
 
     public ThrowResult Resolve(Point2D hitPoint, Point2D aimedPoint)
     {
         double radius = hitPoint.DistanceFromOrigin;
 
-        // Miss - outside the board boundary
         if (radius > BoardDimensions.BoardRadius)
-        {
             return ThrowResult.Miss(hitPoint, aimedPoint);
-        }
 
-        // Determine ring type
         SegmentType segmentType = _ringResolver.ResolveRing(radius);
 
-        // Bull segments don't have sector numbers
         if (segmentType is SegmentType.InnerBull or SegmentType.OuterBull)
         {
             int bullScore = _scoreCalculator.CalculateScore(segmentType, 0);
             return new ThrowResult(bullScore, segmentType, 0, hitPoint, aimedPoint);
         }
 
-        // Resolve sector and calculate score for numbered segments
         int sectorNumber = _sectorResolver.ResolveSector(hitPoint);
         int score = _scoreCalculator.CalculateScore(segmentType, sectorNumber);
-
         return new ThrowResult(score, segmentType, sectorNumber, hitPoint, aimedPoint);
     }
 }

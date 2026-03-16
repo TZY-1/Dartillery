@@ -13,18 +13,14 @@ internal sealed class SystematicBiasDeviationCalculator : IContextualDeviationCa
 
     public SystematicBiasDeviationCalculator(IDeviationCalculator baseCalculator)
     {
-        _baseCalculator = baseCalculator ?? throw new ArgumentNullException(nameof(baseCalculator));
+        ArgumentNullException.ThrowIfNull(baseCalculator);
+        _baseCalculator = baseCalculator;
     }
 
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
-        // Calculate base skill + session tremor
         double effectiveSkill = profile.BaseSkill + context.SessionTremor;
-
-        // Get random deviation from base calculator
         var (dx, dy) = _baseCalculator.CalculateDeviation(effectiveSkill);
-
-        // Add systematic bias
         double biasedDx = dx + profile.SystematicBiasX;
         double biasedDy = dy + profile.SystematicBiasY;
 
