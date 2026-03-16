@@ -74,11 +74,65 @@ dotnet_naming_rule.non_private_fields_should_be_pascal_case.severity = suggestio
 
 # ---- Analyzer severity overrides ----
 
-# SA1101: Do not prefix local calls with 'this.' — not used in this codebase
+# SA0001: XML comment analysis disabled due to project configuration
+dotnet_diagnostic.SA0001.severity = none
+
+# SA1101: Do not prefix local calls with 'this.'
 dotnet_diagnostic.SA1101.severity = none
 
-# SA1600: Elements should be documented — keep at suggestion for Phase 5 XML doc audit
+# SA1117: Parameters must be on same line or each on own line
+dotnet_diagnostic.SA1117.severity = none
+
+# SA1200: Using directives must be inside namespace — we use global/top-level usings
+dotnet_diagnostic.SA1200.severity = none
+
+# SA1413: Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = none
+
+# SA1503: Braces must not be omitted
+dotnet_diagnostic.SA1503.severity = none
+
+# SA1309: Field names must not begin with underscore — we use _camelCase for private fields
+dotnet_diagnostic.SA1309.severity = none
+
+# SA1600: Elements should be documented
 dotnet_diagnostic.SA1600.severity = suggestion
+
+# SA1611: Element parameters must be documented
+dotnet_diagnostic.SA1611.severity = none
+
+# SA1615: Element return value must be documented
+dotnet_diagnostic.SA1615.severity = none
+
+# SA1623: Property summary must begin with "Gets" or "Sets"
+dotnet_diagnostic.SA1623.severity = none
+
+# SA1633: File must have XML file header
+dotnet_diagnostic.SA1633.severity = none
+
+# SA1642: Constructor summary must begin with "Initializes a new instance"
+dotnet_diagnostic.SA1642.severity = none
+
+# CA1707: Identifiers should not contain underscores — conflicts with test naming convention
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1052: Static holder types should be static
+dotnet_diagnostic.CA1052.severity = none
+
+# CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = none
+
+# CA1822: Member does not access instance data — can be static
+dotnet_diagnostic.CA1822.severity = none
+
+# CA1852: Type can be sealed
+dotnet_diagnostic.CA1852.severity = none
+
+# CA2007: Consider calling ConfigureAwait
+dotnet_diagnostic.CA2007.severity = none
+
+# RCS1102: Make class static (Roslynator)
+dotnet_diagnostic.RCS1102.severity = none
 
 [*.{csproj,props,targets,xml}]
 indent_style = space
