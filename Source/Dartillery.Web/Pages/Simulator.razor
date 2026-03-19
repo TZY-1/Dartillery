@@ -6,34 +6,42 @@
 
 <PageTitle>Dart Simulator - Dartillery</PageTitle>
 
-<div class="container-fluid py-4">
-    <div class="row">
-        <!-- Left Column: Controls -->
-        <div class="col-lg-3 col-md-4 mb-4">
-            <SimulationControls SimulationService="@SimulationService"
-                                OnThrowExecuted="@OnThrowExecuted" />
-        </div>
+<div class="simulator-dashboard">
+    <div class="dashboard-toolbar">
+        <SimulatorToolbar SimulationService="@SimulationService"
+                          OnThrowExecuted="@OnThrowExecuted"
+                          @bind-ShowSpreadCircle="ShowSpreadCircle" />
+    </div>
 
-        <!-- Middle Column: Dartboard -->
-        <div class="col-lg-6 col-md-8 mb-4">
-            <DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
-                                 ShowDeviationLines="@ShowDeviationLines"
-                                 EnableManualTargeting="@SimulationService.EnableManualTargeting"
-                                 OnManualTargetSelected="@HandleManualTargetSelected" />
-        </div>
+    <div class="dashboard-controls">
+        <SimulationControls SimulationService="@SimulationService"
+                            OnThrowExecuted="@OnThrowExecuted" />
+    </div>
 
-        <!-- Right Column: Results -->
-        <div class="col-lg-3 col-md-12">
-            <ThrowResultsDisplay SimulationService="@SimulationService" />
-            <div class="mt-4">
-                <FactorOverview SimulationService="@SimulationService" />
-            </div>
-        </div>
+    <div class="dashboard-board">
+        <DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
+                             ShowDeviationLines="@ShowDeviationLines"
+                             ShowSpreadCircle="@ShowSpreadCircle"
+                             SpreadRadius="@GetSpreadRadius()"
+                             EnableManualTargeting="@SimulationService.EnableManualTargeting"
+                             OnManualTargetSelected="@HandleManualTargetSelected" />
+    </div>
+
+    <div class="dashboard-results">
+        <ThrowResultsDisplay SimulationService="@SimulationService" />
+        <FactorOverview SimulationService="@SimulationService" />
     </div>
 </div>
 
 @code {
     private bool ShowDeviationLines { get; set; } = true;
+    private bool ShowSpreadCircle { get; set; } = true;
+
+    private double GetSpreadRadius() => SimulationService.SpreadMode switch
+    {
+        Dartillery.SpreadMode.Uniform => SimulationService.CustomSigma,
+        _ => SimulationService.CustomSigma * 3
+    };
 
     protected override void OnInitialized()
     {
@@ -54,7 +62,6 @@
         }
         catch (InvalidOperationException)
         {
-            //info to user, that aiming at miss is not allowed in manual mode
             return;
         }
 

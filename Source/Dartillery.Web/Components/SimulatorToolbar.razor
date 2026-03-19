@@ -1,0 +1,163 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="simulator-toolbar">
+    <!-- Presets -->
+    <div class="toolbar-group">
+        @foreach (var preset in _presets)
+        {
+            var name = preset.Name;
+            <button class="preset-btn @(SimulationService.SelectedSkillLevel == name ? "preset-active" : "")"
+                    @onclick="() => ApplyPreset(name)" type="button"
+                    title="@preset.Hint">
+                @name
+            </button>
+        }
+    </div>
+
+    <!-- Target -->
+    <div class="toolbar-group">
+        <label class="toolbar-check">
+            <input type="checkbox"
+                   @bind="SimulationService.EnableManualTargeting"
+                   @bind:after="OnParameterChanged" />
+            <span>Manual</span>
+        </label>
+
+        <label class="toolbar-check">
+            <input type="checkbox"
+                   checked="@ShowSpreadCircle"
+                   @onchange="e => ShowSpreadCircleChanged.InvokeAsync((bool)(e.Value ?? false))" />
+            <span>Spread</span>
+        </label>
+
+        @if (!SimulationService.EnableManualTargeting)
+        {
+            <select class="toolbar-select" @bind="SelectedTarget">
+                <option value="T20">Triple 20</option>
+                <option value="T19">Triple 19</option>
+                <option value="T18">Triple 18</option>
+                <option value="Bull">Bullseye</option>
+                <option value="OuterBull">Outer Bull</option>
+                <option value="D20">Double 20</option>
+                <option value="D16">Double 16</option>
+                <option value="S20">Single 20</option>
+                <option value="S19">Single 19</option>
+                <option value="S1">Single 1</option>
+            </select>
+        }
+
+        <select class="toolbar-select" @bind="SelectedSpreadMode" @bind:after="OnParameterChanged">
+            @foreach (var mode in Enum.GetValues<Dartillery.SpreadMode>())
+            {
+                <option value="@mode">@mode</option>
+            }
+        </select>
+    </div>
+
+    <!-- Actions -->
+    <div class="toolbar-group toolbar-actions">
+        <button @onclick="ThrowDart" class="toolbar-btn toolbar-btn-primary" type="button">
+            <i class="bi bi-bullseye"></i> Throw
+        </button>
+        <button @onclick="Throw10Darts" class="toolbar-btn toolbar-btn-secondary" type="button">
+            10x
+        </button>
+        <button @onclick="Throw50Darts" class="toolbar-btn toolbar-btn-secondary" type="button">
+            50x
+        </button>
+        <button @onclick="ClearThrows" class="toolbar-btn toolbar-btn-danger" type="button">
+            <i class="bi bi-trash"></i> Reset
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService SimulationService { get; set; } = null!;
+    [Parameter] public EventCallback OnThrowExecuted { get; set; }
+    [Parameter] public bool ShowSpreadCircle { get; set; }
+    [Parameter] public EventCallback<bool> ShowSpreadCircleChanged { get; set; }
+
+    private string SelectedTarget { get; set; } = "T20";
+
+    private Dartillery.SpreadMode SelectedSpreadMode
+    {
+        get => SimulationService.SpreadMode;
+        set => SimulationService.SpreadMode = value;
+    }
+
+    private static readonly PresetInfo[] _presets =
+    [
+        new("Professional", "Pro player with high precision"),
+        new("Amateur", "Average player"),
+        new("Beginner", "Beginner with wide spread")
+    ];
+
+    private async Task ApplyPreset(string name)
+    {
+        SimulationService.ApplyPreset(name);
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task OnParameterChanged()
+    {
+        SimulationService.SelectedSkillLevel = "Custom";
+        SimulationService.RebuildSession();
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task ThrowDart()
+    {
+        SimulationService.ThrowAt(ParseTarget(SelectedTarget));
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task Throw10Darts()
+    {
+        var target = ParseTarget(SelectedTarget);
+        for (int i = 0; i < 10; i++)
+        {
+            SimulationService.ThrowAt(target);
+            await Task.Yield();
+        }
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task Throw50Darts()
+    {
+        var target = ParseTarget(SelectedTarget);
+        for (int i = 0; i < 50; i++)
+        {
+            SimulationService.ThrowAt(target);
+            if (i % 5 == 0)
+            {
+                await OnThrowExecuted.InvokeAsync();
+                await Task.Delay(50);
+            }
+        }
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private async Task ClearThrows()
+    {
+        SimulationService.ClearThrows();
+        await OnThrowExecuted.InvokeAsync();
+    }
+
+    private static Target ParseTarget(string targetStr) => targetStr switch
+    {
+        "T20" => Target.Triple(20),
+        "T19" => Target.Triple(19),
+        "T18" => Target.Triple(18),
+        "Bull" => Target.Bullseye(),
+        "OuterBull" => Target.OuterBull(),
+        "D20" => Target.Double(20),
+        "D16" => Target.Double(16),
+        "S20" => Target.Single(20),
+        "S19" => Target.Single(19),
+        "S1" => Target.Single(1),
+        _ => Target.Triple(20)
+    };
+
+    private sealed record PresetInfo(string Name, string Hint);
+}

@@ -1,255 +1,53 @@
-@using Dartillery.Core.Models
 @using Dartillery.Web.Services
 
 <div class="factor-overview">
-    <!-- Header -->
-    <div class="factor-header">
-        <h2 class="factor-title">
-            <i class="bi bi-sliders2"></i>
-            Factor Overview
-        </h2>
-    </div>
-
-    <!-- Factor Sliders -->
-    <div class="factor-list">
-        <!-- Base Skill (Accuracy) -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-bullseye"></i>
-            </div>
-            <div class="factor-info">
-                <span class="factor-label">Accuracy</span>
-                <span class="factor-value">@GetAccuracyDisplay()</span>
-            </div>
-            <div class="factor-bar-track">
-                <div class="factor-bar-fill" style="width: @GetAccuracyPercent().ToString("F0")%"></div>
-            </div>
-        </div>
-
-        <!-- Fatigue Rate -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-battery-half"></i>
-            </div>
-            <div class="factor-info">
-                <span class="factor-label">Stamina</span>
-                <span class="factor-value">@GetStaminaDisplay()</span>
-            </div>
-            <div class="factor-bar-track">
-                <div class="factor-bar-fill" style="width: @GetStaminaPercent().ToString("F0")%"></div>
-            </div>
-        </div>
-
-        <!-- Pressure Resistance -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-shield-fill"></i>
-            </div>
-            <div class="factor-info">
-                <span class="factor-label">Composure</span>
-                <span class="factor-value">@GetComposureDisplay()</span>
-            </div>
-            <div class="factor-bar-track">
-                <div class="factor-bar-fill" style="width: @GetComposurePercent().ToString("F0")%"></div>
-            </div>
-        </div>
-
-        <!-- Max Tremor (Stability) -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-hand-index"></i>
-            </div>
-            <div class="factor-info">
-                <span class="factor-label">Stability</span>
-                <span class="factor-value">@GetStabilityDisplay()</span>
-            </div>
-            <div class="factor-bar-track">
-                <div class="factor-bar-fill" style="width: @GetStabilityPercent().ToString("F0")%"></div>
-            </div>
-        </div>
-
-        <!-- Tremor Model -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-lightning"></i>
-            </div>
-            <div class="factor-info">
-                <span class="factor-label">Tremor Model</span>
-                @if (SimulationService.EnableFatigue)
-                {
-                    <span class="factor-badge-active">Active</span>
-                }
-                else
-                {
-                    <span class="factor-badge-inactive">Off</span>
-                }
-            </div>
-            @if (SimulationService.EnableFatigue)
+    <!-- Active Models Info -->
+    <div class="models-summary">
+        <h3 class="summary-title">Simulation Models</h3>
+        <div class="model-status-list">
+            @foreach (var model in GetModelStatuses())
             {
-                <div class="factor-bar-track factor-bar-mini">
-                    <div class="factor-bar-fill factor-bar-tremor" style="width: @GetTremorPercent().ToString("F0")%"></div>
+                <div class="model-status @(model.Active ? "model-active" : "model-inactive")">
+                    <i class="bi @model.Icon"></i>
+                    <span class="model-status-name">@model.Name</span>
+                    @if (model.Active)
+                    {
+                        <span class="model-badge-on">ON</span>
+                    }
+                    else
+                    {
+                        <span class="model-badge-off">OFF</span>
+                    }
                 </div>
             }
         </div>
 
-        <!-- Pressure Model -->
-        <div class="factor-row">
-            <div class="factor-icon">
-                <i class="bi bi-heart-pulse"></i>
+        @if (SimulationService.EnableFatigue && SimulationService.ThrowCount > 0)
+        {
+            <div class="tremor-indicator">
+                <span class="tremor-label">Current Tremor</span>
+                <div class="tremor-bar-track">
+                    <div class="tremor-bar-fill" style="width: @GetTremorPercent().ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                </div>
+                <span class="tremor-value">@((SimulationService.CurrentTremor * 100).ToString("F1"))%</span>
             </div>
-            <div class="factor-info">
-                <span class="factor-label">Pressure Model</span>
-                @if (SimulationService.EnablePressure)
-                {
-                    <span class="factor-badge-active">Active</span>
-                }
-                else
-                {
-                    <span class="factor-badge-inactive">Off</span>
-                }
-            </div>
-        </div>
-    </div>
-
-    <!-- Radar Chart -->
-    <div class="radar-section">
-        <h3 class="radar-title">Player Profile</h3>
-        <svg viewBox="0 0 200 200" class="radar-chart">
-            <!-- Grid lines at 25%, 50%, 75%, 100% -->
-            @foreach (var level in new[] { 0.25, 0.50, 0.75, 1.0 })
-            {
-                <polygon points="@GetPentagonPoints(level)" class="radar-grid" />
-            }
-
-            <!-- Axis lines from center to each vertex -->
-            @for (var i = 0; i < 5; i++)
-            {
-                var point = GetVertex(i, 1.0);
-                <line x1="100" y1="100" x2="@F(point.X)" y2="@F(point.Y)" class="radar-axis" />
-            }
-
-            <!-- Data polygon -->
-            <polygon points="@GetDataPoints()" class="radar-data" />
-
-            <!-- Data points (dots) -->
-            @{
-                var values = GetNormalizedValues();
-                for (var i = 0; i < 5; i++)
-                {
-                    var point = GetVertex(i, values[i]);
-                    <circle cx="@F(point.X)" cy="@F(point.Y)" r="3" class="radar-dot" />
-                }
-            }
-
-            <!-- Axis labels -->
-            @((MarkupString)RenderAxisLabels())
-        </svg>
+        }
     </div>
 </div>
 
 @code {
     [Parameter] public SimulationService SimulationService { get; set; } = null!;
 
-    private const double MaxRadius = 80.0;
-    private const double CenterX = 100.0;
-    private const double CenterY = 100.0;
+    private double GetTremorPercent() => Math.Clamp((SimulationService.CurrentTremor / SimulationService.MaxTremor) * 100.0, 0, 100);
 
-    // Normalization helpers
-    private double GetBaseSkill() => SimulationService.CurrentProfile?.BaseSkill ?? 0.05;
-    private double GetFatigueRate() => SimulationService.CurrentProfile?.FatigueRate ?? 0.005;
-    private double GetPressureResistance() => SimulationService.CurrentProfile?.PressureResistance ?? 0.5;
-    private double GetMaxTremor() => SimulationService.CurrentProfile?.MaxTremor ?? 0.05;
+    private ModelInfo[] GetModelStatuses() =>
+    [
+        new("Fatigue", "bi-lightning", SimulationService.EnableFatigue),
+        new("Pressure", "bi-heart-pulse", SimulationService.EnablePressure),
+        new("Momentum", "bi-fire", SimulationService.EnableMomentum),
+        new("Grouping", "bi-diagram-3", SimulationService.EnableGrouping),
+        new("Target Difficulty", "bi-crosshair", SimulationService.EnableTargetDifficulty)
+    ];
 
-    // Slider percentages
-    private double GetAccuracyPercent() => Clamp((1.0 - (GetBaseSkill() / 0.15)) * 100.0);
-    private double GetStaminaPercent() => Clamp((1.0 - (GetFatigueRate() / 0.02)) * 100.0);
-    private double GetComposurePercent() => Clamp(GetPressureResistance() * 100.0);
-    private double GetStabilityPercent() => Clamp((1.0 - (GetMaxTremor() / 0.1)) * 100.0);
-    private double GetTremorPercent() => Clamp((SimulationService.CurrentTremor / 0.1) * 100.0);
-
-    // Display values
-    private string GetAccuracyDisplay() => $"{GetAccuracyPercent():F0}%";
-    private string GetStaminaDisplay() => $"{GetStaminaPercent():F0}%";
-    private string GetComposureDisplay() => $"{GetComposurePercent():F0}%";
-    private string GetStabilityDisplay() => $"{GetStabilityPercent():F0}%";
-
-    // Radar chart normalized values [0, 1]
-    private double[] GetNormalizedValues()
-    {
-        var activeCount = (SimulationService.EnableFatigue ? 1 : 0) + (SimulationService.EnablePressure ? 1 : 0);
-
-        return
-        [
-            Clamp01(1.0 - (GetBaseSkill() / 0.15)),
-            Clamp01(1.0 - (GetFatigueRate() / 0.02)),
-            Clamp01(GetPressureResistance()),
-            Clamp01(1.0 - (GetMaxTremor() / 0.1)),
-            Clamp01(activeCount / 2.0)
-        ];
-    }
-
-    // SVG coordinate math
-    private static (double X, double Y) GetVertex(int index, double normalizedRadius)
-    {
-        var angle = (2.0 * Math.PI * index / 5.0) - (Math.PI / 2.0);
-        var r = MaxRadius * normalizedRadius;
-        return (CenterX + r * Math.Cos(angle), CenterY + r * Math.Sin(angle));
-    }
-
-    private static (double X, double Y) GetLabelPosition(int index)
-    {
-        var angle = (2.0 * Math.PI * index / 5.0) - (Math.PI / 2.0);
-        var r = MaxRadius + 16.0;
-        return (CenterX + r * Math.Cos(angle), CenterY + r * Math.Sin(angle));
-    }
-
-    private static string GetPentagonPoints(double scale)
-    {
-        var points = new string[5];
-        for (var i = 0; i < 5; i++)
-        {
-            var v = GetVertex(i, scale);
-            points[i] = $"{F(v.X)},{F(v.Y)}";
-        }
-        return string.Join(" ", points);
-    }
-
-    private string GetDataPoints()
-    {
-        var values = GetNormalizedValues();
-        var points = new string[5];
-        for (var i = 0; i < 5; i++)
-        {
-            var v = GetVertex(i, values[i]);
-            points[i] = $"{F(v.X)},{F(v.Y)}";
-        }
-        return string.Join(" ", points);
-    }
-
-    private static string GetTextAnchor(int index) => index switch
-    {
-        0 => "middle",   // top
-        1 => "start",    // right-upper
-        2 => "start",    // right-lower
-        3 => "end",      // left-lower
-        4 => "end",      // left-upper
-        _ => "middle"
-    };
-
-    private static string RenderAxisLabels()
-    {
-        var labels = new[] { "Accuracy", "Stamina", "Composure", "Stability", "Models" };
-        var sb = new System.Text.StringBuilder();
-        for (var i = 0; i < 5; i++)
-        {
-            var pos = GetLabelPosition(i);
-            var anchor = GetTextAnchor(i);
-            sb.Append($"<text x=\"{F(pos.X)}\" y=\"{F(pos.Y)}\" class=\"radar-label\" text-anchor=\"{anchor}\">{labels[i]}</text>");
-        }
-        return sb.ToString();
-    }
-
-    private static double Clamp(double value) => Math.Max(0.0, Math.Min(100.0, value));
-    private static double Clamp01(double value) => Math.Max(0.0, Math.Min(1.0, value));
-    private static string F(double value) => value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+    private sealed record ModelInfo(string Name, string Icon, bool Active);
 }

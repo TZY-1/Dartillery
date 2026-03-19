@@ -1,0 +1,132 @@
+.simulator-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toolbar-actions {
+    margin-left: auto;
+}
+
+/* Preset Buttons */
+
+.preset-btn {
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    background: transparent;
+    color: var(--neutral-light);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.preset-btn:hover {
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+.preset-btn.preset-active {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-brass));
+    color: var(--neutral-white);
+    border-color: transparent;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Target select & checkbox */
+
+.toolbar-check {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--neutral-light);
+    font-size: 0.82rem;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.toolbar-check input {
+    accent-color: var(--accent-gold);
+    cursor: pointer;
+}
+
+.toolbar-select {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    color: var(--neutral-white);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    transition: border-color var(--transition-fast);
+}
+
+.toolbar-select:hover {
+    border-color: var(--accent-brass);
+}
+
+.toolbar-select:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+/* Action Buttons */
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+    transform: translateY(-1px);
+}
+
+.toolbar-btn:active {
+    transform: translateY(0);
+}
+
+.toolbar-btn-primary {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-brass));
+    color: var(--neutral-white);
+}
+
+.toolbar-btn-secondary {
+    background: var(--surface-light);
+    color: var(--neutral-white);
+    border: 1px solid var(--border-light);
+}
+
+.toolbar-btn-secondary:hover {
+    border-color: var(--accent-brass);
+}
+
+.toolbar-btn-danger {
+    background: var(--accent-burgundy);
+    color: var(--neutral-white);
+}
+
+.toolbar-btn-danger:hover {
+    background: var(--danger);
+}
