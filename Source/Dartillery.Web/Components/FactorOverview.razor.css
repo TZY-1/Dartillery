@@ -1,0 +1,186 @@
+.factor-overview {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.factor-header {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.factor-title {
+    color: var(--accent-gold);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.factor-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.factor-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--primary-dark);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    transition: all var(--transition-base);
+}
+
+.factor-row:hover {
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.factor-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-brass));
+    border-radius: 50%;
+    color: var(--neutral-white);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.factor-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.factor-label {
+    font-size: 0.75rem;
+    color: var(--neutral-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+}
+
+.factor-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--neutral-white);
+    line-height: 1.2;
+}
+
+.factor-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--surface-light);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    min-width: 40px;
+}
+
+.factor-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-brass));
+    border-radius: var(--radius-xl);
+    transition: width var(--transition-slow);
+    min-width: 2px;
+}
+
+.factor-bar-mini {
+    height: 6px;
+}
+
+.factor-bar-tremor {
+    background: linear-gradient(90deg, var(--warning), var(--accent-red));
+}
+
+.factor-badge-active {
+    display: inline-block;
+    padding: 1px 8px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    border-radius: var(--radius-sm);
+    color: #10b981;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.factor-badge-inactive {
+    display: inline-block;
+    padding: 1px 8px;
+    background: rgba(107, 114, 128, 0.2);
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: var(--radius-sm);
+    color: var(--neutral-light);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+}
+
+/* Radar Chart */
+
+.radar-section {
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border);
+}
+
+.radar-title {
+    color: var(--neutral-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 var(--spacing-sm) 0;
+    text-align: center;
+}
+
+.radar-chart {
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+    display: block;
+}
+
+::deep .radar-grid {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 0.5;
+    opacity: 0.3;
+}
+
+::deep .radar-axis {
+    stroke: var(--border);
+    stroke-width: 0.5;
+    opacity: 0.3;
+}
+
+::deep .radar-data {
+    fill: var(--accent-gold);
+    fill-opacity: 0.25;
+    stroke: var(--accent-gold);
+    stroke-width: 2;
+}
+
+::deep .radar-dot {
+    fill: var(--accent-gold);
+}
+
+::deep .radar-label {
+    fill: var(--neutral-light);
+    font-size: 9px;
+    font-family: inherit;
+}

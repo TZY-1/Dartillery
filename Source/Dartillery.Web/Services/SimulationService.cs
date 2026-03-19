@@ -46,6 +46,11 @@ public sealed class SimulationService
     public string PlayerName => _session?.Profile.Name ?? "Unknown";
 
     /// <summary>
+    /// Exposes the active player profile for visualization components.
+    /// </summary>
+    public PlayerProfile? CurrentProfile => _session?.Profile;
+
+    /// <summary>
     /// Calculates average score from all throws
     /// </summary>
     public double AverageScore =>
