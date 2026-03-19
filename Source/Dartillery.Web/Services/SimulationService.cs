@@ -32,9 +32,21 @@ public sealed class SimulationService
 
     public bool EnablePressure { get; set; }
 
-    public double FatigueRate { get; set; } = 0.005;
+    public double FatigueRate { get; set; } = 0.007;
+
+    public double PressureResistance { get; set; } = 0.5;
+
+    public double MaxTremor { get; set; } = 0.05;
+
+    public bool EnableMomentum { get; set; }
+
+    public bool EnableGrouping { get; set; }
+
+    public bool EnableTargetDifficulty { get; set; }
 
     public bool EnableManualTargeting { get; set; }
+
+    public SpreadMode SpreadMode { get; set; } = SpreadMode.Gaussian;
 
     // Current state properties
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
@@ -75,20 +87,15 @@ public sealed class SimulationService
     {
         var builder = new EnhancedDartboardSimulatorBuilder();
 
-        // Apply skill level preset or custom profile
-        builder = SelectedSkillLevel switch
+        // Always build from current property values
+        builder.WithPlayerProfile(new PlayerProfile
         {
-            "Professional" => builder.WithProfessionalPlayer(),
-            "Amateur" => builder.WithAmateurPlayer(),
-            "Beginner" => builder.WithBeginnerPlayer(),
-            "Custom" => builder.WithPlayerProfile(new PlayerProfile
-            {
-                Name = "Custom",
-                BaseSkill = CustomSigma,
-                FatigueRate = FatigueRate
-            }),
-            _ => builder.WithAmateurPlayer()
-        };
+            Name = SelectedSkillLevel,
+            BaseSkill = CustomSigma,
+            FatigueRate = FatigueRate,
+            PressureResistance = PressureResistance,
+            MaxTremor = MaxTremor
+        });
 
         // Apply behavioral models based on toggles
         if (EnableFatigue)
@@ -101,11 +108,48 @@ public sealed class SimulationService
             builder.WithCheckoutPsychology();
         }
 
+        if (EnableMomentum)
+        {
+            builder.WithStandardMomentum();
+        }
+
+        if (EnableGrouping)
+        {
+            builder.WithSimpleGrouping();
+        }
+
+        if (EnableTargetDifficulty)
+        {
+            builder.WithStandardTargetDifficulty();
+        }
+
+        builder.WithSpreadMode(SpreadMode);
+        builder.WithTruncation(CustomSigma * 3);
+
         // Build the session
         _session = builder.BuildSession();
         _throws.Clear();
 
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Loads a preset profile's values into the individual properties and rebuilds the session.
+    /// </summary>
+    public void ApplyPreset(string preset)
+    {
+        var profile = preset switch
+        {
+            "Professional" => PlayerProfile.Professional(),
+            "Beginner" => PlayerProfile.Beginner(),
+            _ => PlayerProfile.Amateur()
+        };
+        SelectedSkillLevel = preset;
+        CustomSigma = profile.BaseSkill;
+        FatigueRate = profile.FatigueRate;
+        PressureResistance = profile.PressureResistance;
+        MaxTremor = profile.MaxTremor;
+        RebuildSession();
     }
 
     /// <summary>

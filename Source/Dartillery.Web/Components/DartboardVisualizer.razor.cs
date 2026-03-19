@@ -40,6 +40,12 @@ public partial class DartboardVisualizer
     public bool ShowDeviationLines { get; set; } = true;
 
     [Parameter]
+    public bool ShowSpreadCircle { get; set; }
+
+    [Parameter]
+    public double SpreadRadius { get; set; }
+
+    [Parameter]
     public bool EnableManualTargeting { get; set; }
 
     [Parameter]
