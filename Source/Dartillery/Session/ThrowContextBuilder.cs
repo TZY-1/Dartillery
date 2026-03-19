@@ -12,10 +12,13 @@ public sealed class ThrowContextBuilder
     private readonly ITremorModel _tremorModel;
     private readonly IPressureModel _pressureModel;
     private readonly IMomentumModel _momentumModel;
+
+#pragma warning disable S4487 // Stored for future behavioral model integration
     private readonly IGroupingModel _groupingModel;
     private readonly ITargetDifficultyModel _targetDifficultyModel;
+#pragma warning restore S4487
 
-    private double _currentTremor = 0.0;
+    private double _currentTremor;
 
     /// <summary>
     /// Initializes a new throw context builder with the specified behavioral models.
@@ -66,6 +69,7 @@ public sealed class ThrowContextBuilder
         IReadOnlyList<ThrowResult> throwHistory,
         GameContext? gameContext = null)
     {
+        ArgumentNullException.ThrowIfNull(sessionState);
         var stateWithTremor = sessionState with { CurrentTremor = _currentTremor };
         _currentTremor = _tremorModel.CalculateTremor(stateWithTremor, _profile);
 

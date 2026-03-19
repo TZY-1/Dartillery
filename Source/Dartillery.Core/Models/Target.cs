@@ -8,17 +8,17 @@ namespace Dartillery.Core.Models;
 /// </summary>
 public sealed class Target : IEquatable<Target>
 {
-    /// <summary>The segment type (Single, Double, Triple, Bull).</summary>
-    public SegmentType SegmentType { get; }
-
-    /// <summary>The sector number (1-20). Irrelevant for bull targets.</summary>
-    public int SectorNumber { get; }
-
     private Target(SegmentType segmentType, int sectorNumber)
     {
         SegmentType = segmentType;
         SectorNumber = sectorNumber;
     }
+
+    /// <summary>The segment type (Single, Double, Triple, Bull).</summary>
+    public SegmentType SegmentType { get; }
+
+    /// <summary>The sector number (1-20). Irrelevant for bull targets.</summary>
+    public int SectorNumber { get; }
 
     /// <summary>
     /// Creates a target for a numbered field (Single, Double, Triple).
@@ -35,7 +35,8 @@ public sealed class Target : IEquatable<Target>
 
         if (sectorNumber < 1 || sectorNumber > 20)
         {
-            throw new ArgumentOutOfRangeException(nameof(sectorNumber),
+            throw new ArgumentOutOfRangeException(
+                nameof(sectorNumber),
                 "Sector number must be between 1 and 20.");
         }
 
@@ -88,9 +89,9 @@ public sealed class Target : IEquatable<Target>
     {
         SegmentType.InnerBull => BoardScoring.InnerBullScore,
         SegmentType.OuterBull => BoardScoring.OuterBullScore,
-        SegmentType.Triple    => SectorNumber * BoardScoring.TripleMultiplier,
-        SegmentType.Double    => SectorNumber * BoardScoring.DoubleMultiplier,
-        SegmentType.Single    => SectorNumber * BoardScoring.SingleMultiplier,
+        SegmentType.Triple => SectorNumber * BoardScoring.TripleMultiplier,
+        SegmentType.Double => SectorNumber * BoardScoring.DoubleMultiplier,
+        SegmentType.Single => SectorNumber * BoardScoring.SingleMultiplier,
         _ => 0
     };
 

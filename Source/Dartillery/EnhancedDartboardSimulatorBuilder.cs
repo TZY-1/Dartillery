@@ -61,17 +61,16 @@ namespace Dartillery;
 /// </example>
 public sealed class EnhancedDartboardSimulatorBuilder
 {
+    private readonly List<IThrowEventListener> _eventListeners = new();
     private PlayerProfile? _profile;
     private ITremorModel? _tremorModel;
     private IPressureModel? _pressureModel;
     private IMomentumModel? _momentumModel;
     private IGroupingModel? _groupingModel;
     private ITargetDifficultyModel? _targetDifficultyModel;
-    private IDeviationCalculator? _baseDeviationCalculator;
-    private bool _useTruncation = false;
+    private bool _useTruncation;
     private double _maxDeviation = 0.25;
     private int? _seed;
-    private readonly List<IThrowEventListener> _eventListeners = new();
 
     /// <summary>
     /// Configures the builder with a custom player profile.
@@ -305,7 +304,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
             MomentumModel = _momentumModel ?? new NoMomentumModel(),
             GroupingModel = _groupingModel ?? new NoGroupingModel(),
             TargetDifficultyModel = _targetDifficultyModel ?? new NoTargetDifficultyModel(),
-            BaseDeviationCalculator = _baseDeviationCalculator,
+            BaseDeviationCalculator = null,
             UseTruncation = _useTruncation,
             MaxDeviation = _maxDeviation,
             Seed = _seed,

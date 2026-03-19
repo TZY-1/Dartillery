@@ -10,31 +10,6 @@ namespace Dartillery.Simulation.Geometry;
 /// </summary>
 internal sealed class AimPointCalculator : IAimPointCalculator
 {
-    /// <summary>
-    /// Predefined aim radii for different segment types.
-    /// </summary>
-    private static class AimRadii
-    {
-        /// <summary>Aim for center of board (inner bull).</summary>
-        public const double InnerBull = 0.0;
-
-        /// <summary>Midpoint of outer bull ring.</summary>
-        public static readonly double OuterBull =
-            (BoardDimensions.InnerBullRadius + BoardDimensions.OuterBullRadius) / 2.0;
-
-        /// <summary>Midpoint of triple ring.</summary>
-        public static readonly double Triple =
-            (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
-
-        /// <summary>Midpoint of double ring.</summary>
-        public static readonly double Double =
-            (BoardDimensions.DoubleRingInner + BoardDimensions.DoubleRingOuter) / 2.0;
-
-        /// <summary>Midpoint of outer single area (between triple and double rings).</summary>
-        public static readonly double Single =
-            (BoardDimensions.TripleRingOuter + BoardDimensions.DoubleRingInner) / 2.0;
-    }
-
     /// <inheritdoc />
     public Point2D CalculateAimPoint(Target target)
     {
@@ -71,5 +46,30 @@ internal sealed class AimPointCalculator : IAimPointCalculator
 
         // Angle to the center of the sector
         return index * BoardDimensions.SectorAngle;
+    }
+
+    /// <summary>
+    /// Predefined aim radii for different segment types.
+    /// </summary>
+    private static class AimRadii
+    {
+        /// <summary>Aim for center of board (inner bull).</summary>
+        public const double InnerBull = 0.0;
+
+        /// <summary>Midpoint of outer bull ring.</summary>
+        public const double OuterBull =
+            (BoardDimensions.InnerBullRadius + BoardDimensions.OuterBullRadius) / 2.0;
+
+        /// <summary>Midpoint of triple ring.</summary>
+        public const double Triple =
+            (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
+
+        /// <summary>Midpoint of double ring.</summary>
+        public const double Double =
+            (BoardDimensions.DoubleRingInner + BoardDimensions.DoubleRingOuter) / 2.0;
+
+        /// <summary>Midpoint of outer single area (between triple and double rings).</summary>
+        public const double Single =
+            (BoardDimensions.TripleRingOuter + BoardDimensions.DoubleRingInner) / 2.0;
     }
 }

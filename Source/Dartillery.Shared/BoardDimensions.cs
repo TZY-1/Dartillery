@@ -1,4 +1,4 @@
-﻿namespace Dartillery.Shared;
+namespace Dartillery.Shared;
 
 /// <summary>
 /// Constants for dartboard geometry.
@@ -6,29 +6,6 @@
 /// </summary>
 public static class BoardDimensions
 {
-    // =========================================================================
-    // Reference measurements (millimeters)
-    // =========================================================================
-
-    /// <summary>Distance from board center to outer edge of the double ring.</summary>
-    private const double DartBoardRadiusInMM = 170.0;
-
-    /// <summary>Radius of the inner bull (double bull).</summary>
-    private const double InnerBullRadiusInMM = 6.35;
-
-    /// <summary>Radius of the outer bull (single bull).</summary>
-    private const double OuterBullRadiusInMM = 15.9;
-
-    /// <summary>Distance from board center to inner edge of the triple ring.</summary>
-    private const double TripleRingInnerRadiusInMM = 107.0;
-
-    /// <summary>Distance from board center to outer edge of the triple ring.</summary>
-    private const double TripleRingOuterRadiusInMM = 115.0;
-
-    /// <summary>Distance from board center to inner edge of the double ring.</summary>
-    private const double DoubleRingInnerRadiusInMM = 162.0;
-
-
     // =========================================================================
     // Normalized radii (relative to double ring outer radius)
     // =========================================================================
@@ -56,7 +33,6 @@ public static class BoardDimensions
     /// <summary>Outer radius of the double ring (board outer edge).</summary>
     public const double DoubleRingOuter = 1.0;
 
-
     // =========================================================================
     // Board layout
     // =========================================================================
@@ -80,4 +56,26 @@ public static class BoardDimensions
         3, 19, 7, 16, 8,
         11, 14, 9, 12, 5
     };
+
+    // =========================================================================
+    // Reference measurements (millimeters)
+    // =========================================================================
+
+    /// <summary>Distance from board center to outer edge of the double ring.</summary>
+    private const double DartBoardRadiusInMM = 170.0;
+
+    /// <summary>Radius of the inner bull (double bull).</summary>
+    private const double InnerBullRadiusInMM = 6.35;
+
+    /// <summary>Radius of the outer bull (single bull).</summary>
+    private const double OuterBullRadiusInMM = 15.9;
+
+    /// <summary>Distance from board center to inner edge of the triple ring.</summary>
+    private const double TripleRingInnerRadiusInMM = 107.0;
+
+    /// <summary>Distance from board center to outer edge of the triple ring.</summary>
+    private const double TripleRingOuterRadiusInMM = 115.0;
+
+    /// <summary>Distance from board center to inner edge of the double ring.</summary>
+    private const double DoubleRingInnerRadiusInMM = 162.0;
 }

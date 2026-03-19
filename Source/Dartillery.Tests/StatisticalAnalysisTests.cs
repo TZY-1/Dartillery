@@ -9,22 +9,6 @@ namespace Dartillery.Tests;
 [Category("Analysis")]
 public class StatisticalAnalysisTests
 {
-    private static IThrowSimulator CreateSeededSimulator(
-        SimulatorPrecision? precision = null,
-        double? standardDeviation = null,
-        int seed = 42)
-    {
-        var builder = new DartboardSimulatorBuilder().WithSeed(seed);
-
-        if (precision.HasValue)
-            builder = builder.WithPrecision(precision.Value);
-
-        if (standardDeviation.HasValue)
-            builder = builder.WithStandardDeviation(standardDeviation.Value);
-
-        return builder.Build();
-    }
-
     [Test]
     public void Throw_MultiplePrecisionLevelsAtTriple20_ScoresPositiveForAllLevels()
     {
@@ -55,7 +39,6 @@ public class StatisticalAnalysisTests
     [Test]
     public void Throw_GaussianVsUniformAtBullseye_BothProducePositiveScores()
     {
-        // Arrange
         var target = Target.Bullseye();
         const int throwCount = 1000;
         var seed = 123;
@@ -87,7 +70,6 @@ public class StatisticalAnalysisTests
         TestContext.Out.WriteLine("--- Uniform Distribution (max radius=0.06) ---");
         PrintStatistics(uniformStats, throwCount);
 
-        // Assert
         Assert.That(gaussianStats.AverageScorePerDart, Is.GreaterThan(0));
         Assert.That(uniformStats.AverageScorePerDart, Is.GreaterThan(0));
     }
@@ -95,7 +77,6 @@ public class StatisticalAnalysisTests
     [Test]
     public void Throw_AllTargetTypesWithProfessional_AllScoresNonNegative()
     {
-        // Arrange
         var simulator = CreateSeededSimulator(precision: SimulatorPrecision.Professional, seed: 999);
 
         const int throwsPerTarget = 100;
@@ -131,7 +112,6 @@ public class StatisticalAnalysisTests
         var outerBull = AnalyzeThrows(simulator, Target.OuterBull(), throwsPerTarget);
         TestContext.Out.WriteLine($"Outer Bull: Hit Rate {outerBull.HitRate:P1}, Avg Score {outerBull.AverageScorePerDart:F1}");
 
-        // Assert
         Assert.That(results, Is.Not.Empty);
         Assert.That(results.All(r => r.AvgScore >= 0), Is.True);
     }
@@ -139,7 +119,6 @@ public class StatisticalAnalysisTests
     [Test]
     public void Throw_VaryingStandardDeviations_AllScoresNonNegative()
     {
-        // Arrange
         var target = Target.Triple(20);
         const int throwCount = 500;
 
@@ -162,7 +141,23 @@ public class StatisticalAnalysisTests
         }
     }
 
-    private ThrowStatistics AnalyzeThrows(IThrowSimulator simulator, Target target, int throwCount)
+    private static IThrowSimulator CreateSeededSimulator(
+        SimulatorPrecision? precision = null,
+        double? standardDeviation = null,
+        int seed = 42)
+    {
+        var builder = new DartboardSimulatorBuilder().WithSeed(seed);
+
+        if (precision.HasValue)
+            builder = builder.WithPrecision(precision.Value);
+
+        if (standardDeviation.HasValue)
+            builder = builder.WithStandardDeviation(standardDeviation.Value);
+
+        return builder.Build();
+    }
+
+    private static ThrowStatistics AnalyzeThrows(IThrowSimulator simulator, Target target, int throwCount)
     {
         var results = new List<ThrowResult>();
 
@@ -181,8 +176,7 @@ public class StatisticalAnalysisTests
             .GroupBy(r => new { r.SegmentType, r.SectorNumber })
             .ToDictionary(
                 g => (g.Key.SegmentType, g.Key.SectorNumber),
-                g => g.Count()
-            );
+                g => g.Count());
 
         return new ThrowStatistics
         {
@@ -199,7 +193,7 @@ public class StatisticalAnalysisTests
         };
     }
 
-    private void PrintStatistics(ThrowStatistics stats, int throwCount)
+    private static void PrintStatistics(ThrowStatistics stats, int throwCount)
     {
         TestContext.Out.WriteLine($"Board Hit Rate: {stats.HitRate:P1} ({stats.SuccessfulThrows}/{throwCount})");
 
@@ -238,15 +232,25 @@ public class StatisticalAnalysisTests
     private class ThrowStatistics
     {
         public int TotalThrows { get; set; }
+
         public int SuccessfulThrows { get; set; }
+
         public int Misses { get; set; }
+
         public double HitRate { get; set; }
+
         public double AverageScorePerDart { get; set; }
+
         public double ThreeDartAverage => AverageScorePerDart * 3;
+
         public int MaxScore { get; set; }
+
         public int TripleHits { get; set; }
+
         public int DoubleHits { get; set; }
+
         public Dictionary<int, int> ScoreDistribution { get; set; } = new();
-        public Dictionary<(SegmentType, int), int> FieldDistribution { get; set; } = new();
+
+        public Dictionary<(SegmentType Type, int Sector), int> FieldDistribution { get; set; } = new();
     }
 }

@@ -106,12 +106,13 @@ public static class DartilleryServiceCollectionExtensions
                     throw new InvalidOperationException(
                         "CustomDeviationCalculator must be set when using DeviationDistribution.Custom.");
                 }
+
                 services.AddSingleton(options.CustomDeviationCalculator);
                 break;
 
             default:
                 throw new ArgumentOutOfRangeException(
-                    nameof(options.DistributionType),
+                    nameof(options),
                     options.DistributionType,
                     "Unknown distribution type.");
         }

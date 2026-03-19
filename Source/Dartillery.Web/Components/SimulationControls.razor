@@ -296,7 +296,7 @@
         await OnThrowExecuted.InvokeAsync();
     }
 
-    private Target ParseTarget(string targetStr)
+    private static Target ParseTarget(string targetStr)
     {
         return targetStr switch
         {

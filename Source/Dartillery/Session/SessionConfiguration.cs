@@ -39,7 +39,7 @@ internal sealed record SessionConfiguration
     public IDeviationCalculator? BaseDeviationCalculator { get; init; }
 
     /// <summary>Whether deviation truncation is enabled.</summary>
-    public bool UseTruncation { get; init; } = false;
+    public bool UseTruncation { get; init; }
 
     /// <summary>Maximum allowed deviation when truncation is enabled.</summary>
     public double MaxDeviation { get; init; } = 0.25;

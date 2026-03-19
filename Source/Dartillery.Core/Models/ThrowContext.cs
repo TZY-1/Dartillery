@@ -10,7 +10,7 @@ public sealed record ThrowContext
     /// Session-specific tremor magnitude (accumulated fatigue).
     /// Added to base skill to simulate declining accuracy.
     /// </summary>
-    public double SessionTremor { get; init; } = 0.0;
+    public double SessionTremor { get; init; }
 
     /// <summary>
     /// Pressure-based precision modifier (multiplier).
@@ -28,7 +28,7 @@ public sealed record ThrowContext
     /// Number of throws executed in current session.
     /// Used to calculate fatigue accumulation.
     /// </summary>
-    public int ThrowIndexInSession { get; init; } = 0;
+    public int ThrowIndexInSession { get; init; }
 
     /// <summary>
     /// Game-specific context (optional, for pressure calculation).

@@ -45,7 +45,6 @@ public class EdgeCaseTests
         [Test]
         public void Throw_AllValidTargets_ProducesValidResults()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(999)
                 .Build();
@@ -68,7 +67,6 @@ public class EdgeCaseTests
             targets.Add(Target.Bullseye());
             targets.Add(Target.OuterBull());
 
-            // Act & Assert
             foreach (var target in targets)
             {
                 var result = simulator.Throw(target);
@@ -81,33 +79,28 @@ public class EdgeCaseTests
         [Test]
         public void Throw_ConsecutiveThrows_ShowsVariation()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(12345)
                 .Build();
 
             var target = Target.Triple(20);
 
-            // Act - werfe viele Darts
             var results = new List<ThrowResult>();
             for (int i = 0; i < 1000; i++)
             {
                 results.Add(simulator.Throw(target));
             }
 
-            // Assert - Ergebnisse sollten variieren (nicht alle identisch)
             var uniqueScores = results.Select(r => r.Score).Distinct().Count();
             Assert.That(uniqueScores, Is.GreaterThan(1),
                 "All throws produced identical results - randomness may be broken");
 
-            // Assert - Alle Ergebnisse sollten gültig sein
             Assert.That(results.All(r => r.Score >= 0 && r.Score <= 60), Is.True);
         }
 
         [Test]
         public void Throw_DifferentSeeds_ProduceDifferentSequences()
         {
-            // Arrange
             var simulator1 = new DartboardSimulatorBuilder()
                 .WithSeed(1)
                 .Build();
@@ -118,7 +111,6 @@ public class EdgeCaseTests
 
             var target = Target.Triple(20);
 
-            // Act
             var results1 = new List<int>();
             var results2 = new List<int>();
 
@@ -128,7 +120,6 @@ public class EdgeCaseTests
                 results2.Add(simulator2.Throw(target).Score);
             }
 
-            // Assert - Unterschiedliche Seeds sollten unterschiedliche Sequenzen erzeugen
             var identicalCount = results1.Zip(results2, (a, b) => a == b).Count(x => x);
             Assert.That(identicalCount, Is.LessThan(100),
                 "Different seeds produced identical results");
@@ -137,7 +128,6 @@ public class EdgeCaseTests
         [Test]
         public void Throw_SameSeed_ProducesIdenticalSequences()
         {
-            // Arrange
             var simulator1 = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
@@ -155,7 +145,6 @@ public class EdgeCaseTests
                 Target.Triple(19)
             };
 
-            // Act & Assert
             foreach (var target in targets)
             {
                 var result1 = simulator1.Throw(target);
@@ -170,21 +159,19 @@ public class EdgeCaseTests
         [Test]
         public void Throw_RapidSuccession_CompletesInReasonableTime()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .Build();
 
             var target = Target.Triple(20);
 
-            // Act - Performance-Messung für schnelle Würfe
             var startTime = DateTime.UtcNow;
             for (int i = 0; i < 10000; i++)
             {
                 simulator.Throw(target);
             }
+
             var elapsed = DateTime.UtcNow - startTime;
 
-            // Assert - sollte schnell genug sein (< 1 Sekunde für 10k Würfe)
             Assert.That(elapsed.TotalSeconds, Is.LessThan(1.0),
                 $"10,000 throws took {elapsed.TotalMilliseconds}ms - performance issue detected");
         }
@@ -196,17 +183,14 @@ public class EdgeCaseTests
         [Test]
         public void Throw_AtSector1AllSegmentTypes_ReturnsValidResults()
         {
-            // Arrange - Sektor 1 ist der niedrigste Wert
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
 
-            // Act
             var single1 = simulator.Throw(Target.Single(1));
             var double1 = simulator.Throw(Target.Double(1));
             var triple1 = simulator.Throw(Target.Triple(1));
 
-            // Assert
             Assert.That(single1, Is.Not.Null);
             Assert.That(double1, Is.Not.Null);
             Assert.That(triple1, Is.Not.Null);
@@ -215,17 +199,14 @@ public class EdgeCaseTests
         [Test]
         public void Throw_AtSector20AllSegmentTypes_ReturnsValidResults()
         {
-            // Arrange - Sektor 20 ist der höchste Wert
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
 
-            // Act
             var single20 = simulator.Throw(Target.Single(20));
             var double20 = simulator.Throw(Target.Double(20));
             var triple20 = simulator.Throw(Target.Triple(20));
 
-            // Assert
             Assert.That(single20, Is.Not.Null);
             Assert.That(double20, Is.Not.Null);
             Assert.That(triple20, Is.Not.Null);
@@ -234,13 +215,11 @@ public class EdgeCaseTests
         [Test]
         public void ThrowResult_IsDoubleProperty_TrueForDoubleSegments()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
                 .WithSeed(42)
                 .Build();
 
-            // Act - werfe auf Double bis wir eins treffen
             ThrowResult? doubleHit = null;
             for (int i = 0; i < 100; i++)
             {
@@ -252,7 +231,6 @@ public class EdgeCaseTests
                 }
             }
 
-            // Assert
             Assert.That(doubleHit, Is.Not.Null, "Failed to hit a double in 100 attempts");
             Assert.That(doubleHit!.IsDouble, Is.True);
         }
@@ -260,13 +238,11 @@ public class EdgeCaseTests
         [Test]
         public void ThrowResult_IsDoubleProperty_TrueForBullseye()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
                 .WithSeed(42)
                 .Build();
 
-            // Act - werfe auf Bullseye bis wir es treffen
             ThrowResult? bullseyeHit = null;
             for (int i = 0; i < 100; i++)
             {
@@ -278,7 +254,6 @@ public class EdgeCaseTests
                 }
             }
 
-            // Assert - Bullseye zählt als Double für Checkout
             Assert.That(bullseyeHit, Is.Not.Null, "Failed to hit bullseye in 100 attempts");
             Assert.That(bullseyeHit!.IsDouble, Is.True);
         }
@@ -286,21 +261,18 @@ public class EdgeCaseTests
         [Test]
         public void ThrowResult_IsDoubleProperty_FalseForNonDoubles()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
 
             var target = Target.Triple(20);
 
-            // Act - sammle verschiedene Würfe
             var results = new List<ThrowResult>();
             for (int i = 0; i < 50; i++)
             {
                 results.Add(simulator.Throw(target));
             }
 
-            // Assert - Nicht-Double-Segmente sollten IsDouble = false haben
             var nonDoubles = results.Where(r =>
                 r.SegmentType != SegmentType.Double &&
                 r.SegmentType != SegmentType.InnerBull);
@@ -315,11 +287,10 @@ public class EdgeCaseTests
         [Test]
         public void Builder_MultipleConfigurationCalls_LastValueWins()
         {
-            // Arrange & Act - mehrfaches Setzen des Seeds
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(1)
-                .WithSeed(2)  // sollte vorherigen Wert überschreiben
-                .WithSeed(3)  // sollte wieder überschreiben
+                .WithSeed(2) // sollte vorherigen Wert überschreiben
+                .WithSeed(3) // sollte wieder überschreiben
                 .Build();
 
             var target = Target.Triple(20);
@@ -331,7 +302,6 @@ public class EdgeCaseTests
                 .Build();
             var result2 = simulator3.Throw(target);
 
-            // Assert
             Assert.That(result1.Score, Is.EqualTo(result2.Score));
             Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
         }
@@ -339,13 +309,11 @@ public class EdgeCaseTests
         [Test]
         public void Builder_WithPrecisionAndStandardDeviation_StandardDeviationOverrides()
         {
-            // Arrange & Act - Precision und StandardDeviation zusammen
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
                 .WithStandardDeviation(0.15) // sollte Precision überschreiben
                 .Build();
 
-            // Assert - prüfe nur, dass es funktioniert
             var result = simulator.Throw(Target.Triple(20));
             Assert.That(result, Is.Not.Null);
         }
@@ -353,7 +321,6 @@ public class EdgeCaseTests
         [Test]
         public void Target_ToString_ReturnsReadableFormat()
         {
-            // Arrange
             var targets = new[]
             {
                 Target.Single(20),
@@ -363,7 +330,6 @@ public class EdgeCaseTests
                 Target.OuterBull()
             };
 
-            // Act & Assert
             foreach (var target in targets)
             {
                 var str = target.ToString();
@@ -382,7 +348,6 @@ public class EdgeCaseTests
         [Test]
         public void Simulator_LongRunningSession_MaintainsConsistency()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
@@ -396,7 +361,6 @@ public class EdgeCaseTests
                 Target.Bullseye()
             };
 
-            // Act - simuliere eine sehr lange Session (5000 Würfe)
             var allResults = new List<ThrowResult>();
             for (int round = 0; round < 1000; round++)
             {
@@ -407,7 +371,6 @@ public class EdgeCaseTests
                 }
             }
 
-            // Assert
             Assert.That(allResults, Has.Count.EqualTo(5000));
             Assert.That(allResults.All(r => r.Score >= 0 && r.Score <= 60), Is.True,
                 "Some results had invalid scores");
@@ -421,12 +384,10 @@ public class EdgeCaseTests
         [Test]
         public void Simulator_AlternatingTargets_ProducesVariedResults()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(777)
                 .Build();
 
-            // Act - wechsle zwischen sehr unterschiedlichen Zielen
             var results = new List<(Target Target, ThrowResult Result)>();
             for (int i = 0; i < 100; i++)
             {
@@ -437,14 +398,12 @@ public class EdgeCaseTests
                 results.Add((target2, simulator.Throw(target2)));
             }
 
-            // Assert - beide Ziele sollten gültige Ergebnisse liefern
             Assert.That(results.All(r => r.Result.Score >= 0), Is.True);
         }
 
         [Test]
         public void Simulator_StatisticalDistribution_ShowsRealisticVariance()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Amateur)
                 .WithSeed(999)
@@ -452,14 +411,11 @@ public class EdgeCaseTests
 
             var target = Target.Triple(20);
 
-            // Act - sammle viele Proben
             var samples = new List<ThrowResult>();
             for (int i = 0; i < 1000; i++)
             {
                 samples.Add(simulator.Throw(target));
             }
-
-            // Assert - prüfe auf realistische Verteilungseigenschaften
 
             // Sollte das Ziel manchmal treffen, aber nicht immer
             var hitCount = samples.Count(s => s.SegmentType == SegmentType.Triple && s.SectorNumber == 20);
@@ -478,14 +434,12 @@ public class EdgeCaseTests
         [Test]
         public void Simulator_MultipleInstances_AreIndependent()
         {
-            // Arrange - erstelle mehrere Simulatoren
             var sim1 = new DartboardSimulatorBuilder().WithSeed(1).Build();
             var sim2 = new DartboardSimulatorBuilder().WithSeed(2).Build();
             var sim3 = new DartboardSimulatorBuilder().WithSeed(3).Build();
 
             var target = Target.Triple(20);
 
-            // Act - werfe mit allen Simulatoren
             var results1 = new List<int>();
             var results2 = new List<int>();
             var results3 = new List<int>();
@@ -497,7 +451,6 @@ public class EdgeCaseTests
                 results3.Add(sim3.Throw(target).Score);
             }
 
-            // Assert - jeder Simulator sollte seinen eigenen Zustand behalten
             Assert.That(results1, Is.Not.EqualTo(results2));
             Assert.That(results2, Is.Not.EqualTo(results3));
             Assert.That(results1, Is.Not.EqualTo(results3));

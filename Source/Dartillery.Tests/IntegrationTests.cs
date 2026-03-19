@@ -11,18 +11,9 @@ public class IntegrationTests
     [TestFixture]
     public class SimulatorIntegrationTests
     {
-        private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
-        {
-            return new DartboardSimulatorBuilder()
-                .WithPrecision(precision)
-                .WithSeed(seed)
-                .Build();
-        }
-
         [Test]
         public void Simulate501_ProfessionalWithSeed_FinishesUnder100Darts()
         {
-            // Arrange
             var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 42);
 
             int remainingScore = 501;
@@ -30,7 +21,6 @@ public class IntegrationTests
             const int maxDarts = 100;
             bool gameWon = false;
 
-            // Act
             while (remainingScore > 0 && dartsThrown < maxDarts)
             {
                 var target = SelectSmartTarget(remainingScore);
@@ -56,7 +46,6 @@ public class IntegrationTests
                 }
             }
 
-            // Assert
             TestContext.Out.WriteLine($"Game finished: {gameWon}, Darts: {dartsThrown}, Remaining: {remainingScore}");
             Assert.That(dartsThrown, Is.LessThan(maxDarts));
         }
@@ -64,7 +53,6 @@ public class IntegrationTests
         [Test]
         public void Throw_ThreePrecisionLevelsAtTriple20_HitRatesFormGradient()
         {
-            // Arrange
             var target = Target.Triple(20);
             const int throwCount = 500;
 
@@ -72,12 +60,10 @@ public class IntegrationTests
             var amateur = CreateSeededSimulator(SimulatorPrecision.Amateur, seed: 42);
             var beginner = CreateSeededSimulator(SimulatorPrecision.Beginner, seed: 42);
 
-            // Act
             var proResults = ThrowMultiple(professional, target, throwCount);
             var amateurResults = ThrowMultiple(amateur, target, throwCount);
             var beginnerResults = ThrowMultiple(beginner, target, throwCount);
 
-            // Assert
             var proHitRate = CalculateHitRate(proResults, SegmentType.Triple, 20);
             var amateurHitRate = CalculateHitRate(amateurResults, SegmentType.Triple, 20);
             var beginnerHitRate = CalculateHitRate(beginnerResults, SegmentType.Triple, 20);
@@ -94,7 +80,6 @@ public class IntegrationTests
         [Test]
         public void Throw_GaussianVsUniformAtBullseye_BothHitBullAtLeastOnce()
         {
-            // Arrange
             var target = Target.Bullseye();
             const int throwCount = 1000;
             const double sigma = 0.03;
@@ -111,11 +96,9 @@ public class IntegrationTests
                 .WithSeed(42)
                 .Build();
 
-            // Act
             var gaussianResults = ThrowMultiple(gaussian, target, throwCount);
             var uniformResults = ThrowMultiple(uniform, target, throwCount);
 
-            // Assert
             var gaussianBullHits = gaussianResults.Count(r => r.SegmentType == SegmentType.InnerBull);
             var uniformBullHits = uniformResults.Count(r => r.SegmentType == SegmentType.InnerBull);
 
@@ -137,7 +120,6 @@ public class IntegrationTests
         [Test]
         public void SimulateCricket_ProfessionalPlayer_ClosesAtLeastOneSector()
         {
-            // Arrange - Cricket uses sectors 15-20 plus Bull
             var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 999);
 
             var cricketNumbers = new[] { 15, 16, 17, 18, 19, 20 };
@@ -148,15 +130,14 @@ public class IntegrationTests
 
             const int maxDarts = 50;
 
-            // Act - throw at cricket numbers until all "closed" (3 hits)
             for (int i = 0; i < maxDarts; i++)
             {
                 // Choose a number that is not yet closed
                 var openNumbers = hitCounts.Where(kv => kv.Value < 3).Select(kv => kv.Key).ToList();
-                if (!openNumbers.Any())
+                if (openNumbers.Count == 0)
                     break;
 
-                var targetNumber = openNumbers.First();
+                var targetNumber = openNumbers[0];
                 Target target = targetNumber == 25
                     ? Target.Bullseye()
                     : Target.Triple(targetNumber);
@@ -181,7 +162,6 @@ public class IntegrationTests
                 }
             }
 
-            // Assert
             TestContext.Out.WriteLine("Cricket Hit Counts:");
             foreach (var (number, count) in hitCounts.OrderBy(kv => kv.Key))
             {
@@ -197,14 +177,12 @@ public class IntegrationTests
         [Test]
         public void SimulateAroundTheClock_AmateurPlayer_ReachesAtLeastSector1()
         {
-            // Arrange - Around the Clock: hit sectors 1-20 in sequence
             var simulator = CreateSeededSimulator(SimulatorPrecision.Amateur, seed: 777);
 
             int currentTarget = 1;
             int dartsThrown = 0;
             const int maxDarts = 200;
 
-            // Act
             while (currentTarget <= 20 && dartsThrown < maxDarts)
             {
                 var target = Target.Single(currentTarget);
@@ -218,7 +196,6 @@ public class IntegrationTests
                 }
             }
 
-            // Assert
             TestContext.Out.WriteLine($"Around the Clock: Reached sector {currentTarget - 1} in {dartsThrown} darts");
 
             // With Amateur precision we should reach at least sector 1
@@ -228,13 +205,11 @@ public class IntegrationTests
         [Test]
         public void Throw_100VisitsAtTriple20_BestScoreExceeds100()
         {
-            // Arrange
             var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 42);
 
             int maxScore = 0;
             const int attempts = 100;
 
-            // Act - try multiple times to throw 3 darts at T20
             for (int attempt = 0; attempt < attempts; attempt++)
             {
                 int visitScore = 0;
@@ -243,10 +218,10 @@ public class IntegrationTests
                     var result = simulator.Throw(Target.Triple(20));
                     visitScore += result.Score;
                 }
+
                 maxScore = Math.Max(maxScore, visitScore);
             }
 
-            // Assert
             TestContext.Out.WriteLine($"Best 3-dart score: {maxScore} (max possible: 180)");
 
             // With Professional precision we should achieve high scores
@@ -259,7 +234,6 @@ public class IntegrationTests
         [Test]
         public void Throw_FiveCommonDoubles_AllHitAtLeastOnce()
         {
-            // Arrange
             var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 123);
 
             var commonDoubles = new[] { 16, 20, 18, 12, 10 };
@@ -267,7 +241,6 @@ public class IntegrationTests
 
             var successRates = new Dictionary<int, double>();
 
-            // Act
             foreach (var doubleNumber in commonDoubles)
             {
                 int hits = 0;
@@ -279,10 +252,10 @@ public class IntegrationTests
                         hits++;
                     }
                 }
+
                 successRates[doubleNumber] = hits / (double)attemptsPerDouble;
             }
 
-            // Assert
             TestContext.Out.WriteLine("Double Success Rates (Professional):");
             foreach (var (number, rate) in successRates.OrderByDescending(kv => kv.Value))
             {
@@ -298,23 +271,32 @@ public class IntegrationTests
                 "Average success rate should be reasonable for professional");
         }
 
-        private List<ThrowResult> ThrowMultiple(IThrowSimulator simulator, Target target, int count)
+        private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
+        {
+            return new DartboardSimulatorBuilder()
+                .WithPrecision(precision)
+                .WithSeed(seed)
+                .Build();
+        }
+
+        private static List<ThrowResult> ThrowMultiple(IThrowSimulator simulator, Target target, int count)
         {
             var results = new List<ThrowResult>();
             for (int i = 0; i < count; i++)
             {
                 results.Add(simulator.Throw(target));
             }
+
             return results;
         }
 
-        private double CalculateHitRate(List<ThrowResult> results, SegmentType targetType, int targetSector)
+        private static double CalculateHitRate(List<ThrowResult> results, SegmentType targetType, int targetSector)
         {
             var hits = results.Count(r => r.SegmentType == targetType && r.SectorNumber == targetSector);
             return hits / (double)results.Count;
         }
 
-        private Target SelectSmartTarget(int remaining)
+        private static Target SelectSmartTarget(int remaining)
         {
             // Simple checkout strategy
             if (remaining <= 40 && remaining % 2 == 0 && remaining >= 2)
@@ -338,20 +320,18 @@ public class IntegrationTests
         [Test]
         public void Throw_FourCardinalTargets_HitPointsSpreadAcrossBoard()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(42)
                 .Build();
 
             var targets = new[]
             {
-                Target.Triple(20),  // Top
-                Target.Triple(6),   // Right
-                Target.Triple(3),   // Bottom
-                Target.Triple(11)   // Left
+                Target.Triple(20), // Top
+                Target.Triple(6), // Right
+                Target.Triple(3), // Bottom
+                Target.Triple(11) // Left
             };
 
-            // Act & Assert
             foreach (var target in targets)
             {
                 var results = new List<ThrowResult>();
@@ -367,13 +347,13 @@ public class IntegrationTests
                 var hasNegativeY = results.Any(r => r.HitPoint.Y < 0);
 
                 TestContext.Out.WriteLine($"Target {target}: +X={hasPositiveX}, -X={hasNegativeX}, +Y={hasPositiveY}, -Y={hasNegativeY}");
+                Assert.That(results, Has.Count.EqualTo(100), "Should have recorded 100 throws per target");
             }
         }
 
         [Test]
         public void Throw_AllTwentySectors_AllSectorsHitAtLeastOnce()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
                 .WithSeed(999)
@@ -382,7 +362,6 @@ public class IntegrationTests
             var sectorHits = new HashSet<int>();
             const int throwsPerSector = 20;
 
-            // Act - throw at each sector
             for (int sector = 1; sector <= 20; sector++)
             {
                 for (int i = 0; i < throwsPerSector; i++)
@@ -395,7 +374,6 @@ public class IntegrationTests
                 }
             }
 
-            // Assert - we should have hit all 20 sectors
             TestContext.Out.WriteLine($"Unique sectors hit: {sectorHits.Count}/20");
             Assert.That(sectorHits.Count, Is.EqualTo(20),
                 "Should be able to hit all 20 sectors");
@@ -404,19 +382,16 @@ public class IntegrationTests
         [Test]
         public void Throw_AtBullseye_BullHitsHaveSectorZero()
         {
-            // Arrange
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(123)
                 .Build();
 
-            // Act - throw at bulls
             var bullResults = new List<ThrowResult>();
             for (int i = 0; i < 200; i++)
             {
                 bullResults.Add(simulator.Throw(Target.Bullseye()));
             }
 
-            // Assert - Bull hits should have no sector numbers
             var bullHits = bullResults.Where(r =>
                 r.SegmentType == SegmentType.InnerBull ||
                 r.SegmentType == SegmentType.OuterBull);
@@ -435,7 +410,6 @@ public class IntegrationTests
         [Test]
         public void Throw_ProfessionalVsAmateur_ProfessionalScoresHigher()
         {
-            // Arrange
             const int rounds = 10;
             const int dartsPerRound = 3;
 
@@ -451,7 +425,6 @@ public class IntegrationTests
 
             var target = Target.Triple(20);
 
-            // Act
             int proTotal = 0;
             int amateurTotal = 0;
 
@@ -467,7 +440,6 @@ public class IntegrationTests
             var proAverage = proTotal / (double)(rounds * dartsPerRound);
             var amateurAverage = amateurTotal / (double)(rounds * dartsPerRound);
 
-            // Assert
             TestContext.Out.WriteLine($"Professional average: {proAverage:F2}");
             TestContext.Out.WriteLine($"Amateur average: {amateurAverage:F2}");
             TestContext.Out.WriteLine($"Skill gap: {proAverage - amateurAverage:F2} points per dart");
@@ -479,16 +451,13 @@ public class IntegrationTests
         [Test]
         public void Throw_ProfessionalAtDouble16_HitsWithin20Attempts()
         {
-            // Arrange - Player needs D16 to win
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
                 .WithSeed(777)
                 .Build();
 
-            const int checkoutTarget = 32; // D16
             const int maxAttempts = 20;
 
-            // Act - attempt the checkout multiple times
             int attemptsNeeded = 0;
             bool success = false;
 
@@ -504,7 +473,6 @@ public class IntegrationTests
                 }
             }
 
-            // Assert
             TestContext.Out.WriteLine($"Checkout (D16): {(success ? $"SUCCESS in {attemptsNeeded} attempts" : "FAILED")}");
 
             if (success)

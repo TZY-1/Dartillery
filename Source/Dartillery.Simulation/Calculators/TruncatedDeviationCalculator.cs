@@ -25,7 +25,7 @@ internal sealed class TruncatedDeviationCalculator : IContextualDeviationCalcula
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);
 
-        double magnitude = Math.Sqrt(dx * dx + dy * dy);
+        double magnitude = Math.Sqrt((dx * dx) + (dy * dy));
 
         // If deviation exceeds max, scale it down proportionally
         if (magnitude > _maxDeviationMeters)

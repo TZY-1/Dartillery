@@ -12,7 +12,6 @@ public class DiagnosticTests
     [Test]
     public void Throw_ProfessionalAtTriple20_DeviationBiasNearZero()
     {
-        // Arrange
         var target = Target.Triple(20);
         var simulator = new DartboardSimulatorBuilder()
             .WithPrecision(SimulatorPrecision.Professional)
@@ -26,7 +25,7 @@ public class DiagnosticTests
         var aimPoint = aimCalc.CalculateAimPoint(target);
 
         TestContext.Out.WriteLine($"Aim Point for T20: ({aimPoint.X:F6}, {aimPoint.Y:F6})");
-        TestContext.Out.WriteLine($"Aim Point Polar: radius={Math.Sqrt(aimPoint.X * aimPoint.X + aimPoint.Y * aimPoint.Y):F6}, angle={Math.Atan2(aimPoint.Y, aimPoint.X) * 180 / Math.PI:F2}°\n");
+        TestContext.Out.WriteLine($"Aim Point Polar: radius={Math.Sqrt((aimPoint.X * aimPoint.X) + (aimPoint.Y * aimPoint.Y)):F6}, angle={(Math.Atan2(aimPoint.Y, aimPoint.X) * 180) / Math.PI:F2}°\n");
 
         // Simulate 20 throws and show coordinates
         TestContext.Out.WriteLine("First 20 Throws:");
@@ -45,7 +44,7 @@ public class DiagnosticTests
                 ? "Miss"
                 : $"{result.SegmentType} {result.SectorNumber}";
 
-            TestContext.Out.WriteLine($"{i+1,-4} {dx,-10:F6} {dy,-10:F6} {hitX,-10:F6} {hitY,-10:F6} {segmentDesc,-15}");
+            TestContext.Out.WriteLine($"{i + 1,-4} {dx,-10:F6} {dy,-10:F6} {hitX,-10:F6} {hitY,-10:F6} {segmentDesc,-15}");
         }
 
         // Analyze deviation distribution
@@ -90,7 +89,6 @@ public class DiagnosticTests
         TestContext.Out.WriteLine($"\nX direction: {positiveX} positive, {negativeX} negative (should be ~50/50)");
         TestContext.Out.WriteLine($"Y direction: {positiveY} positive, {negativeY} negative (should be ~50/50)");
 
-        // Assert near-zero bias
         Assert.That(Math.Abs(sumDx / 1000), Is.LessThan(0.01), "Mean dx bias should be near zero");
         Assert.That(Math.Abs(sumDy / 1000), Is.LessThan(0.01), "Mean dy bias should be near zero");
     }

@@ -7,6 +7,13 @@ namespace Dartillery.Core.Models;
 public sealed record PlayerProfile
 {
     /// <summary>
+    /// Initializes a player profile with default moderate-skill values (equivalent to <see cref="Amateur()"/>).
+    /// </summary>
+    public PlayerProfile()
+    {
+    }
+
+    /// <summary>
     /// Player identifier (e.g., name or ID).
     /// </summary>
     public string Name { get; init; } = "Anonymous";
@@ -22,13 +29,13 @@ public sealed record PlayerProfile
     /// Represents consistent aiming offset due to stance, grip, or handedness.
     /// Typical range: -0.03 to +0.03 meters.
     /// </summary>
-    public double SystematicBiasX { get; init; } = 0.0;
+    public double SystematicBiasX { get; init; }
 
     /// <summary>
     /// Systematic vertical bias (positive = up, negative = down).
     /// Typical range: -0.03 to +0.03 meters.
     /// </summary>
-    public double SystematicBiasY { get; init; } = 0.0;
+    public double SystematicBiasY { get; init; }
 
     /// <summary>
     /// Rate at which tremor accumulates during a session.
@@ -49,11 +56,6 @@ public sealed record PlayerProfile
     /// Added to base skill as session progresses.
     /// </summary>
     public double MaxTremor { get; init; } = 0.05;
-
-    /// <summary>
-    /// Initializes a player profile with default moderate-skill values (equivalent to <see cref="Amateur()"/>).
-    /// </summary>
-    public PlayerProfile() { }
 
     /// <summary>
     /// Creates a professional-level profile (BaseSkill 0.02, FatigueRate 0.003, PressureResistance 0.8, MaxTremor 0.03).

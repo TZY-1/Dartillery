@@ -8,31 +8,59 @@ namespace Dartillery.Web.Services;
 /// </summary>
 public sealed class SimulationService
 {
-    private PlayerSession? _session;
-    private readonly List<ThrowResult> _throws = new();
     private readonly ITargetResolver _targetResolver;
 
-    // Configuration properties for UI binding
-    public string SelectedSkillLevel { get; set; } = "Amateur";
-    public double CustomSigma { get; set; } = 0.05;
-    public bool EnableFatigue { get; set; } = true;
-    public bool EnablePressure { get; set; } = false;
-    public double FatigueRate { get; set; } = 0.005;
-    public bool EnableManualTargeting { get; set; } = false;
+    private readonly List<ThrowResult> _throws = new();
 
-    // Current state properties
-    public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
-    public double CurrentTremor => _session?.CurrentTremor ?? 0.0;
-    public int ThrowCount => _session?.ThrowCount ?? 0;
-    public string PlayerName => _session?.Profile.Name ?? "Unknown";
-
-    // Event for UI updates
-    public event Action? OnStateChanged;
+    private PlayerSession? _session;
 
     public SimulationService(ITargetResolver targetResolver)
     {
         this._targetResolver = targetResolver;
     }
+
+#pragma warning disable CA1003 // Blazor UI notification pattern uses Action, not EventHandler
+    public event Action? OnStateChanged;
+#pragma warning restore CA1003
+
+    // Configuration properties for UI binding
+    public string SelectedSkillLevel { get; set; } = "Amateur";
+
+    public double CustomSigma { get; set; } = 0.05;
+
+    public bool EnableFatigue { get; set; } = true;
+
+    public bool EnablePressure { get; set; }
+
+    public double FatigueRate { get; set; } = 0.005;
+
+    public bool EnableManualTargeting { get; set; }
+
+    // Current state properties
+    public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
+
+    public double CurrentTremor => _session?.CurrentTremor ?? 0.0;
+
+    public int ThrowCount => _session?.ThrowCount ?? 0;
+
+    public string PlayerName => _session?.Profile.Name ?? "Unknown";
+
+    /// <summary>
+    /// Calculates average score from all throws
+    /// </summary>
+    public double AverageScore =>
+        _throws.Count > 0 ? _throws.Average(t => t.Score) : 0.0;
+
+    /// <summary>
+    /// Calculates hit rate (percentage of throws that hit the board)
+    /// </summary>
+    public double HitRate =>
+        _throws.Count > 0 ? _throws.Count(t => t.IsHit) / (double)_throws.Count : 0.0;
+
+    /// <summary>
+    /// Gets the most recent throw result, or null if no throws yet
+    /// </summary>
+    public ThrowResult? LastThrow => _throws.Count > 0 ? _throws[^1] : null;
 
     /// <summary>
     /// Rebuilds the session with current configuration settings.
@@ -119,23 +147,6 @@ public sealed class SimulationService
     }
 
     /// <summary>
-    /// Calculates average score from all throws
-    /// </summary>
-    public double AverageScore =>
-        _throws.Count > 0 ? _throws.Average(t => t.Score) : 0.0;
-
-    /// <summary>
-    /// Calculates hit rate (percentage of throws that hit the board)
-    /// </summary>
-    public double HitRate =>
-        _throws.Count > 0 ? _throws.Count(t => t.IsHit) / (double)_throws.Count : 0.0;
-
-    /// <summary>
-    /// Gets the most recent throw result, or null if no throws yet
-    /// </summary>
-    public ThrowResult? LastThrow => _throws.Count > 0 ? _throws[^1] : null;
-
-    /// <summary>
     /// Executes a dart throw at specific normalized coordinates (for manual targeting).
     /// Creates a target from the given coordinates and delegates to ThrowAt.
     /// </summary>
@@ -149,7 +160,7 @@ public sealed class SimulationService
 
         if (target == null)
             throw new InvalidOperationException("Throwing outside the board is not allowed.");
-        
+
         return ThrowAt(target, gameContext);
     }
 

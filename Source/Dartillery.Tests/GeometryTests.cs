@@ -1,7 +1,7 @@
 using Dartillery.Core.Enums;
 using Dartillery.Core.Models;
-using Dartillery.Simulation.Geometry;
 using Dartillery.Shared;
+using Dartillery.Simulation.Geometry;
 
 namespace Dartillery.Tests;
 
@@ -22,169 +22,130 @@ public class GeometryTests
         [Test]
         public void ResolveRing_InnerBullCenter_ReturnsInnerBull()
         {
-            // Arrange
             double radius = 0.0;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.InnerBull));
         }
 
         [Test]
         public void ResolveRing_InnerBullEdge_ReturnsInnerBull()
         {
-            // Arrange
             double radius = BoardDimensions.InnerBullRadius;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.InnerBull));
         }
 
         [Test]
         public void ResolveRing_OuterBullInner_ReturnsOuterBull()
         {
-            // Arrange
             double radius = BoardDimensions.InnerBullRadius + 0.001;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.OuterBull));
         }
 
         [Test]
         public void ResolveRing_OuterBullEdge_ReturnsOuterBull()
         {
-            // Arrange
             double radius = BoardDimensions.OuterBullRadius;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.OuterBull));
         }
 
         [Test]
         public void ResolveRing_TripleRingInnerEdge_ReturnsTriple()
         {
-            // Arrange
             double radius = BoardDimensions.TripleRingInner;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Triple));
         }
 
         [Test]
         public void ResolveRing_TripleRingCenter_ReturnsTriple()
         {
-            // Arrange
             double radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Triple));
         }
 
         [Test]
         public void ResolveRing_TripleRingOuterEdge_ReturnsTriple()
         {
-            // Arrange
             double radius = BoardDimensions.TripleRingOuter;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Triple));
         }
 
         [Test]
         public void ResolveRing_DoubleRingInnerEdge_ReturnsDouble()
         {
-            // Arrange
             double radius = BoardDimensions.DoubleRingInner;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Double));
         }
 
         [Test]
         public void ResolveRing_DoubleRingOuterEdge_ReturnsDouble()
         {
-            // Arrange
             double radius = BoardDimensions.DoubleRingOuter;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Double));
         }
 
         [Test]
         public void ResolveRing_BetweenOuterBullAndTriple_ReturnsSingle()
         {
-            // Arrange
             double radius = BoardDimensions.OuterBullRadius + 0.001;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Single));
         }
 
         [Test]
         public void ResolveRing_BetweenTripleAndDouble_ReturnsSingle()
         {
-            // Arrange
             double radius = BoardDimensions.TripleRingOuter + 0.001;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Single));
         }
 
         [Test]
         public void ResolveRing_JustBeforeTriple_ReturnsSingle()
         {
-            // Arrange
             double radius = BoardDimensions.TripleRingInner - 0.001;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Single));
         }
 
         [Test]
         public void ResolveRing_JustBeforeDouble_ReturnsSingle()
         {
-            // Arrange
             double radius = BoardDimensions.DoubleRingInner - 0.001;
 
-            // Act
             var result = _resolver.ResolveRing(radius);
 
-            // Assert
             Assert.That(result, Is.EqualTo(SegmentType.Single));
         }
 
@@ -193,7 +154,6 @@ public class GeometryTests
         {
             // This test verifies that there are no gaps in ring coverage
             // by testing many points from center to beyond the board
-
             var testRadii = new List<(double Radius, SegmentType Expected)>
             {
                 (0.000, SegmentType.InnerBull),
@@ -237,62 +197,48 @@ public class GeometryTests
         [Test]
         public void ResolveSector_TopCenter_ReturnsSector20()
         {
-            // Arrange - Point straight up (12 o'clock)
             var point = new Point2D(0.0, 0.1);
 
-            // Act
             var sector = _resolver.ResolveSector(point);
 
-            // Assert
             Assert.That(sector, Is.EqualTo(20));
         }
 
         [Test]
         public void ResolveSector_Right_ReturnsSector6()
         {
-            // Arrange - Point straight right (3 o'clock)
             var point = new Point2D(0.1, 0.0);
 
-            // Act
             var sector = _resolver.ResolveSector(point);
 
-            // Assert
             Assert.That(sector, Is.EqualTo(6));
         }
 
         [Test]
         public void ResolveSector_Bottom_ReturnsSector3()
         {
-            // Arrange - Point straight down (6 o'clock)
             var point = new Point2D(0.0, -0.1);
 
-            // Act
             var sector = _resolver.ResolveSector(point);
 
-            // Assert
             Assert.That(sector, Is.EqualTo(3));
         }
 
         [Test]
         public void ResolveSector_Left_ReturnsSector11()
         {
-            // Arrange - Point straight left (9 o'clock)
             var point = new Point2D(-0.1, 0.0);
 
-            // Act
             var sector = _resolver.ResolveSector(point);
 
-            // Assert
             Assert.That(sector, Is.EqualTo(11));
         }
 
         [Test]
         public void ResolveSector_AllSectors_FollowClockwiseOrder()
         {
-            // Arrange
             var expectedOrder = new[] { 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5 };
 
-            // Act & Assert - Test a point in each sector
             for (int i = 0; i < 20; i++)
             {
                 // Calculate angle for middle of sector
@@ -301,8 +247,7 @@ public class GeometryTests
                 // Create point at that angle
                 var point = new Point2D(
                     Math.Sin(angle) * 0.1,  // Use Sin/Cos to get Y-up coordinate system
-                    Math.Cos(angle) * 0.1
-                );
+                    Math.Cos(angle) * 0.1);
 
                 var sector = _resolver.ResolveSector(point);
                 Assert.That(sector, Is.EqualTo(expectedOrder[i]),
@@ -315,24 +260,21 @@ public class GeometryTests
         {
             // Test points exactly at sector boundaries
             // Each sector spans 18 degrees, boundaries should be handled correctly
-
             var halfSector = BoardDimensions.SectorAngle / 2.0;
 
             for (int i = 0; i < 20; i++)
             {
                 // Sectors are centered on i * SectorAngle, so they span
                 // from (i - 0.5) * SectorAngle to (i + 0.5) * SectorAngle
-                double angleInsideLower = i * BoardDimensions.SectorAngle - halfSector + 0.001;
+                double angleInsideLower = (i * BoardDimensions.SectorAngle) - halfSector + 0.001;
                 var pointInsideLower = new Point2D(
                     Math.Sin(angleInsideLower) * 0.1,
-                    Math.Cos(angleInsideLower) * 0.1
-                );
+                    Math.Cos(angleInsideLower) * 0.1);
 
-                double angleInsideUpper = i * BoardDimensions.SectorAngle + halfSector - 0.001;
+                double angleInsideUpper = (i * BoardDimensions.SectorAngle) + halfSector - 0.001;
                 var pointInsideUpper = new Point2D(
                     Math.Sin(angleInsideUpper) * 0.1,
-                    Math.Cos(angleInsideUpper) * 0.1
-                );
+                    Math.Cos(angleInsideUpper) * 0.1);
 
                 var sectorLower = _resolver.ResolveSector(pointInsideLower);
                 var sectorUpper = _resolver.ResolveSector(pointInsideUpper);
@@ -352,7 +294,7 @@ public class GeometryTests
                 (new Point2D(0.1, 0.1), 20),    // Q1 - top right (should be near 20 or 1)
                 (new Point2D(-0.1, 0.1), 20),   // Q2 - top left (should be near 20 or 18)
                 (new Point2D(-0.1, -0.1), 3),   // Q3 - bottom left (should be near 3 or 11)
-                (new Point2D(0.1, -0.1), 3)     // Q4 - bottom right (should be near 3 or 6)
+                (new Point2D(0.1, -0.1), 3) // Q4 - bottom right (should be near 3 or 6)
             };
 
             foreach (var (point, _) in testPoints)
@@ -625,8 +567,7 @@ public class GeometryTests
                 double angle = i * (2 * Math.PI / 20);
                 var hitPoint = new Point2D(
                     Math.Sin(angle) * radius,
-                    Math.Cos(angle) * radius
-                );
+                    Math.Cos(angle) * radius);
                 var aimedPoint = hitPoint;
 
                 var result = _resolver.Resolve(hitPoint, aimedPoint);

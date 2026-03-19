@@ -9,7 +9,6 @@ namespace Dartillery.EventListeners;
 /// </summary>
 public sealed class CsvDataLogger : IThrowEventListener, IDisposable
 {
-    private readonly string _filePath;
     private readonly StreamWriter _writer;
 
     /// <summary>
@@ -18,7 +17,6 @@ public sealed class CsvDataLogger : IThrowEventListener, IDisposable
     /// <param name="filePath">Path to CSV file (will be created/appended).</param>
     public CsvDataLogger(string filePath)
     {
-        _filePath = filePath;
         _writer = new StreamWriter(filePath, append: true);
 
         // Write header if new file
@@ -30,8 +28,10 @@ public sealed class CsvDataLogger : IThrowEventListener, IDisposable
         }
     }
 
+    /// <inheritdoc />
     public void OnThrowCompleted(ThrowEvent evt)
     {
+        ArgumentNullException.ThrowIfNull(evt);
         _writer.WriteLine($"{evt.Timestamp:O}," +
             $"{evt.SessionId}," +
             $"{evt.Context.ThrowIndexInSession}," +
@@ -50,6 +50,7 @@ public sealed class CsvDataLogger : IThrowEventListener, IDisposable
         _writer.Flush();
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _writer?.Dispose();

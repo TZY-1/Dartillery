@@ -107,6 +107,9 @@ dotnet_diagnostic.SA1615.severity = none
 # SA1623: Property summary must begin with "Gets" or "Sets"
 dotnet_diagnostic.SA1623.severity = none
 
+# SA1629: Documentation text should end with a period
+dotnet_diagnostic.SA1629.severity = none
+
 # SA1633: File must have XML file header
 dotnet_diagnostic.SA1633.severity = none
 
@@ -133,6 +136,48 @@ dotnet_diagnostic.CA2007.severity = none
 
 # RCS1102: Make class static (Roslynator)
 dotnet_diagnostic.RCS1102.severity = none
+
+# CA1716: Identifiers should not match keywords — domain terms (Throw, Shared)
+dotnet_diagnostic.CA1716.severity = none
+
+# CA1720: Identifiers should not contain type names — dart domain terms (Single, Double)
+dotnet_diagnostic.CA1720.severity = none
+
+# CA1724: Type names should not match namespaces — no System.Web usage
+dotnet_diagnostic.CA1724.severity = none
+
+# CA1024: Use properties where appropriate — GetScore() is intentionally a method
+dotnet_diagnostic.CA1024.severity = none
+
+# CA1002: Do not expose generic lists — init-only record properties, Collection<T> adds no value
+dotnet_diagnostic.CA1002.severity = none
+
+# CA5394: Do not use insecure randomness — game simulation, not security
+dotnet_diagnostic.CA5394.severity = none
+
+# S1244: Floating-point equality — intentional guard in Box-Muller transform
+dotnet_diagnostic.S1244.severity = none
+
+# CA1031: Do not catch general exception types — event publisher catches all by design
+dotnet_diagnostic.CA1031.severity = none
+
+# CA1515: Make types internal — test classes need public visibility for NUnit
+dotnet_diagnostic.CA1515.severity = none
+
+# CA2225: Operator overloads have named alternates — unnecessary for internal value types
+dotnet_diagnostic.CA2225.severity = none
+
+# SA1649: File name should match first type name — extension method files follow .NET convention
+dotnet_diagnostic.SA1649.severity = none
+
+# CA1034: Nested types should not be visible — test fixture grouping uses public nested classes
+dotnet_diagnostic.CA1034.severity = none
+
+# S2187: Test classes should have test methods — outer fixture classes group nested fixtures
+dotnet_diagnostic.S2187.severity = none
+
+# CA1508: Avoid dead conditional code — false positive with builder patterns and optional config
+dotnet_diagnostic.CA1508.severity = none
 
 [*.{csproj,props,targets,xml}]
 indent_style = space

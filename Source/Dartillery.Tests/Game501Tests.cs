@@ -8,24 +8,13 @@ namespace Dartillery.Tests;
 [Category("Analysis")]
 public class Game501Tests
 {
-    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int? seed = null)
-    {
-        var builder = new DartboardSimulatorBuilder().WithPrecision(precision);
-        if (seed.HasValue)
-            builder = builder.WithSeed(seed.Value);
-        return builder.Build();
-    }
-
     [Test]
     public void Simulate501_ProfessionalPrecision_CompletesWithPositiveDartCount()
     {
-        // Arrange
         var simulator = CreateSeededSimulator(SimulatorPrecision.Professional);
 
-        // Act
         var gameStats = Simulate501Game(simulator);
 
-        // Assert & Report
         TestContext.Out.WriteLine("=== 501 Game Simulation (Professional) ===\n");
         TestContext.Out.WriteLine($"Game finished: {(gameStats.GameWon ? "YES" : "NO")}");
         TestContext.Out.WriteLine($"Total darts thrown: {gameStats.TotalDarts}");
@@ -55,7 +44,7 @@ public class Game501Tests
 
         TestContext.Out.WriteLine($"\n--- Hit Distribution ---");
         var topHits = gameStats.ActualHits
-            .GroupBy(r => $"{r.SegmentType} {(r.SectorNumber > 0 ? r.SectorNumber.ToString() : "")}")
+            .GroupBy(r => $"{r.SegmentType} {(r.SectorNumber > 0 ? r.SectorNumber.ToString() : string.Empty)}")
             .Select(g => new { Hit = g.Key, Count = g.Count(), TotalScore = g.Sum(r => r.Score) })
             .OrderByDescending(x => x.TotalScore)
             .Take(10);
@@ -71,7 +60,6 @@ public class Game501Tests
     [Test]
     public void Simulate501_AllPrecisionLevels_ProduceValidStatistics()
     {
-        // Arrange
         var precisionLevels = new[]
         {
             (SimulatorPrecision.Professional, "Professional"),
@@ -94,6 +82,8 @@ public class Game501Tests
 
             TestContext.Out.WriteLine($"{name,-15} {stats.ThreeDartAverage,-7:F2} {stats.TotalDarts,-8} {(stats.GameWon ? "Yes" : "No"),-10} {checkoutPct,-11:F1}%");
         }
+
+        Assert.That(precisionLevels, Has.Length.EqualTo(3));
     }
 
     [Test]
@@ -112,12 +102,10 @@ public class Game501Tests
         {
             var allGames = new List<Game501Statistics>();
 
-            // Arrange
             var simulator = CreateSeededSimulator(level);
 
             TestContext.Out.WriteLine($"=== Simulating {gameCount} Games of 501 for {name} Level ===\n");
 
-            // Act
             for (int i = 0; i < gameCount; i++)
             {
                 var stats = Simulate501Game(simulator, maxDarts: 100);
@@ -127,8 +115,8 @@ public class Game501Tests
 
             // Calculate overall statistics
             var finishedGames = allGames.Where(g => g.GameWon).ToList();
-            var avgDarts = finishedGames.Any() ? finishedGames.Average(g => g.TotalDarts) : 0;
-            var avgThreeDartAvg = finishedGames.Any() ? finishedGames.Average(g => g.ThreeDartAverage) : 0;
+            var avgDarts = finishedGames.Count > 0 ? finishedGames.Average(g => g.TotalDarts) : 0;
+            var avgThreeDartAvg = finishedGames.Count > 0 ? finishedGames.Average(g => g.ThreeDartAverage) : 0;
             var finishRate = finishedGames.Count * 100.0 / gameCount;
 
             TestContext.Out.WriteLine($"\n--- Overall Statistics ---");
@@ -140,7 +128,15 @@ public class Game501Tests
         }
     }
 
-    private Game501Statistics Simulate501Game(IThrowSimulator simulator, int maxDarts = 200)
+    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int? seed = null)
+    {
+        var builder = new DartboardSimulatorBuilder().WithPrecision(precision);
+        if (seed.HasValue)
+            builder = builder.WithSeed(seed.Value);
+        return builder.Build();
+    }
+
+    private static Game501Statistics Simulate501Game(IThrowSimulator simulator, int maxDarts = 200)
     {
         var stats = new Game501Statistics();
         int remainingScore = 501;
@@ -153,6 +149,7 @@ public class Game501Tests
 
             var visitScore = remainingScore;
             var busted = false;
+
             // Throw 3 darts
             for (int i = 0; i < 3 && visitScore > 0; i++)
             {
@@ -173,7 +170,7 @@ public class Game501Tests
                 visitScore -= result.Score;
 
                 if ((visitScore == 1 || visitScore < 0) ||
-                    visitScore == 0 && !result.IsDouble)
+                    (visitScore == 0 && !result.IsDouble))
                 {
                     // Bust - no score this visit
                     busted = true;
@@ -193,12 +190,7 @@ public class Game501Tests
                 }
             }
 
-            if (busted)
-            {
-
-                visitScore = remainingScore;
-            }
-            else
+            if (!busted)
             {
                 remainingScore = visitScore;
             }
@@ -220,7 +212,7 @@ public class Game501Tests
         return stats;
     }
 
-    private Target SelectTarget(int remaining)
+    private static Target SelectTarget(int remaining)
     {
         // Simple strategy: aim for highest scoring targets
         // When in checkout range, aim for the double
@@ -253,7 +245,7 @@ public class Game501Tests
         return defaultTarget;
     }
 
-    private string FormatVisit(VisitStatistics visit)
+    private static string FormatVisit(VisitStatistics visit)
     {
         return string.Join(", ", visit.Throws.Select(t => $"{t.SegmentType}{t.SectorNumber}"));
     }
@@ -261,23 +253,36 @@ public class Game501Tests
     private class Game501Statistics
     {
         public bool GameWon { get; set; }
+
         public int TotalDarts { get; set; }
+
         public int TotalScore { get; set; }
+
         public double ThreeDartAverage { get; set; }
+
         public int HighestThreeDartScore { get; set; }
+
         public int CheckoutAttempts { get; set; }
+
         public int CheckoutSuccess { get; set; }
+
         public List<VisitStatistics> Visits { get; set; } = new();
+
         public List<Target> TargetsAimed { get; set; } = new();
+
         public List<ThrowResult> ActualHits { get; set; } = new();
     }
 
     private class VisitStatistics
     {
         public int RemainingBefore { get; set; }
+
         public int RemainingAfter { get; set; }
+
         public List<ThrowResult> Throws { get; set; } = new();
+
         public int TotalScore { get; set; }
+
         public bool Busted { get; set; }
     }
 }

@@ -1,21 +1,10 @@
-﻿namespace Dartillery.Simulation.Configuration;
+namespace Dartillery.Simulation.Configuration;
 
 /// <summary>
 /// Configuration options for the throw simulation.
 /// </summary>
 internal sealed class SimulatorOptions
 {
-    /// <summary>
-    /// Standard deviation of the throw dispersion.
-    /// Smaller values = more precise throws.
-    /// </summary>
-    public double Sigma { get; set; } = 0.03;
-
-    /// <summary>
-    /// Seed for the random generator. Null = random seed.
-    /// </summary>
-    public int? Seed { get; set; }
-
     /// <summary>
     /// Default options with moderate dispersion.
     /// </summary>
@@ -35,4 +24,15 @@ internal sealed class SimulatorOptions
     /// Options for a beginner (high dispersion).
     /// </summary>
     public static SimulatorOptions Beginner => new() { Sigma = 0.08 };
+
+    /// <summary>
+    /// Standard deviation of the throw dispersion.
+    /// Smaller values = more precise throws.
+    /// </summary>
+    public double Sigma { get; set; } = 0.03;
+
+    /// <summary>
+    /// Seed for the random generator. Null = random seed.
+    /// </summary>
+    public int? Seed { get; set; }
 }

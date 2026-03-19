@@ -21,6 +21,11 @@ public sealed class ThrowEventPublisher
     }
 
     /// <summary>
+    /// Gets the number of currently registered event listeners.
+    /// </summary>
+    public int ListenerCount => _eventListeners.Count;
+
+    /// <summary>
     /// Constructs a <see cref="ThrowEvent"/> and dispatches it to all registered listeners.
     /// </summary>
     /// <param name="result">The result of the throw.</param>
@@ -87,9 +92,4 @@ public sealed class ThrowEventPublisher
     {
         return _eventListeners.Remove(listener);
     }
-
-    /// <summary>
-    /// Gets the number of currently registered event listeners.
-    /// </summary>
-    public int ListenerCount => _eventListeners.Count;
 }

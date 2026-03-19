@@ -6,7 +6,6 @@ builder.Services.AddServerSideBlazor();
 
 // Dartillery services
 builder.Services.AddScoped<Dartillery.Web.Services.SimulationService>();
-builder.Services.AddSingleton<Dartillery.Web.Services.DartboardGeometryService>();
 builder.Services.AddDartillerySimulation();
 
 var app = builder.Build();
@@ -15,6 +14,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -28,4 +28,4 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-app.Run();
+await app.RunAsync();

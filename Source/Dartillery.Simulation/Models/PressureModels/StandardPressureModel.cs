@@ -38,7 +38,7 @@ internal sealed class StandardPressureModel : IPressureModel
 
         // Apply player's pressure resistance
         // resistance = 1.0 → no effect, resistance = 0.0 → full pressure
-        double finalModifier = 1.0 + (basePressure - 1.0) * (1.0 - profile.PressureResistance);
+        double finalModifier = 1.0 + ((basePressure - 1.0) * (1.0 - profile.PressureResistance));
 
         return finalModifier;
     }

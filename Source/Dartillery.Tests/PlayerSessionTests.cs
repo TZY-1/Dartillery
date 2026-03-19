@@ -21,11 +21,9 @@ public class PlayerSessionTests
         [Test]
         public void NewSession_StartsWithZeroThrows()
         {
-            // Arrange & Act
             var session = new EnhancedDartboardSimulatorBuilder()
                 .BuildSession();
 
-            // Assert
             Assert.That(session.ThrowCount, Is.EqualTo(0));
             Assert.That(session.ThrowHistory, Is.Empty);
         }
@@ -33,30 +31,24 @@ public class PlayerSessionTests
         [Test]
         public void Throw_IncrementsThrowCount()
         {
-            // Arrange
             var session = CreateSession();
 
-            // Act
             session.Throw(Target.Triple(20));
             session.Throw(Target.Triple(20));
             session.Throw(Target.Triple(20));
 
-            // Assert
             Assert.That(session.ThrowCount, Is.EqualTo(3));
         }
 
         [Test]
         public void Throw_AddsToHistory()
         {
-            // Arrange
             var session = CreateSession();
 
-            // Act
             var result1 = session.Throw(Target.Triple(20));
             var result2 = session.Throw(Target.Double(16));
             var result3 = session.Throw(Target.Bullseye());
 
-            // Assert
             Assert.That(session.ThrowHistory, Has.Count.EqualTo(3));
             Assert.That(session.ThrowHistory[0], Is.EqualTo(result1));
             Assert.That(session.ThrowHistory[1], Is.EqualTo(result2));
@@ -66,7 +58,6 @@ public class PlayerSessionTests
         [Test]
         public void Reset_ClearsSessionState()
         {
-            // Arrange
             var session = CreateSession(b => b.WithLinearTremor());
 
             // Throw some darts
@@ -78,10 +69,8 @@ public class PlayerSessionTests
             var throwCountBeforeReset = session.ThrowCount;
             var tremorBeforeReset = session.CurrentTremor;
 
-            // Act
             session.Reset();
 
-            // Assert
             Assert.That(throwCountBeforeReset, Is.GreaterThan(0));
             Assert.That(session.ThrowCount, Is.EqualTo(0));
             Assert.That(session.ThrowHistory, Is.Empty);
@@ -91,29 +80,24 @@ public class PlayerSessionTests
         [Test]
         public void SessionId_IsUnique()
         {
-            // Arrange & Act
             var session1 = new EnhancedDartboardSimulatorBuilder().BuildSession();
             var session2 = new EnhancedDartboardSimulatorBuilder().BuildSession();
 
-            // Assert
             Assert.That(session1.SessionId, Is.Not.EqualTo(session2.SessionId));
         }
 
         [Test]
         public void SessionId_StaysConstantDuringSession()
         {
-            // Arrange
             var session = CreateSession();
 
             var initialId = session.SessionId;
 
-            // Act - throw multiple darts
             for (int i = 0; i < 20; i++)
             {
                 session.Throw(Target.Triple(20));
             }
 
-            // Assert
             Assert.That(session.SessionId, Is.EqualTo(initialId));
         }
     }
@@ -124,10 +108,8 @@ public class PlayerSessionTests
         [Test]
         public void Throw_LinearTremorOver100Throws_TremorMonotonicallyIncreases()
         {
-            // Arrange
             var session = CreateSession(b => b.WithProfessionalPlayer().WithLinearTremor());
 
-            // Act & Assert
             var initialTremor = session.CurrentTremor;
             var tremorValues = new List<double> { initialTremor };
 
@@ -157,10 +139,8 @@ public class PlayerSessionTests
         [Test]
         public void Throw_RealisticTremorOver200Throws_EarlyIncreaseExceedsLate()
         {
-            // Arrange
             var session = CreateSession(b => b.WithProfessionalPlayer().WithRealisticTremor());
 
-            // Act
             var tremorCheckpoints = new List<(int ThrowCount, double Tremor)>();
 
             for (int i = 0; i < 200; i++)
@@ -174,7 +154,6 @@ public class PlayerSessionTests
                 }
             }
 
-            // Assert - Logarithmic growth: high increase early, then flattening
             TestContext.Out.WriteLine("Tremor progression:");
             foreach (var (count, tremor) in tremorCheckpoints)
             {
@@ -194,7 +173,6 @@ public class PlayerSessionTests
         [Test]
         public void Reset_AfterLinearTremorAccumulation_TremorResetsToZero()
         {
-            // Arrange
             var session = CreateSession(b => b.WithLinearTremor());
 
             // Build up tremor
@@ -205,10 +183,8 @@ public class PlayerSessionTests
 
             var tremorBeforeReset = session.CurrentTremor;
 
-            // Act
             session.Reset();
 
-            // Assert
             Assert.That(tremorBeforeReset, Is.GreaterThan(0));
             Assert.That(session.CurrentTremor, Is.EqualTo(0));
         }
@@ -220,7 +196,6 @@ public class PlayerSessionTests
         [Test]
         public void Throw_WithGameContext_ProcessesSuccessfully()
         {
-            // Arrange
             var session = CreateSession(b => b.WithStandardPressure());
 
             var gameContext = new GameContext
@@ -229,10 +204,8 @@ public class PlayerSessionTests
                 CurrentVisitResults = new List<ThrowResult>()
             };
 
-            // Act
             var result = session.Throw(Target.Triple(20), gameContext);
 
-            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Score, Is.GreaterThanOrEqualTo(0));
         }
@@ -240,10 +213,8 @@ public class PlayerSessionTests
         [Test]
         public void Throw_CheckoutSituation_AppliesPressure()
         {
-            // Arrange
             var session = CreateSession(b => b.WithAmateurPlayer().WithCheckoutPsychology());
 
-            // Act - normal situation vs. checkout situation
             var normalScores = new List<int>();
             for (int i = 0; i < 100; i++)
             {
@@ -264,7 +235,6 @@ public class PlayerSessionTests
                 checkoutScores.Add(session.Throw(Target.Double(20), checkoutContext).Score);
             }
 
-            // Assert - both should deliver valid results
             Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
             Assert.That(checkoutScores.All(s => s >= 0 && s <= 40), Is.True);
 
@@ -275,7 +245,6 @@ public class PlayerSessionTests
         [Test]
         public void Throw_WithPreviousThrowsInVisit_TracksVisitHistory()
         {
-            // Arrange
             var session = CreateSession();
 
             var gameContext = new GameContext
@@ -284,7 +253,6 @@ public class PlayerSessionTests
                 CurrentVisitResults = new List<ThrowResult>()
             };
 
-            // Act - throw 3 darts in a visit
             var dart1 = session.Throw(Target.Triple(20), gameContext);
             gameContext.CurrentVisitResults.Add(dart1);
 
@@ -293,7 +261,6 @@ public class PlayerSessionTests
 
             var dart3 = session.Throw(Target.Triple(20), gameContext);
 
-            // Assert
             Assert.That(dart1, Is.Not.Null);
             Assert.That(dart2, Is.Not.Null);
             Assert.That(dart3, Is.Not.Null);
@@ -306,15 +273,12 @@ public class PlayerSessionTests
         [Test]
         public void Profile_IsReadable()
         {
-            // Arrange
             var session = new EnhancedDartboardSimulatorBuilder()
                 .WithProfessionalPlayer("TestPlayer")
                 .BuildSession();
 
-            // Act
             var profile = session.Profile;
 
-            // Assert
             Assert.That(profile, Is.Not.Null);
             Assert.That(profile.Name, Is.EqualTo("TestPlayer"));
             Assert.That(profile.BaseSkill, Is.GreaterThan(0));
@@ -323,15 +287,12 @@ public class PlayerSessionTests
         [Test]
         public void ThrowHistory_IsReadOnly()
         {
-            // Arrange
             var session = CreateSession();
 
             session.Throw(Target.Triple(20));
 
-            // Act
             var history = session.ThrowHistory;
 
-            // Assert
             Assert.That(history, Is.InstanceOf<IReadOnlyList<ThrowResult>>());
         }
     }
@@ -342,10 +303,8 @@ public class PlayerSessionTests
         [Test]
         public void Throw_500ThrowsWithTremor_AllScoresInValidRange()
         {
-            // Arrange
             var session = CreateSession(b => b.WithAmateurPlayer().WithLinearTremor());
 
-            // Act
             var allScores = new List<int>();
             for (int i = 0; i < 500; i++)
             {
@@ -353,7 +312,6 @@ public class PlayerSessionTests
                 allScores.Add(result.Score);
             }
 
-            // Assert
             Assert.That(session.ThrowCount, Is.EqualTo(500));
             Assert.That(session.ThrowHistory.Count, Is.EqualTo(500));
             Assert.That(allScores.All(s => s >= 0 && s <= 60), Is.True);
@@ -365,10 +323,8 @@ public class PlayerSessionTests
         [Test]
         public void Reset_FiveConsecutiveGames_EachResetClearsState()
         {
-            // Arrange
             var session = CreateSession(b => b.WithLinearTremor());
 
-            // Act & Assert - simulate multiple games
             for (int game = 0; game < 5; game++)
             {
                 // Play a game
@@ -395,7 +351,6 @@ public class PlayerSessionTests
         [Test]
         public void Simulate501_ProfessionalWithTremorAndPressure_ThrowCountPositive()
         {
-            // Arrange
             var session = CreateSession(b => b
                 .WithProfessionalPlayer()
                 .WithRealisticTremor()
@@ -404,7 +359,6 @@ public class PlayerSessionTests
             int remainingScore = 501;
             var visitScores = new List<int>();
 
-            // Act - simulate a 501 game
             while (remainingScore > 0 && session.ThrowCount < 100)
             {
                 var gameContext = new GameContext
@@ -438,7 +392,6 @@ public class PlayerSessionTests
                 if (remainingScore < 0) remainingScore += visitScore; // Bust
             }
 
-            // Assert
             TestContext.Out.WriteLine($"Game completed in {session.ThrowCount} darts");
             TestContext.Out.WriteLine($"Number of visits: {visitScores.Count}");
             TestContext.Out.WriteLine($"Final score: {remainingScore}");
@@ -448,7 +401,7 @@ public class PlayerSessionTests
             Assert.That(visitScores.Count, Is.GreaterThan(0));
         }
 
-        private Target SelectTarget(int remaining)
+        private static Target SelectTarget(int remaining)
         {
             // Very simple strategy
             if (remaining <= 40 && remaining % 2 == 0)

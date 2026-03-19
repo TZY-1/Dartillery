@@ -59,6 +59,33 @@ public sealed class PlayerSession
     }
 
     /// <summary>
+    /// All throw results in chronological order. Cleared on <see cref="Reset"/>.
+    /// </summary>
+    public IReadOnlyList<ThrowResult> ThrowHistory => _stateManager.ThrowHistory;
+
+    /// <summary>
+    /// Total throws executed in this session. Resets to zero on <see cref="Reset"/>.
+    /// </summary>
+    public int ThrowCount => _stateManager.ThrowCount;
+
+    /// <summary>
+    /// Current accumulated tremor magnitude as calculated by the configured tremor model.
+    /// Increases over the session based on throw count and fatigue rate; resets to zero on <see cref="Reset"/>.
+    /// </summary>
+    public double CurrentTremor => _contextBuilder.CurrentTremor;
+
+    /// <summary>
+    /// The player profile defining skill characteristics for this session.
+    /// </summary>
+    public PlayerProfile Profile => _stateManager.Profile;
+
+    /// <summary>
+    /// Unique identifier for this session instance, generated at construction time.
+    /// Used to correlate throw events across multiple listeners.
+    /// </summary>
+    public Guid SessionId => _stateManager.SessionId;
+
+    /// <summary>
     /// Executes a dart throw at the specified target, applying all configured behavioral modifiers.
     /// </summary>
     /// <param name="target">The target segment to aim at (e.g., Triple 20, Double 16, Bullseye).</param>
@@ -92,31 +119,4 @@ public sealed class PlayerSession
         _stateManager.Reset();
         _contextBuilder.Reset();
     }
-
-    /// <summary>
-    /// All throw results in chronological order. Cleared on <see cref="Reset"/>.
-    /// </summary>
-    public IReadOnlyList<ThrowResult> ThrowHistory => _stateManager.ThrowHistory;
-
-    /// <summary>
-    /// Total throws executed in this session. Resets to zero on <see cref="Reset"/>.
-    /// </summary>
-    public int ThrowCount => _stateManager.ThrowCount;
-
-    /// <summary>
-    /// Current accumulated tremor magnitude as calculated by the configured tremor model.
-    /// Increases over the session based on throw count and fatigue rate; resets to zero on <see cref="Reset"/>.
-    /// </summary>
-    public double CurrentTremor => _contextBuilder.CurrentTremor;
-
-    /// <summary>
-    /// The player profile defining skill characteristics for this session.
-    /// </summary>
-    public PlayerProfile Profile => _stateManager.Profile;
-
-    /// <summary>
-    /// Unique identifier for this session instance, generated at construction time.
-    /// Used to correlate throw events across multiple listeners.
-    /// </summary>
-    public Guid SessionId => _stateManager.SessionId;
 }

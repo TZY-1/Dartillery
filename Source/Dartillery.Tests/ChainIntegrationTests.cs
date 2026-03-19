@@ -13,17 +13,6 @@ namespace Dartillery.Tests;
 [Category("Integration")]
 public class ChainIntegrationTests
 {
-    private static PlayerSession BuildFullChainSession(int seed = 42)
-    {
-        return new EnhancedDartboardSimulatorBuilder()
-            .WithProfessionalPlayer("Test")
-            .WithRealisticTremor()
-            .WithCheckoutPsychology()
-            .WithStandardMomentum()
-            .WithSeed(seed)
-            .BuildSession();
-    }
-
     /// <summary>
     /// Determinism test: two identically-configured sessions with the same fixed seed
     /// produce identical score sequences. This is the primary regression gate — any
@@ -32,14 +21,12 @@ public class ChainIntegrationTests
     [Test]
     public void BuildSession_TwoIdenticalSessionsWithFixedSeed_ProduceDeterministicScoreSequence()
     {
-        // Arrange
         const int throwCount = 20;
         var target = Target.Triple(20);
 
         var session1 = BuildFullChainSession(seed: 42);
         var session2 = BuildFullChainSession(seed: 42);
 
-        // Act
         var scores1 = new List<int>();
         var scores2 = new List<int>();
 
@@ -49,7 +36,6 @@ public class ChainIntegrationTests
             scores2.Add(session2.Throw(target).Score);
         }
 
-        // Assert
         TestContext.Out.WriteLine($"Session 1 scores: [{string.Join(", ", scores1)}]");
         TestContext.Out.WriteLine($"Session 2 scores: [{string.Join(", ", scores2)}]");
 
@@ -68,7 +54,6 @@ public class ChainIntegrationTests
     [Test]
     public void BuildSession_FullChainVsBareSimulator_ProducesDifferentScoreDistributions()
     {
-        // Arrange
         const int throwCount = 50;
         var target = Target.Triple(20);
 
@@ -77,7 +62,6 @@ public class ChainIntegrationTests
             .WithSeed(42)
             .Build();
 
-        // Act
         var fullChainScores = new List<int>();
         var bareScores = new List<int>();
 
@@ -87,7 +71,6 @@ public class ChainIntegrationTests
             bareScores.Add(bareSimulator.Throw(target).Score);
         }
 
-        // Assert
         TestContext.Out.WriteLine($"Full chain scores: [{string.Join(", ", fullChainScores)}]");
         TestContext.Out.WriteLine($"Bare simulator scores: [{string.Join(", ", bareScores)}]");
         TestContext.Out.WriteLine($"Full chain avg: {fullChainScores.Average():F2}, Bare avg: {bareScores.Average():F2}");
@@ -105,7 +88,6 @@ public class ChainIntegrationTests
     [Test]
     public void BuildSession_FullChain_AllResultsHaveValidScoresAndCoordinates()
     {
-        // Arrange
         var session = BuildFullChainSession(seed: 42);
         var targets = new[]
         {
@@ -117,14 +99,12 @@ public class ChainIntegrationTests
 
         var results = new List<ThrowResult>();
 
-        // Act — throw 30 darts across various targets
         for (int i = 0; i < 30; i++)
         {
             var target = targets[i % targets.Length];
             results.Add(session.Throw(target));
         }
 
-        // Assert
         var definedSegmentTypes = Enum.GetValues<SegmentType>().ToHashSet();
 
         foreach (var result in results)
@@ -151,5 +131,16 @@ public class ChainIntegrationTests
         }
 
         TestContext.Out.WriteLine($"All {results.Count} results are valid.");
+    }
+
+    private static PlayerSession BuildFullChainSession(int seed = 42)
+    {
+        return new EnhancedDartboardSimulatorBuilder()
+            .WithProfessionalPlayer("Test")
+            .WithRealisticTremor()
+            .WithCheckoutPsychology()
+            .WithStandardMomentum()
+            .WithSeed(seed)
+            .BuildSession();
     }
 }

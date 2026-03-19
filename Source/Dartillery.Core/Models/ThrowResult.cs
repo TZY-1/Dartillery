@@ -8,6 +8,23 @@ namespace Dartillery.Core.Models;
 /// </summary>
 public sealed record ThrowResult
 {
+    /// <summary>
+    /// Initializes a new throw result.
+    /// </summary>
+    /// <param name="score">The score achieved.</param>
+    /// <param name="segmentType">The type of segment hit.</param>
+    /// <param name="sectorNumber">The sector number (1-20), or 0 for bull/miss.</param>
+    /// <param name="hitPoint">The actual hit point on the board.</param>
+    /// <param name="aimedPoint">The point that was aimed at.</param>
+    public ThrowResult(int score, SegmentType segmentType, int sectorNumber, Point2D hitPoint, Point2D aimedPoint)
+    {
+        Score = score;
+        SegmentType = segmentType;
+        SectorNumber = sectorNumber;
+        HitPoint = hitPoint;
+        AimedPoint = aimedPoint;
+    }
+
     /// <summary>Points scored by this throw (0 for a miss).</summary>
     public int Score { get; init; }
 
@@ -27,23 +44,6 @@ public sealed record ThrowResult
     /// Optional per-throw analytics data (modifiers applied, player name, session ID, timestamp).
     /// </summary>
     public ThrowMetadata? Metadata { get; init; }
-
-    /// <summary>
-    /// Initializes a new throw result.
-    /// </summary>
-    /// <param name="score">The score achieved.</param>
-    /// <param name="segmentType">The type of segment hit.</param>
-    /// <param name="sectorNumber">The sector number (1-20), or 0 for bull/miss.</param>
-    /// <param name="hitPoint">The actual hit point on the board.</param>
-    /// <param name="aimedPoint">The point that was aimed at.</param>
-    public ThrowResult(int score, SegmentType segmentType, int sectorNumber, Point2D hitPoint, Point2D aimedPoint)
-    {
-        Score = score;
-        SegmentType = segmentType;
-        SectorNumber = sectorNumber;
-        HitPoint = hitPoint;
-        AimedPoint = aimedPoint;
-    }
 
     /// <summary>True when the dart landed on any scoring segment (not a miss).</summary>
     public bool IsHit => SegmentType != SegmentType.Miss;

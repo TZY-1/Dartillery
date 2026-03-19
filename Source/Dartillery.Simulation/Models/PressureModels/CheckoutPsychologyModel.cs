@@ -49,6 +49,6 @@ internal sealed class CheckoutPsychologyModel : IPressureModel
         }
 
         // Apply player's pressure resistance
-        return 1.0 + (pressure - 1.0) * (1.0 - profile.PressureResistance);
+        return 1.0 + ((pressure - 1.0) * (1.0 - profile.PressureResistance));
     }
 }

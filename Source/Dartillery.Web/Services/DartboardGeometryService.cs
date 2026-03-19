@@ -8,10 +8,8 @@ namespace Dartillery.Web.Services;
 /// Singleton service as it is stateless and only performs calculations.
 /// SOLID: Single Responsibility Principle - coordinate transformation only
 /// </summary>
-public sealed class DartboardGeometryService
+public static class DartboardGeometryService
 {
-    // ViewBox center coordinates (SVG coordinate system)
-    private const double ViewBoxSize = 600.0;
     private const double ViewBoxCenter = 300.0;
 
     /// <summary>
@@ -20,11 +18,8 @@ public sealed class DartboardGeometryService
     /// <param name="point">Normalized point where (0,0) = center</param>
     /// <param name="viewportRadius">Viewport radius in pixels (default: 280px)</param>
     /// <returns>Tuple with (X, Y) viewport coordinates</returns>
-    public (double X, double Y) NormalizedToViewport(Point2D point, double viewportRadius = 280.0)
+    public static (double X, double Y) NormalizedToViewport(Point2D point, double viewportRadius = 280.0)
     {
-        // Normalized: (0,0) = center, radius 1.0 = double ring outer edge
-        // SVG: (centerX, centerY) = center, Y inverted (down is positive)
-
         double x = ViewBoxCenter + (point.X * viewportRadius);
         double y = ViewBoxCenter - (point.Y * viewportRadius); // Invert Y-axis
 
@@ -36,7 +31,7 @@ public sealed class DartboardGeometryService
     /// </summary>
     /// <param name="sectorIndex">Index in SectorOrderClockwise array (0-19)</param>
     /// <returns>Angle in radians from 12 o'clock clockwise</returns>
-    public double GetSectorCenterAngle(int sectorIndex)
+    public static double GetSectorCenterAngle(int sectorIndex)
     {
         const double sectorAngle = 2.0 * Math.PI / 20.0; // 18° in radians
         return sectorIndex * sectorAngle;
@@ -47,7 +42,7 @@ public sealed class DartboardGeometryService
     /// </summary>
     /// <param name="sectorIndex">Index in SectorOrderClockwise array (0-19)</param>
     /// <returns>Tuple with (StartAngle, EndAngle) in radians</returns>
-    public (double StartAngle, double EndAngle) GetSectorBoundaryAngles(int sectorIndex)
+    public static (double StartAngle, double EndAngle) GetSectorBoundaryAngles(int sectorIndex)
     {
         const double sectorAngle = 2.0 * Math.PI / 20.0;
         const double halfSectorAngle = sectorAngle / 2.0;
@@ -64,7 +59,7 @@ public sealed class DartboardGeometryService
     /// </summary>
     /// <param name="sectorNumber">Sector number 1-20</param>
     /// <returns>True if red, false if green</returns>
-    public bool IsRedSector(int sectorNumber)
+    public static bool IsRedSector(int sectorNumber)
     {
         // Red sectors: 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
         // Pattern: odd positions in clockwise array are red
@@ -75,7 +70,7 @@ public sealed class DartboardGeometryService
     /// <summary>
     /// Returns the sector order clockwise from 12 o'clock
     /// </summary>
-    public int[] GetSectorOrderClockwise() => BoardDimensions.SectorOrderClockwise;
+    public static int[] GetSectorOrderClockwise() => BoardDimensions.SectorOrderClockwise;
 
     /// <summary>
     /// Converts polar coordinates (radius, angle) to normalized Cartesian coordinates
@@ -83,7 +78,7 @@ public sealed class DartboardGeometryService
     /// <param name="radius">Radius (0-1, normalized)</param>
     /// <param name="angleFromTop">Angle from 12 o'clock clockwise in radians</param>
     /// <returns>Point2D with normalized X,Y coordinates</returns>
-    public Point2D PolarToNormalized(double radius, double angleFromTop)
+    public static Point2D PolarToNormalized(double radius, double angleFromTop)
     {
         return Point2D.FromPolar(radius, angleFromTop);
     }
@@ -97,13 +92,13 @@ public sealed class DartboardGeometryService
     /// <param name="startAngle">Start angle in radians (from 12 o'clock clockwise)</param>
     /// <param name="endAngle">End angle in radians (from 12 o'clock clockwise)</param>
     /// <returns>SVG path string for the arc</returns>
-    public string CreateArcPath(double centerX, double centerY, double radius, double startAngle, double endAngle)
+    public static string CreateArcPath(double centerX, double centerY, double radius, double startAngle, double endAngle)
     {
         // Convert from "angle from top clockwise" to standard coordinate system
-        double startX = centerX + radius * Math.Sin(startAngle);
-        double startY = centerY - radius * Math.Cos(startAngle);
-        double endX = centerX + radius * Math.Sin(endAngle);
-        double endY = centerY - radius * Math.Cos(endAngle);
+        double startX = centerX + (radius * Math.Sin(startAngle));
+        double startY = centerY - (radius * Math.Cos(startAngle));
+        double endX = centerX + (radius * Math.Sin(endAngle));
+        double endY = centerY - (radius * Math.Cos(endAngle));
 
         // Large arc flag: 1 if arc > 180°, otherwise 0
         int largeArcFlag = (endAngle - startAngle) > Math.PI ? 1 : 0;
@@ -123,19 +118,19 @@ public sealed class DartboardGeometryService
     /// <param name="startAngle">Start angle in radians</param>
     /// <param name="endAngle">End angle in radians</param>
     /// <returns>Closed SVG path for the segment</returns>
-    public string CreateSectorSegmentPath(double centerX, double centerY, double innerRadius, double outerRadius, double startAngle, double endAngle)
+    public static string CreateSectorSegmentPath(double centerX, double centerY, double innerRadius, double outerRadius, double startAngle, double endAngle)
     {
         // Outer arc points
-        double outerStartX = centerX + outerRadius * Math.Sin(startAngle);
-        double outerStartY = centerY - outerRadius * Math.Cos(startAngle);
-        double outerEndX = centerX + outerRadius * Math.Sin(endAngle);
-        double outerEndY = centerY - outerRadius * Math.Cos(endAngle);
+        double outerStartX = centerX + (outerRadius * Math.Sin(startAngle));
+        double outerStartY = centerY - (outerRadius * Math.Cos(startAngle));
+        double outerEndX = centerX + (outerRadius * Math.Sin(endAngle));
+        double outerEndY = centerY - (outerRadius * Math.Cos(endAngle));
 
         // Inner arc points
-        double innerStartX = centerX + innerRadius * Math.Sin(startAngle);
-        double innerStartY = centerY - innerRadius * Math.Cos(startAngle);
-        double innerEndX = centerX + innerRadius * Math.Sin(endAngle);
-        double innerEndY = centerY - innerRadius * Math.Cos(endAngle);
+        double innerStartX = centerX + (innerRadius * Math.Sin(startAngle));
+        double innerStartY = centerY - (innerRadius * Math.Cos(startAngle));
+        double innerEndX = centerX + (innerRadius * Math.Sin(endAngle));
+        double innerEndY = centerY - (innerRadius * Math.Cos(endAngle));
 
         int largeArcFlag = (endAngle - startAngle) > Math.PI ? 1 : 0;
 

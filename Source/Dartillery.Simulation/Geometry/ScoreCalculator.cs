@@ -18,7 +18,8 @@ internal sealed class ScoreCalculator : IScoreCalculator
             SegmentType.Double => sectorNumber * BoardScoring.DoubleMultiplier,
             SegmentType.Single => sectorNumber * BoardScoring.SingleMultiplier,
             SegmentType.Miss => 0,
-            _ => throw new ArgumentOutOfRangeException(nameof(segmentType),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(segmentType),
                 $"Unknown segment type: {segmentType}")
         };
     }

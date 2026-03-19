@@ -14,17 +14,17 @@ public sealed record GameContext
     /// Number of checkout attempts for current score.
     /// Multiple failures increase pressure.
     /// </summary>
-    public int CheckoutAttempts { get; init; } = 0;
+    public int CheckoutAttempts { get; init; }
 
     /// <summary>
     /// Is this throw attempting to finish the game?
     /// </summary>
-    public bool IsCheckoutAttempt { get; init; } = false;
+    public bool IsCheckoutAttempt { get; init; }
 
     /// <summary>
     /// Is this a match-point situation (high pressure)?
     /// </summary>
-    public bool IsMatchPoint { get; init; } = false;
+    public bool IsMatchPoint { get; init; }
 
     /// <summary>
     /// Throws remaining in the current visit (0-3 for standard darts; default 3 = start of visit).

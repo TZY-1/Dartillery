@@ -9,18 +9,9 @@ namespace Dartillery.Tests;
 [Category("Analysis")]
 public class CheckoutTests
 {
-    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
-    {
-        return new DartboardSimulatorBuilder()
-            .WithPrecision(precision)
-            .WithSeed(seed)
-            .Build();
-    }
-
     [Test]
     public void SimulateCheckout_CommonRoutes_AllAttemptsRecorded()
     {
-        // Arrange
         var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 42);
 
         var checkouts = new List<CheckoutRoute>
@@ -52,15 +43,16 @@ public class CheckoutTests
             var routeStr = string.Join(" -> ", checkout.Targets.Where(t => t != null));
             TestContext.Out.WriteLine($"{checkout.Score,-6} {routeStr,-30} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
+
+        Assert.Pass();
     }
 
     [Test]
     public void SimulateCheckout_FourStrategiesFor120_AllStatsComputed()
     {
-        // Arrange
         var simulator = CreateSeededSimulator(SimulatorPrecision.Professional, seed: 999);
 
-        var strategies = new List<(string Name, Target[] Route)>
+        var strategies = new List<(string Name, Target?[] Route)>
         {
             ("T20-S20-D20", new[] { Target.Triple(20), Target.Single(20), Target.Double(20) }),
             ("T18-T18-D18", new[] { Target.Triple(18), Target.Triple(18), Target.Double(18) }),
@@ -77,12 +69,13 @@ public class CheckoutTests
             var stats = SimulateCheckout(simulator, route, 200);
             TestContext.Out.WriteLine($"{name,-20} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
+
+        Assert.Pass();
     }
 
     [Test]
     public void SimulateCheckout_AllPrecisionLevelsOn141_AllStatsComputed()
     {
-        // Arrange
         var checkoutRoute = new[] { Target.Triple(20), Target.Triple(19), Target.Double(12) }; // 141
 
         var precisionLevels = new[]
@@ -103,9 +96,50 @@ public class CheckoutTests
             var stats = SimulateCheckout(simulator, checkoutRoute, 200);
             TestContext.Out.WriteLine($"{name,-15} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
+
+        Assert.Pass();
     }
 
-    private CheckoutStatistics SimulateCheckout(IThrowSimulator simulator, Target[] route, int attempts)
+    private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
+    {
+        return new DartboardSimulatorBuilder()
+            .WithPrecision(precision)
+            .WithSeed(seed)
+            .Build();
+    }
+
+    private static int TryCheckout(IThrowSimulator simulator, Target?[] route)
+    {
+        int dartsUsed = 0;
+
+        foreach (var target in route)
+        {
+            if (target == null) continue;
+
+            dartsUsed++;
+            var result = simulator.Throw(target);
+
+            if (!IsTargetHit(target, result))
+            {
+                return -1; // Checkout failed
+            }
+        }
+
+        return dartsUsed;
+    }
+
+    private static bool IsTargetHit(Target target, ThrowResult result)
+    {
+        if (target.SegmentType is SegmentType.InnerBull or SegmentType.OuterBull)
+        {
+            return result.SegmentType == target.SegmentType;
+        }
+
+        return result.SegmentType == target.SegmentType &&
+               result.SectorNumber == target.SectorNumber;
+    }
+
+    private static CheckoutStatistics SimulateCheckout(IThrowSimulator simulator, Target?[] route, int attempts)
     {
         int successes = 0;
         int totalDarts = 0;
@@ -129,54 +163,27 @@ public class CheckoutTests
         };
     }
 
-    private int TryCheckout(IThrowSimulator simulator, Target[] route)
-    {
-        int dartsUsed = 0;
-
-        foreach (var target in route)
-        {
-            if (target == null) continue;
-
-            dartsUsed++;
-            var result = simulator.Throw(target);
-
-            if (!IsTargetHit(target, result))
-            {
-                return -1; // Checkout failed
-            }
-        }
-
-        return dartsUsed;
-    }
-
-    private bool IsTargetHit(Target target, ThrowResult result)
-    {
-        if (target.SegmentType is SegmentType.InnerBull or SegmentType.OuterBull)
-        {
-            return result.SegmentType == target.SegmentType;
-        }
-
-        return result.SegmentType == target.SegmentType &&
-               result.SectorNumber == target.SectorNumber;
-    }
-
     private class CheckoutRoute
     {
-        public int Score { get; }
-        public Target[] Targets { get; }
-
-        public CheckoutRoute(int score, params Target[] targets)
+        public CheckoutRoute(int score, params Target?[] targets)
         {
             Score = score;
             Targets = targets;
         }
+
+        public int Score { get; }
+
+        public Target?[] Targets { get; }
     }
 
     private class CheckoutStatistics
     {
         public int Attempts { get; set; }
+
         public int Successes { get; set; }
+
         public double SuccessRate { get; set; }
+
         public double AverageDarts { get; set; }
     }
 }

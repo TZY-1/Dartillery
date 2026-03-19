@@ -8,16 +8,55 @@ namespace Dartillery.Tests;
 [TestFixture]
 public class ThrowEventPublisherTests
 {
-    private sealed class LambdaThrowEventListener : IThrowEventListener
+    [Test]
+    public void Publish_ThrowingListener_DoesNotPreventSubsequentListenersFromExecuting()
     {
-        private readonly Action<ThrowEvent> _action;
+        bool secondListenerCalled = false;
 
-        public LambdaThrowEventListener(Action<ThrowEvent> action)
-        {
-            _action = action;
-        }
+        var firstListener = new LambdaThrowEventListener(_ => throw new InvalidOperationException("First listener exploded"));
+        var secondListener = new LambdaThrowEventListener(_ => secondListenerCalled = true);
 
-        public void OnThrowCompleted(ThrowEvent throwEvent) => _action(throwEvent);
+        var publisher = new ThrowEventPublisher(new[] { firstListener, secondListener });
+
+        Assert.Throws<AggregateException>(() =>
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
+
+        Assert.That(secondListenerCalled, Is.True, "Second listener should have been called even though first listener threw");
+    }
+
+    [Test]
+    public void Publish_TwoThrowingListeners_AggregateExceptionContainsBothErrors()
+    {
+        var error1 = new InvalidOperationException("Error from listener 1");
+        var error2 = new ArgumentException("Error from listener 2");
+
+        var firstListener = new LambdaThrowEventListener(_ => throw error1);
+        var secondListener = new LambdaThrowEventListener(_ => throw error2);
+
+        var publisher = new ThrowEventPublisher(new[] { firstListener, secondListener });
+
+        var aggregate = Assert.Throws<AggregateException>(() =>
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
+
+        Assert.That(aggregate, Is.Not.Null);
+        Assert.That(aggregate!.InnerExceptions, Has.Count.EqualTo(2));
+        Assert.That(aggregate.InnerExceptions, Does.Contain(error1));
+        Assert.That(aggregate.InnerExceptions, Does.Contain(error2));
+    }
+
+    [Test]
+    public void Publish_NoThrowingListeners_NoExceptionThrown()
+    {
+        int callCount = 0;
+        var listener1 = new LambdaThrowEventListener(_ => callCount++);
+        var listener2 = new LambdaThrowEventListener(_ => callCount++);
+
+        var publisher = new ThrowEventPublisher(new[] { listener1, listener2 });
+
+        Assert.DoesNotThrow(() =>
+            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
+
+        Assert.That(callCount, Is.EqualTo(2), "Both listeners should have been called");
     }
 
     private static ThrowResult SomeResult() =>
@@ -28,62 +67,15 @@ public class ThrowEventPublisherTests
 
     private static PlayerProfile SomeProfile() => new();
 
-    [Test]
-    public void Publish_ThrowingListener_DoesNotPreventSubsequentListenersFromExecuting()
+    private sealed class LambdaThrowEventListener : IThrowEventListener
     {
-        // Arrange
-        bool secondListenerCalled = false;
+        private readonly Action<ThrowEvent> _action;
 
-        var firstListener = new LambdaThrowEventListener(_ => throw new InvalidOperationException("First listener exploded"));
-        var secondListener = new LambdaThrowEventListener(_ => secondListenerCalled = true);
+        public LambdaThrowEventListener(Action<ThrowEvent> action)
+        {
+            _action = action;
+        }
 
-        var publisher = new ThrowEventPublisher(new[] { firstListener, secondListener });
-
-        // Act
-        Assert.Throws<AggregateException>(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
-
-        // Assert
-        Assert.That(secondListenerCalled, Is.True, "Second listener should have been called even though first listener threw");
-    }
-
-    [Test]
-    public void Publish_TwoThrowingListeners_AggregateExceptionContainsBothErrors()
-    {
-        // Arrange
-        var error1 = new InvalidOperationException("Error from listener 1");
-        var error2 = new ArgumentException("Error from listener 2");
-
-        var firstListener = new LambdaThrowEventListener(_ => throw error1);
-        var secondListener = new LambdaThrowEventListener(_ => throw error2);
-
-        var publisher = new ThrowEventPublisher(new[] { firstListener, secondListener });
-
-        // Act
-        var aggregate = Assert.Throws<AggregateException>(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
-
-        // Assert
-        Assert.That(aggregate, Is.Not.Null);
-        Assert.That(aggregate!.InnerExceptions, Has.Count.EqualTo(2));
-        Assert.That(aggregate.InnerExceptions, Does.Contain(error1));
-        Assert.That(aggregate.InnerExceptions, Does.Contain(error2));
-    }
-
-    [Test]
-    public void Publish_NoThrowingListeners_NoExceptionThrown()
-    {
-        // Arrange
-        int callCount = 0;
-        var listener1 = new LambdaThrowEventListener(_ => callCount++);
-        var listener2 = new LambdaThrowEventListener(_ => callCount++);
-
-        var publisher = new ThrowEventPublisher(new[] { listener1, listener2 });
-
-        // Act & Assert
-        Assert.DoesNotThrow(() =>
-            publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
-
-        Assert.That(callCount, Is.EqualTo(2), "Both listeners should have been called");
+        public void OnThrowCompleted(ThrowEvent evt) => _action(evt);
     }
 }

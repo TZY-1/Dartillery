@@ -9,30 +9,48 @@ namespace Dartillery.Web.Components;
 
 public partial class DartboardVisualizer
 {
-    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
-
-    [Parameter] public List<ThrowResult>? Throws { get; set; }
-    [Parameter] public bool ShowDeviationLines { get; set; } = true;
-    [Parameter] public bool EnableManualTargeting { get; set; }
-    [Parameter] public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
-
-    private ElementReference svgElementRef;
     private const double InnerBullRadius = BoardDimensions.InnerBullRadius;
+
     private const double OuterBullRadius = BoardDimensions.OuterBullRadius;
+
     private const double TripleRingInner = BoardDimensions.TripleRingInner;
+
     private const double TripleRingOuter = BoardDimensions.TripleRingOuter;
+
     private const double DoubleRingInner = BoardDimensions.DoubleRingInner;
+
     private const double DoubleRingOuter = BoardDimensions.DoubleRingOuter;
+
     private const int SectorCount = BoardDimensions.SectorCount;
+
     private const double SectorAngle = BoardDimensions.SectorAngle;
+
+    private const double StartAngle = (-Math.PI / 2) - (SectorAngle / 2);
 
     private static readonly int[] SectorOrder = BoardDimensions.SectorOrderClockwise;
 
-    private const double StartAngle = -Math.PI / 2 - SectorAngle / 2;
+    private ElementReference svgElementRef;
 
-    private string GetSectorPath(int index, double innerRadius, double outerRadius)
+#pragma warning disable CA2227 // Blazor [Parameter] properties require a setter
+    [Parameter]
+    public List<ThrowResult>? Throws { get; set; }
+#pragma warning restore CA2227
+
+    [Parameter]
+    public bool ShowDeviationLines { get; set; } = true;
+
+    [Parameter]
+    public bool EnableManualTargeting { get; set; }
+
+    [Parameter]
+    public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = null!;
+
+    private static string GetSectorPath(int index, double innerRadius, double outerRadius)
     {
-        double startRad_clockwiseFromUp = StartAngle + index * SectorAngle;
+        double startRad_clockwiseFromUp = StartAngle + (index * SectorAngle);
         double angle2_clockwiseFromUp = startRad_clockwiseFromUp + SectorAngle;
 
         var x1 = Math.Cos(startRad_clockwiseFromUp) * innerRadius;
@@ -57,15 +75,12 @@ public partial class DartboardVisualizer
         return sb.ToString();
     }
 
-    private (double X, double Y) GetSectorTextPosition(int index)
+    private static (double X, double Y) GetSectorTextPosition(int index)
     {
-        var angle = StartAngle + index * SectorAngle + SectorAngle / 2;
+        var angle = StartAngle + (index * SectorAngle) + (SectorAngle / 2);
         var radius = DoubleRingOuter + 0.12;
 
-        return (
-            Math.Cos(angle) * radius,
-            Math.Sin(angle) * radius
-        );
+        return (Math.Cos(angle) * radius, Math.Sin(angle) * radius);
     }
 
     private async Task HandleSvgClick(MouseEventArgs e)
@@ -82,8 +97,7 @@ public partial class DartboardVisualizer
                 "dartboardInterop.getSvgCoordinates",
                 svgElementRef,
                 e.ClientX,
-                e.ClientY
-            );
+                e.ClientY);
 
             // Invoke callback with normalized coordinates
             await OnManualTargetSelected.InvokeAsync((coords.X, coords.Y));
@@ -98,9 +112,14 @@ public partial class DartboardVisualizer
         }
     }
 
-    private class SvgCoordinates
+#pragma warning disable CA1812 // Instantiated by JSInterop deserialization
+#pragma warning disable S1144 // Properties set by JSInterop deserialization via reflection
+    private sealed class SvgCoordinates
     {
         public double X { get; set; }
+
         public double Y { get; set; }
     }
+#pragma warning restore S1144
+#pragma warning restore CA1812
 }

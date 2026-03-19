@@ -43,17 +43,6 @@ public sealed class DartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Configures the simulator with a custom deviation calculator (advanced).
-    /// </summary>
-    internal DartboardSimulatorBuilder UseDeviationCalculator(IDeviationCalculator calculator)
-    {
-        ArgumentNullException.ThrowIfNull(calculator);
-        _deviationCalculator = calculator;
-        _distributionType = DeviationDistribution.Custom;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the standard deviation (sigma) for throw deviation. Lower values produce more precise throws.
     /// Typical range: 0.02 (professional) to 0.08 (beginner).
     /// </summary>
@@ -100,36 +89,6 @@ public sealed class DartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Sets a custom random provider (advanced).
-    /// </summary>
-    internal DartboardSimulatorBuilder UseRandomProvider(IRandomProvider randomProvider)
-    {
-        ArgumentNullException.ThrowIfNull(randomProvider);
-        _randomProvider = randomProvider;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets a custom segment resolver (advanced).
-    /// </summary>
-    internal DartboardSimulatorBuilder UseSegmentResolver(ISegmentResolver segmentResolver)
-    {
-        ArgumentNullException.ThrowIfNull(segmentResolver);
-        _segmentResolver = segmentResolver;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets a custom aim point calculator (advanced).
-    /// </summary>
-    internal DartboardSimulatorBuilder UseAimPointCalculator(IAimPointCalculator aimPointCalculator)
-    {
-        ArgumentNullException.ThrowIfNull(aimPointCalculator);
-        _aimPointCalculator = aimPointCalculator;
-        return this;
-    }
-
-    /// <summary>
     /// Builds and returns a configured <see cref="IThrowSimulator"/> using the current builder state.
     /// </summary>
     /// <returns>A ready-to-use <see cref="IThrowSimulator"/> instance.</returns>
@@ -157,5 +116,46 @@ public sealed class DartboardSimulatorBuilder
             _segmentResolver,
             _aimPointCalculator,
             _standardDeviation);
+    }
+
+    /// <summary>
+    /// Configures the simulator with a custom deviation calculator (advanced).
+    /// </summary>
+    internal DartboardSimulatorBuilder UseDeviationCalculator(IDeviationCalculator calculator)
+    {
+        ArgumentNullException.ThrowIfNull(calculator);
+        _deviationCalculator = calculator;
+        _distributionType = DeviationDistribution.Custom;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a custom random provider (advanced).
+    /// </summary>
+    internal DartboardSimulatorBuilder UseRandomProvider(IRandomProvider randomProvider)
+    {
+        ArgumentNullException.ThrowIfNull(randomProvider);
+        _randomProvider = randomProvider;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a custom segment resolver (advanced).
+    /// </summary>
+    internal DartboardSimulatorBuilder UseSegmentResolver(ISegmentResolver segmentResolver)
+    {
+        ArgumentNullException.ThrowIfNull(segmentResolver);
+        _segmentResolver = segmentResolver;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a custom aim point calculator (advanced).
+    /// </summary>
+    internal DartboardSimulatorBuilder UseAimPointCalculator(IAimPointCalculator aimPointCalculator)
+    {
+        ArgumentNullException.ThrowIfNull(aimPointCalculator);
+        _aimPointCalculator = aimPointCalculator;
+        return this;
     }
 }

@@ -111,7 +111,7 @@
 @code {
     [Parameter] public SimulationService SimulationService { get; set; } = null!;
 
-    private string GetScoreClass(int score)
+    private static string GetScoreClass(int score)
     {
         return score switch
         {
@@ -122,7 +122,7 @@
         };
     }
 
-    private string GetSegmentTypeName(SegmentType segmentType)
+    private static string GetSegmentTypeName(SegmentType segmentType)
     {
         return segmentType switch
         {
@@ -136,7 +136,7 @@
         };
     }
 
-    private string GetSegmentTypeAbbreviation(SegmentType segmentType)
+    private static string GetSegmentTypeAbbreviation(SegmentType segmentType)
     {
         return segmentType switch
         {

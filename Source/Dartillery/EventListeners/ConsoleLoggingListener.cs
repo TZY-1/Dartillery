@@ -9,8 +9,10 @@ namespace Dartillery.EventListeners;
 /// </summary>
 public sealed class ConsoleLoggingListener : IThrowEventListener
 {
+    /// <inheritdoc />
     public void OnThrowCompleted(ThrowEvent evt)
     {
+        ArgumentNullException.ThrowIfNull(evt);
         Console.WriteLine($"[{evt.Timestamp:HH:mm:ss}] {evt.Profile.Name}: " +
             $"{evt.Result.SegmentType} {evt.Result.SectorNumber} " +
             $"(Score: {evt.Result.Score}, Tremor: {evt.Context.SessionTremor:F4})");

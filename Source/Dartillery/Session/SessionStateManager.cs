@@ -12,7 +12,7 @@ public sealed class SessionStateManager
     private readonly TimeProvider _timeProvider;
     private readonly Guid _sessionId;
 
-    private int _throwCount = 0;
+    private int _throwCount;
     private DateTime _sessionStart;
     private DateTime _lastThrowTime;
 
