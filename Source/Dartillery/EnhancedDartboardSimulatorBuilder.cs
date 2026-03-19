@@ -68,6 +68,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
     private IMomentumModel? _momentumModel;
     private IGroupingModel? _groupingModel;
     private ITargetDifficultyModel? _targetDifficultyModel;
+    private SpreadMode _spreadMode = SpreadMode.Gaussian;
     private bool _useTruncation;
     private double _maxDeviation = 0.25;
     private int? _seed;
@@ -253,6 +254,15 @@ public sealed class EnhancedDartboardSimulatorBuilder
     }
 
     /// <summary>
+    /// Sets the spread calculation mode (Gaussian or Uniform). Defaults to Gaussian.
+    /// </summary>
+    public EnhancedDartboardSimulatorBuilder WithSpreadMode(SpreadMode mode)
+    {
+        _spreadMode = mode;
+        return this;
+    }
+
+    /// <summary>
     /// Enables deviation truncation to prevent statistical outliers from landing impossibly far from the target.
     /// </summary>
     /// <param name="maxDeviation">Maximum allowed deviation in normalized board units (1.0 = outer double ring radius). Defaults to 0.25.</param>
@@ -304,7 +314,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
             MomentumModel = _momentumModel ?? new NoMomentumModel(),
             GroupingModel = _groupingModel ?? new NoGroupingModel(),
             TargetDifficultyModel = _targetDifficultyModel ?? new NoTargetDifficultyModel(),
-            BaseDeviationCalculator = null,
+            SpreadMode = _spreadMode,
             UseTruncation = _useTruncation,
             MaxDeviation = _maxDeviation,
             Seed = _seed,
@@ -315,8 +325,11 @@ public sealed class EnhancedDartboardSimulatorBuilder
             ? new DefaultRandomProvider(config.Seed.Value)
             : new DefaultRandomProvider();
 
-        var baseCalc = config.BaseDeviationCalculator
-            ?? new GaussianDeviationCalculator(rng);
+        IDeviationCalculator baseCalc = config.SpreadMode switch
+        {
+            SpreadMode.Uniform => new UniformDeviationCalculator(rng),
+            _ => new GaussianDeviationCalculator(rng)
+        };
 
         var chain = new DeviationCalculatorChainBuilder(baseCalc)
             .WithTruncation(config.UseTruncation, config.MaxDeviation)

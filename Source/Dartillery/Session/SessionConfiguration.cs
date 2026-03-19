@@ -32,11 +32,8 @@ internal sealed record SessionConfiguration
     /// <summary>The target difficulty model used for target-specific difficulty adjustments.</summary>
     public ITargetDifficultyModel TargetDifficultyModel { get; init; } = new NoTargetDifficultyModel();
 
-    /// <summary>
-    /// Optional base deviation calculator. When <c>null</c>, a <c>GaussianDeviationCalculator</c>
-    /// seeded by the session's random provider is created at build time.
-    /// </summary>
-    public IDeviationCalculator? BaseDeviationCalculator { get; init; }
+    /// <summary>The spread calculation mode (Gaussian or Uniform).</summary>
+    public SpreadMode SpreadMode { get; init; } = SpreadMode.Gaussian;
 
     /// <summary>Whether deviation truncation is enabled.</summary>
     public bool UseTruncation { get; init; }
