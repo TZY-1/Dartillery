@@ -111,6 +111,25 @@ public sealed class PlayerSession
     }
 
     /// <summary>
+    /// Executes a dart throw aimed at exact coordinates instead of a target segment center.
+    /// </summary>
+    public ThrowResult ThrowAtPoint(Point2D aimPoint, GameContext? gameContext = null)
+    {
+        var sessionState = _stateManager.GetCurrentState();
+        var context = _contextBuilder.BuildContext(sessionState, _stateManager.ThrowHistory, gameContext);
+        var result = _simulator.ThrowAtPoint(aimPoint, context);
+        _stateManager.RecordThrow(result);
+        _eventPublisher.Publish(
+            result,
+            context,
+            _stateManager.Profile,
+            _stateManager.SessionId,
+            _timeProvider.GetUtcNow().UtcDateTime);
+
+        return result;
+    }
+
+    /// <summary>
     /// Resets the session to initial state: clears throw history, resets throw count and tremor accumulation.
     /// The player profile and behavioral models are preserved.
     /// </summary>

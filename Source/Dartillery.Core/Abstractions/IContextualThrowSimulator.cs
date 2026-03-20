@@ -15,4 +15,9 @@ public interface IContextualThrowSimulator
     /// <param name="context">Throw context with session state and modifiers.</param>
     /// <returns>The result of the throw.</returns>
     ThrowResult Throw(Target target, ThrowContext context);
+
+    /// <summary>
+    /// Executes a throw aimed at exact coordinates instead of a target segment center.
+    /// </summary>
+    ThrowResult ThrowAtPoint(Point2D aimPoint, ThrowContext context);
 }

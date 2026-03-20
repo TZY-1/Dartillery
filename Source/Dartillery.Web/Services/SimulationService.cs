@@ -205,12 +205,16 @@ public sealed class SimulationService
     /// <returns>The throw result</returns>
     public ThrowResult ThrowAtCoordinates(double x, double y, GameContext? gameContext = null)
     {
-        var target = _targetResolver.Resolve(new Point2D(x, y));
+        if (_session == null)
+        {
+            RebuildSession();
+        }
 
-        if (target == null)
-            throw new InvalidOperationException("Throwing outside the board is not allowed.");
+        var result = _session!.ThrowAtPoint(new Point2D(x, y), gameContext);
+        _throws.Add(result);
 
-        return ThrowAt(target, gameContext);
+        NotifyStateChanged();
+        return result;
     }
 
     /// <summary>
