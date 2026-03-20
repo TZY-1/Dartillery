@@ -55,6 +55,45 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         Point2D hitPoint = new(adjustedAimPoint.X + dx, adjustedAimPoint.Y + dy);
 
         // use original aim point for deviation reference (not grouping-adjusted)
-        return _segmentResolver.Resolve(hitPoint, baseAimPoint);
+        var result = _segmentResolver.Resolve(hitPoint, baseAimPoint);
+
+        return result with
+        {
+            Metadata = new ThrowMetadata
+            {
+                TremorMagnitude = context.SessionTremor,
+                PressureModifier = context.PressureModifier,
+                MomentumModifier = context.MomentumModifier,
+                GroupingMultiplier = groupingMultiplier,
+                DifficultyMultiplier = difficultyMultiplier,
+                SystematicBiasApplied = _profile.SystematicBiasX,
+                PlayerName = _profile.Name,
+                Timestamp = DateTime.UtcNow
+            }
+        };
+    }
+
+    public ThrowResult ThrowAtPoint(Point2D aimPoint, ThrowContext context)
+    {
+        var (dx, dy) = _deviationCalculator.CalculateDeviation(_profile, context);
+
+        Point2D hitPoint = new(aimPoint.X + dx, aimPoint.Y + dy);
+
+        var result = _segmentResolver.Resolve(hitPoint, aimPoint);
+
+        return result with
+        {
+            Metadata = new ThrowMetadata
+            {
+                TremorMagnitude = context.SessionTremor,
+                PressureModifier = context.PressureModifier,
+                MomentumModifier = context.MomentumModifier,
+                GroupingMultiplier = 1.0,
+                DifficultyMultiplier = 1.0,
+                SystematicBiasApplied = _profile.SystematicBiasX,
+                PlayerName = _profile.Name,
+                Timestamp = DateTime.UtcNow
+            }
+        };
     }
 }
