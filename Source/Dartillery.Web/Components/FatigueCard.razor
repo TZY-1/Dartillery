@@ -1,0 +1,104 @@
+@using Dartillery.Web.Services
+
+<div class="factor-card @(!Svc.EnableFatigue ? "card-inactive" : "")">
+    <div class="card-header">
+        <i class="bi bi-lightning card-icon"></i>
+        <span class="card-title">Fatigue</span>
+        <label class="toggle-label">
+            <input type="checkbox" class="toggle-input"
+                   checked="@Svc.EnableFatigue"
+                   @onchange="e => OnToggle(v => Svc.EnableFatigue = v, e)" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+    </div>
+    <div class="card-body">
+        <!-- Stamina slider -->
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Stamina</span>
+                <span class="slider-value">@GetStaminaPercent().ToString("F0")%</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.0" max="0.02" step="0.001"
+                   value="@Svc.FatigueRate.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.FatigueRate = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">How quickly the player tires. Low = accuracy degrades faster each throw.</small>
+        </div>
+
+        <!-- Stability slider -->
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Stability</span>
+                <span class="slider-value">@GetStabilityPercent().ToString("F0")%</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.0" max="0.1" step="0.001"
+                   value="@Svc.MaxTremor.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.MaxTremor = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">Max hand tremor cap. High = even when exhausted, accuracy has a floor.</small>
+        </div>
+
+        <div class="card-divider"></div>
+
+        @if (Svc.EnableFatigue && Svc.ThrowCount > 0)
+        {
+            <div class="diag-bar-row">
+                <span class="diag-label">Tremor</span>
+                <div class="diag-bar-track">
+                    <div class="diag-bar-fill bar-fatigue" style="width: @GetTremorPct().ToString("F1", Inv)%"></div>
+                </div>
+                <span class="diag-bar-val">@GetTremorPct().ToString("F0")%</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Tremor Value</span>
+                <span class="diag-val">@Svc.CurrentTremor.ToString("F4")</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Throws</span>
+                <span class="diag-val">@Svc.ThrowCount</span>
+            </div>
+            <div class="diag-detail warn">Accuracy lost: @((Svc.CurrentTremor / Svc.CustomSigma * 100).ToString("F1"))% of base sigma</div>
+        }
+        else if (!Svc.EnableFatigue)
+        {
+            <div class="diag-empty">Enable fatigue to simulate hand tremor buildup</div>
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see fatigue diagnostics</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+    [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private double GetStaminaPercent() => Math.Clamp((1.0 - (Svc.FatigueRate / 0.02)) * 100.0, 0, 100);
+    private double GetStabilityPercent() => Math.Clamp((1.0 - (Svc.MaxTremor / 0.1)) * 100.0, 0, 100);
+    private double GetTremorPct() => Svc.MaxTremor > 0 ? Math.Clamp((Svc.CurrentTremor / Svc.MaxTremor) * 100.0, 0, 100) : 0;
+
+    private static void OnSlider(ChangeEventArgs e, Action<double> setter)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, Inv, out var v))
+            setter(v);
+    }
+
+    private async Task OnChanged()
+    {
+        Svc.SelectedSkillLevel = "Custom";
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+
+    private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
+    {
+        setter((bool)(e.Value ?? false));
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+}

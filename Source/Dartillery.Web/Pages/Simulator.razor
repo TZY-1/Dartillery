@@ -13,11 +13,6 @@
                           @bind-ShowSpreadCircle="ShowSpreadCircle" />
     </div>
 
-    <div class="dashboard-controls">
-        <SimulationControls SimulationService="@SimulationService"
-                            OnThrowExecuted="@OnThrowExecuted" />
-    </div>
-
     <div class="dashboard-board">
         <DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
                              ShowDeviationLines="@ShowDeviationLines"
@@ -25,11 +20,17 @@
                              SpreadRadius="@GetSpreadRadius()"
                              EnableManualTargeting="@SimulationService.EnableManualTargeting"
                              OnManualTargetSelected="@HandleManualTargetSelected" />
+        <CompactStats SimulationService="@SimulationService" />
+        <RecentThrowsStrip SimulationService="@SimulationService" />
     </div>
 
-    <div class="dashboard-results">
-        <ThrowResultsDisplay SimulationService="@SimulationService" />
-        <FactorOverview SimulationService="@SimulationService" />
+    <div class="dashboard-factors">
+        <AccuracyCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <FatigueCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <PressureCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <MomentumCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <GroupingCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <TargetDifficultyCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
     </div>
 </div>
 

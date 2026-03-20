@@ -1,7 +1,10 @@
 .simulator-dashboard {
     display: grid;
-    grid-template-columns: 240px 1fr 260px;
+    grid-template-columns: 480px 1fr 1fr 1fr;
     grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "toolbar toolbar toolbar toolbar"
+        "board   factors factors factors";
     gap: var(--spacing-sm);
     height: 100vh;
     padding: var(--spacing-sm);
@@ -9,77 +12,93 @@
 }
 
 .dashboard-toolbar {
-    grid-column: 1 / -1;
-}
-
-.dashboard-controls {
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-light) transparent;
-}
-
-.dashboard-controls::-webkit-scrollbar {
-    width: 4px;
-}
-
-.dashboard-controls::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.dashboard-controls::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 2px;
+    grid-area: toolbar;
 }
 
 .dashboard-board {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    min-height: 0;
-}
-
-.dashboard-results {
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
+    grid-area: board;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--border-light) transparent;
 }
 
-.dashboard-results::-webkit-scrollbar {
+.dashboard-board::-webkit-scrollbar {
     width: 4px;
 }
 
-.dashboard-results::-webkit-scrollbar-track {
+.dashboard-board::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.dashboard-results::-webkit-scrollbar-thumb {
+.dashboard-board::-webkit-scrollbar-thumb {
     background: var(--border-light);
     border-radius: 2px;
 }
 
-/* Responsive: stack on smaller screens */
+.dashboard-factors {
+    grid-area: factors;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    align-content: start;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-light) transparent;
+}
+
+.dashboard-factors::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dashboard-factors::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dashboard-factors::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 2px;
+}
+
+/* Medium screens: 2-column factor grid */
+@media (min-width: 992px) and (max-width: 1399px) {
+    .simulator-dashboard {
+        grid-template-columns: 280px 1fr 1fr;
+        grid-template-areas:
+            "toolbar toolbar toolbar"
+            "board   factors factors";
+    }
+
+    .dashboard-factors {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Small screens: single column stack */
 @media (max-width: 991px) {
     .simulator-dashboard {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
+        grid-template-areas:
+            "toolbar"
+            "board"
+            "factors";
         height: auto;
         overflow: auto;
     }
 
-    .dashboard-toolbar {
-        grid-column: 1;
+    .dashboard-board {
+        overflow-y: visible;
     }
 
-    .dashboard-controls,
-    .dashboard-results {
+    .dashboard-factors {
+        grid-template-columns: 1fr;
         overflow-y: visible;
     }
 }

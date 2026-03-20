@@ -1,0 +1,60 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="factor-card @(!Svc.EnableGrouping ? "card-inactive" : "")">
+    <div class="card-header">
+        <i class="bi bi-diagram-3 card-icon"></i>
+        <span class="card-title">Grouping</span>
+        <label class="toggle-label">
+            <input type="checkbox" class="toggle-input"
+                   checked="@Svc.EnableGrouping"
+                   @onchange="e => OnToggle(v => Svc.EnableGrouping = v, e)" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+    </div>
+    <div class="card-body">
+        <small class="card-desc">Darts already in the board physically block the next throw. 2+ darts clustered within 3cm increase spread by 15%.</small>
+
+        <div class="card-divider"></div>
+
+        @if (Svc.EnableGrouping && Svc.LastThrow?.Metadata is { } meta)
+        {
+            <div class="diag-row">
+                <span class="diag-label">Multiplier</span>
+                <span class="diag-val @(meta.GroupingMultiplier > 1.01 ? "warn" : "good")">
+                    x@(meta.GroupingMultiplier.ToString("F2"))
+                </span>
+            </div>
+            <div class="diag-detail @(meta.GroupingMultiplier > 1.01 ? "warn" : "neutral")">
+                @if (meta.GroupingMultiplier > 1.01)
+                {
+                    <span>Blocked! Nearby darts increased spread by @(((meta.GroupingMultiplier - 1.0) * 100).ToString("F0"))%</span>
+                }
+                else
+                {
+                    <span>No blocking — darts not clustered tightly enough</span>
+                }
+            </div>
+        }
+        else if (!Svc.EnableGrouping)
+        {
+            <div class="diag-empty">Enable grouping to simulate dart-blocking effects</div>
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see grouping diagnostics</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+    [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
+    {
+        setter((bool)(e.Value ?? false));
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+}

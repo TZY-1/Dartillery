@@ -1,0 +1,73 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="factor-card @(!Svc.EnableMomentum ? "card-inactive" : "")">
+    <div class="card-header">
+        <i class="bi bi-fire card-icon"></i>
+        <span class="card-title">Momentum</span>
+        <label class="toggle-label">
+            <input type="checkbox" class="toggle-input"
+                   checked="@Svc.EnableMomentum"
+                   @onchange="e => OnToggle(v => Svc.EnableMomentum = v, e)" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+    </div>
+    <div class="card-body">
+        <small class="card-desc">Hot streaks improve accuracy, cold streaks worsen it. Analyzes last 6 throws for triples, doubles, and bulls.</small>
+
+        <div class="card-divider"></div>
+
+        @if (Svc.EnableMomentum && Svc.LastThrow?.Metadata is { } meta)
+        {
+            <div class="diag-bar-row">
+                <span class="diag-label">Modifier</span>
+                <div class="diag-bar-track momentum-track">
+                    @{
+                        var dist = Math.Abs(meta.MomentumModifier - 1.0);
+                        var w = Math.Clamp(dist / 0.15 * 50.0, 0, 50);
+                        var offset = meta.MomentumModifier < 1.0 ? 50.0 - w : 50.0;
+                        var cls = meta.MomentumModifier < 0.99 ? "bar-good" : meta.MomentumModifier > 1.01 ? "bar-danger" : "bar-neutral";
+                    }
+                    <div class="diag-bar-fill @cls" style="width: @w.ToString("F1", Inv)%; margin-left: @offset.ToString("F1", Inv)%"></div>
+                </div>
+                <span class="diag-bar-val">x@(meta.MomentumModifier.ToString("F2"))</span>
+            </div>
+            <div class="diag-detail @(meta.MomentumModifier < 0.99 ? "good" : meta.MomentumModifier > 1.01 ? "warn" : "neutral")">
+                @if (meta.MomentumModifier < 0.99)
+                {
+                    <span>Hot streak — accuracy improved by @(((1.0 - meta.MomentumModifier) * 100).ToString("F0"))%</span>
+                }
+                else if (meta.MomentumModifier > 1.01)
+                {
+                    <span>Cold streak — accuracy reduced by @(((meta.MomentumModifier - 1.0) * 100).ToString("F0"))%</span>
+                }
+                else
+                {
+                    <span>Neutral — no streak detected</span>
+                }
+            </div>
+        }
+        else if (!Svc.EnableMomentum)
+        {
+            <div class="diag-empty">Enable momentum to simulate hot/cold streaks</div>
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see momentum diagnostics</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+    [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
+    {
+        setter((bool)(e.Value ?? false));
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+}

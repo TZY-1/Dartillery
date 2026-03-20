@@ -1,0 +1,92 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="factor-card @(!Svc.EnablePressure ? "card-inactive" : "")">
+    <div class="card-header">
+        <i class="bi bi-heart-pulse card-icon"></i>
+        <span class="card-title">Pressure</span>
+        <label class="toggle-label">
+            <input type="checkbox" class="toggle-input"
+                   checked="@Svc.EnablePressure"
+                   @onchange="e => OnToggle(v => Svc.EnablePressure = v, e)" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+    </div>
+    <div class="card-body">
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Composure</span>
+                <span class="slider-value">@((Svc.PressureResistance * 100).ToString("F0"))%</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.0" max="1.0" step="0.01"
+                   value="@Svc.PressureResistance.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.PressureResistance = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">Mental resistance to high-stakes moments. 100% = ice-cold under pressure.</small>
+        </div>
+
+        <div class="card-divider"></div>
+
+        @if (Svc.EnablePressure && Svc.LastThrow?.Metadata is { } meta)
+        {
+            <div class="diag-bar-row">
+                <span class="diag-label">Modifier</span>
+                <div class="diag-bar-track">
+                    <div class="diag-bar-fill @(meta.PressureModifier > 1.1 ? "bar-danger" : meta.PressureModifier > 1.01 ? "bar-warn" : "bar-neutral")"
+                         style="width: @(Math.Clamp((meta.PressureModifier - 1.0) / 0.5 * 100.0, 0, 100).ToString("F1", Inv))%"></div>
+                </div>
+                <span class="diag-bar-val">x@(meta.PressureModifier.ToString("F2"))</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Resistance</span>
+                <span class="diag-val">@((Svc.PressureResistance * 100).ToString("F0"))%</span>
+            </div>
+            <div class="diag-detail @(meta.PressureModifier > 1.01 ? "warn" : "neutral")">
+                @if (meta.PressureModifier > 1.01)
+                {
+                    <span>Under pressure — deviation +@(((meta.PressureModifier - 1.0) * 100).ToString("F0"))%</span>
+                }
+                else
+                {
+                    <span>No pressure effect on last throw</span>
+                }
+            </div>
+        }
+        else if (!Svc.EnablePressure)
+        {
+            <div class="diag-empty">Enable pressure to simulate checkout/match-point effects</div>
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see pressure diagnostics</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+    [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private static void OnSlider(ChangeEventArgs e, Action<double> setter)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, Inv, out var v))
+            setter(v);
+    }
+
+    private async Task OnChanged()
+    {
+        Svc.SelectedSkillLevel = "Custom";
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+
+    private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
+    {
+        setter((bool)(e.Value ?? false));
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+}

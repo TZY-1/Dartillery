@@ -1,0 +1,82 @@
+@using Dartillery.Core.Models
+@using Dartillery.Core.Enums
+@using Dartillery.Web.Services
+
+<div class="compact-stats">
+    @if (SimulationService.ThrowCount == 0)
+    {
+        <div class="stats-empty">
+            <i class="bi bi-bullseye"></i>
+            <span>Throw darts to see stats</span>
+        </div>
+    }
+    else
+    {
+        <div class="stats-pills">
+            <div class="stat-pill">
+                <span class="pill-value">@SimulationService.ThrowCount</span>
+                <span class="pill-label">Throws</span>
+            </div>
+            <div class="stat-pill">
+                <span class="pill-value">@SimulationService.AverageScore.ToString("F1")</span>
+                <span class="pill-label">Avg</span>
+            </div>
+            <div class="stat-pill">
+                <span class="pill-value">@((SimulationService.HitRate * 100).ToString("F0"))%</span>
+                <span class="pill-label">Hit Rate</span>
+            </div>
+        </div>
+
+        @if (SimulationService.LastThrow is { } last)
+        {
+            <div class="last-throw-row">
+                <span class="last-label">Last:</span>
+                <span class="last-score @GetScoreClass(last.Score)">@last.Score</span>
+                <span class="last-segment">@FormatSegment(last)</span>
+                <span class="last-deviation">dev @last.Deviation.ToString("F3")</span>
+            </div>
+
+            @if (last.Metadata is { } meta)
+            {
+                var total = meta.PressureModifier * meta.MomentumModifier * meta.GroupingMultiplier * meta.DifficultyMultiplier;
+                <div class="combined-row">
+                    <span class="combined-label">Combined Modifier:</span>
+                    <span class="combined-value @(total > 1.05 ? "val-warn" : total < 0.95 ? "val-good" : "")">
+                        x@(total.ToString("F2"))
+                    </span>
+                    @if (total > 1.05)
+                    {
+                        <span class="combined-detail val-warn">+@(((total - 1.0) * 100).ToString("F0"))% deviation</span>
+                    }
+                    else if (total < 0.95)
+                    {
+                        <span class="combined-detail val-good">-@(((1.0 - total) * 100).ToString("F0"))% deviation</span>
+                    }
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public SimulationService SimulationService { get; set; } = null!;
+
+    private static string GetScoreClass(int score) => score switch
+    {
+        >= 60 => "score-high",
+        >= 40 => "score-medium",
+        > 0 => "score-low",
+        _ => "score-miss"
+    };
+
+    private static string FormatSegment(ThrowResult t) => t.SegmentType switch
+    {
+        SegmentType.InnerBull => "Bullseye",
+        SegmentType.OuterBull => "Bull",
+        SegmentType.Triple => $"T{t.SectorNumber}",
+        SegmentType.Double => $"D{t.SectorNumber}",
+        SegmentType.Single => $"S{t.SectorNumber}",
+        SegmentType.Miss => "Miss",
+        _ => "?"
+    };
+}

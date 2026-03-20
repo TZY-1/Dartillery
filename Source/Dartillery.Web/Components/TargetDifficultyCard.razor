@@ -1,0 +1,64 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="factor-card @(!Svc.EnableTargetDifficulty ? "card-inactive" : "")">
+    <div class="card-header">
+        <i class="bi bi-crosshair card-icon"></i>
+        <span class="card-title">Target Difficulty</span>
+        <label class="toggle-label">
+            <input type="checkbox" class="toggle-input"
+                   checked="@Svc.EnableTargetDifficulty"
+                   @onchange="e => OnToggle(v => Svc.EnableTargetDifficulty = v, e)" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+    </div>
+    <div class="card-body">
+        <small class="card-desc">Smaller targets are harder to hit. Inner Bull +30%, Outer Bull +15%, Double +5%, Single -5%.</small>
+
+        <div class="card-divider"></div>
+
+        @if (Svc.EnableTargetDifficulty && Svc.LastThrow?.Metadata is { } meta)
+        {
+            <div class="diag-row">
+                <span class="diag-label">Multiplier</span>
+                <span class="diag-val @GetDiffClass(meta.DifficultyMultiplier)">
+                    x@(meta.DifficultyMultiplier.ToString("F2"))
+                </span>
+            </div>
+            <div class="diag-detail @(meta.DifficultyMultiplier > 1.1 ? "warn" : meta.DifficultyMultiplier < 0.99 ? "good" : "neutral")">
+                @GetExplanation(meta.DifficultyMultiplier)
+            </div>
+        }
+        else if (!Svc.EnableTargetDifficulty)
+        {
+            <div class="diag-empty">Enable target difficulty to simulate size-based accuracy</div>
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see difficulty diagnostics</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+    [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private static string GetDiffClass(double m) => m > 1.1 ? "warn" : m < 0.99 ? "good" : "";
+
+    private static string GetExplanation(double m) => m switch
+    {
+        >= 1.25 => "Inner Bull (Bullseye) — hardest target, +30% deviation",
+        >= 1.1 => "Outer Bull — small target, +15% deviation",
+        >= 1.03 => "Double ring — edge of board, +5% deviation",
+        <= 0.97 => "Single — large area, -5% deviation (easier)",
+        _ => "Triple — baseline difficulty"
+    };
+
+    private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
+    {
+        setter((bool)(e.Value ?? false));
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+}

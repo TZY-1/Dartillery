@@ -1,0 +1,37 @@
+@using Dartillery.Core.Enums
+@using Dartillery.Web.Services
+
+<div class="recent-strip">
+    <div class="strip-header">
+        <i class="bi bi-list-ul"></i>
+        <span>Recent</span>
+    </div>
+    @if (SimulationService.ThrowCount > 0)
+    {
+        <div class="strip-list">
+            @foreach (var t in SimulationService.Throws.TakeLast(12).Reverse())
+            {
+                <div class="strip-item @(!t.IsHit ? "miss" : "")">
+                    <span class="strip-score">@t.Score</span>
+                    <span class="strip-seg">@Abbrev(t.SegmentType)</span>
+                    <span class="strip-sector">@(t.SectorNumber > 0 ? t.SectorNumber.ToString() : "-")</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public SimulationService SimulationService { get; set; } = null!;
+
+    private static string Abbrev(SegmentType s) => s switch
+    {
+        SegmentType.InnerBull => "DB",
+        SegmentType.OuterBull => "SB",
+        SegmentType.Triple => "T",
+        SegmentType.Double => "D",
+        SegmentType.Single => "S",
+        SegmentType.Miss => "X",
+        _ => "?"
+    };
+}
