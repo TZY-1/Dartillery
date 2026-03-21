@@ -1,7 +1,7 @@
 namespace Dartillery.Core.Models;
 
 /// <summary>
-/// Session state for tremor calculation.
+/// Session state for fatigue calculation.
 /// Captures temporal aspects of a throwing session.
 /// </summary>
 public sealed record SessionState
@@ -22,8 +22,8 @@ public sealed record SessionState
     public TimeSpan TimeSinceLastThrow { get; init; }
 
     /// <summary>
-    /// Current tremor magnitude from previous calculation.
-    /// Used by recovery models to track tremor decay.
+    /// Current fatigue magnitude from previous calculation.
+    /// Used by recovery models to track fatigue decay.
     /// </summary>
-    public double CurrentTremor { get; init; }
+    public double CurrentFatigue { get; init; }
 }

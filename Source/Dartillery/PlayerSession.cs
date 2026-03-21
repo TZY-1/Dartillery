@@ -22,7 +22,7 @@ public sealed class PlayerSession
     /// </summary>
     /// <param name="simulator">The contextual throw simulator for executing throws.</param>
     /// <param name="profile">The player profile containing skill characteristics.</param>
-    /// <param name="tremorModel">The tremor model for fatigue simulation.</param>
+    /// <param name="fatigueModel">The fatigue model for accuracy degradation.</param>
     /// <param name="pressureModel">The pressure model for psychological effects.</param>
     /// <param name="momentumModel">The momentum model for streak effects.</param>
     /// <param name="groupingModel">The grouping model for dart clustering.</param>
@@ -33,7 +33,7 @@ public sealed class PlayerSession
     public PlayerSession(
         IContextualThrowSimulator simulator,
         PlayerProfile profile,
-        ITremorModel tremorModel,
+        IFatigueModel fatigueModel,
         IPressureModel pressureModel,
         IMomentumModel momentumModel,
         IGroupingModel groupingModel,
@@ -49,7 +49,7 @@ public sealed class PlayerSession
 
         _contextBuilder = new ThrowContextBuilder(
             profile,
-            tremorModel,
+            fatigueModel,
             pressureModel,
             momentumModel,
             groupingModel,
@@ -69,10 +69,10 @@ public sealed class PlayerSession
     public int ThrowCount => _stateManager.ThrowCount;
 
     /// <summary>
-    /// Current accumulated tremor magnitude as calculated by the configured tremor model.
+    /// Current accumulated fatigue magnitude as calculated by the configured fatigue model.
     /// Increases over the session based on throw count and fatigue rate; resets to zero on <see cref="Reset"/>.
     /// </summary>
-    public double CurrentTremor => _contextBuilder.CurrentTremor;
+    public double CurrentFatigue => _contextBuilder.CurrentFatigue;
 
     /// <summary>
     /// The player profile defining skill characteristics for this session.
@@ -130,7 +130,7 @@ public sealed class PlayerSession
     }
 
     /// <summary>
-    /// Resets the session to initial state: clears throw history, resets throw count and tremor accumulation.
+    /// Resets the session to initial state: clears throw history, resets throw count and fatigue accumulation.
     /// The player profile and behavioral models are preserved.
     /// </summary>
     public void Reset()

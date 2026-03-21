@@ -36,7 +36,7 @@ public sealed class SimulationService
 
     public double PressureResistance { get; set; } = 0.5;
 
-    public double MaxTremor { get; set; } = 0.05;
+    public double MaxFatigue { get; set; } = 0.05;
 
     public bool EnableMomentum { get; set; }
 
@@ -65,7 +65,7 @@ public sealed class SimulationService
     // Current state properties
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
 
-    public double CurrentTremor => _session?.CurrentTremor ?? 0.0;
+    public double CurrentFatigue => _session?.CurrentFatigue ?? 0.0;
 
     public int ThrowCount => _session?.ThrowCount ?? 0;
 
@@ -108,13 +108,13 @@ public sealed class SimulationService
             BaseSkill = CustomSigma,
             FatigueRate = FatigueRate,
             PressureResistance = PressureResistance,
-            MaxTremor = MaxTremor
+            MaxFatigue = MaxFatigue
         });
 
         // Apply behavioral models based on toggles
         if (EnableFatigue)
         {
-            builder.WithRealisticTremor();
+            builder.WithRealisticFatigue();
         }
 
         if (EnablePressure)
@@ -165,7 +165,7 @@ public sealed class SimulationService
         CustomSigma = profile.BaseSkill;
         FatigueRate = profile.FatigueRate;
         PressureResistance = profile.PressureResistance;
-        MaxTremor = profile.MaxTremor;
+        MaxFatigue = profile.MaxFatigue;
         RebuildSession();
     }
 
@@ -193,7 +193,7 @@ public sealed class SimulationService
 
     /// <summary>
     /// Clears all throws but keeps the session intact.
-    /// Resets tremor and other accumulated effects.
+    /// Resets fatigue and other accumulated effects.
     /// </summary>
     public void ClearThrows()
     {

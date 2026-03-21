@@ -35,7 +35,7 @@ public class DependencyInjectionTests
         Assert.That(provider.GetRequiredService<IAimPointCalculator>(), Is.Not.Null);
         Assert.That(provider.GetRequiredService<ITargetResolver>(), Is.Not.Null);
 
-        Assert.That(provider.GetRequiredService<ITremorModel>(), Is.Not.Null);
+        Assert.That(provider.GetRequiredService<IFatigueModel>(), Is.Not.Null);
         Assert.That(provider.GetRequiredService<IPressureModel>(), Is.Not.Null);
         Assert.That(provider.GetRequiredService<IMomentumModel>(), Is.Not.Null);
         Assert.That(provider.GetRequiredService<IGroupingModel>(), Is.Not.Null);

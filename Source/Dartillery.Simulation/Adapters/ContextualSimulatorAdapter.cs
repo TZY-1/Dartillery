@@ -61,7 +61,7 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         {
             Metadata = new ThrowMetadata
             {
-                TremorMagnitude = context.SessionTremor,
+                FatigueMagnitude = context.SessionFatigue,
                 PressureModifier = context.PressureModifier,
                 MomentumModifier = context.MomentumModifier,
                 GroupingMultiplier = groupingMultiplier,
@@ -85,7 +85,7 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         {
             Metadata = new ThrowMetadata
             {
-                TremorMagnitude = context.SessionTremor,
+                FatigueMagnitude = context.SessionFatigue,
                 PressureModifier = context.PressureModifier,
                 MomentumModifier = context.MomentumModifier,
                 GroupingMultiplier = 1.0,

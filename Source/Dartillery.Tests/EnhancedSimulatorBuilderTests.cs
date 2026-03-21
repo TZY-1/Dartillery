@@ -116,7 +116,7 @@ public class EnhancedSimulatorBuilderTests
                 SystematicBiasY = -0.005,
                 FatigueRate = 0.004,
                 PressureResistance = 0.7,
-                MaxTremor = 0.04
+                MaxFatigue = 0.04
             };
 
             var session = new EnhancedDartboardSimulatorBuilder()
@@ -158,68 +158,68 @@ public class EnhancedSimulatorBuilderTests
     }
 
     [TestFixture]
-    public class TremorModelTests
+    public class FatigueModelTests
     {
         [Test]
-        public void BuildSession_WithLinearTremor_TremorIncreasesOverThrows()
+        public void BuildSession_WithLinearFatigue_FatigueIncreasesOverThrows()
         {
-            var session = CreateSession(b => b.WithLinearTremor());
+            var session = CreateSession(b => b.WithLinearFatigue());
 
             Assert.That(session, Is.Not.Null);
 
-            // Throw some darts and check that tremor increases
-            var initialTremor = session.CurrentTremor;
+            // Throw some darts and check that fatigue increases
+            var initialFatigue = session.CurrentFatigue;
             for (int i = 0; i < 50; i++)
             {
                 session.Throw(Target.Triple(20));
             }
 
-            var finalTremor = session.CurrentTremor;
+            var finalFatigue = session.CurrentFatigue;
 
-            TestContext.Out.WriteLine($"Initial tremor: {initialTremor:F6}");
-            TestContext.Out.WriteLine($"Final tremor after 50 throws: {finalTremor:F6}");
+            TestContext.Out.WriteLine($"Initial fatigue: {initialFatigue:F6}");
+            TestContext.Out.WriteLine($"Final fatigue after 50 throws: {finalFatigue:F6}");
 
-            Assert.That(finalTremor, Is.GreaterThan(initialTremor),
-                "Tremor should increase with linear model");
+            Assert.That(finalFatigue, Is.GreaterThan(initialFatigue),
+                "Fatigue should increase with linear model");
         }
 
         [Test]
-        public void BuildSession_WithRealisticTremor_TremorIncreasesOrStable()
+        public void BuildSession_WithRealisticFatigue_FatigueIncreasesOrStable()
         {
-            var session = CreateSession(b => b.WithRealisticTremor());
+            var session = CreateSession(b => b.WithRealisticFatigue());
 
             Assert.That(session, Is.Not.Null);
 
-            // Logarithmic tremor should also build up
-            var initialTremor = session.CurrentTremor;
+            // Logarithmic fatigue should also build up
+            var initialFatigue = session.CurrentFatigue;
             for (int i = 0; i < 100; i++)
             {
                 session.Throw(Target.Triple(20));
             }
 
-            var finalTremor = session.CurrentTremor;
+            var finalFatigue = session.CurrentFatigue;
 
-            TestContext.Out.WriteLine($"Initial tremor: {initialTremor:F6}");
-            TestContext.Out.WriteLine($"Final tremor after 100 throws: {finalTremor:F6}");
+            TestContext.Out.WriteLine($"Initial fatigue: {initialFatigue:F6}");
+            TestContext.Out.WriteLine($"Final fatigue after 100 throws: {finalFatigue:F6}");
 
-            Assert.That(finalTremor, Is.GreaterThanOrEqualTo(initialTremor));
+            Assert.That(finalFatigue, Is.GreaterThanOrEqualTo(initialFatigue));
         }
 
         [Test]
-        public void BuildSession_WithoutTremor_TremorRemainsConstant()
+        public void BuildSession_WithoutFatigue_FatigueRemainsConstant()
         {
-            var session = CreateSession(b => b.WithTremorModel(new NoOpTremorModel()));
+            var session = CreateSession(b => b.WithFatigueModel(new NoOpFatigueModel()));
 
-            var tremorValues = new List<double>();
+            var fatigueValues = new List<double>();
             for (int i = 0; i < 50; i++)
             {
                 session.Throw(Target.Triple(20));
-                tremorValues.Add(session.CurrentTremor);
+                fatigueValues.Add(session.CurrentFatigue);
             }
 
-            var distinctValues = tremorValues.Distinct().Count();
+            var distinctValues = fatigueValues.Distinct().Count();
             Assert.That(distinctValues, Is.LessThanOrEqualTo(2),
-                "Without tremor model, tremor should remain relatively constant");
+                "Without fatigue model, fatigue should remain relatively constant");
         }
     }
 
@@ -379,7 +379,7 @@ public class EnhancedSimulatorBuilderTests
         {
             var session = new EnhancedDartboardSimulatorBuilder()
                 .WithProfessionalPlayer("TestPro")
-                .WithLinearTremor()
+                .WithLinearFatigue()
                 .WithStandardPressure()
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
@@ -416,7 +416,7 @@ public class EnhancedSimulatorBuilderTests
         {
             var session = new EnhancedDartboardSimulatorBuilder()
                 .WithAmateurPlayer("Complete Test")
-                .WithRealisticTremor()
+                .WithRealisticFatigue()
                 .WithCheckoutPsychology()
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
@@ -452,32 +452,32 @@ public class EnhancedSimulatorBuilderTests
     public class ComparisonTests
     {
         [Test]
-        public void Throw_WithAndWithoutTremor_AllScoresInValidRange()
+        public void Throw_WithAndWithoutFatigue_AllScoresInValidRange()
         {
             const int throwCount = 100;
             var target = Target.Triple(20);
 
-            var withTremor = CreateSession(b => b.WithProfessionalPlayer().WithLinearTremor());
-            var withoutTremor = CreateSession(b => b.WithProfessionalPlayer());
+            var withFatigue = CreateSession(b => b.WithProfessionalPlayer().WithLinearFatigue());
+            var withoutFatigue = CreateSession(b => b.WithProfessionalPlayer());
 
-            var scoresWithTremor = new List<int>();
-            var scoresWithoutTremor = new List<int>();
+            var scoresWithFatigue = new List<int>();
+            var scoresWithoutFatigue = new List<int>();
 
             for (int i = 0; i < throwCount; i++)
             {
-                scoresWithTremor.Add(withTremor.Throw(target).Score);
-                scoresWithoutTremor.Add(withoutTremor.Throw(target).Score);
+                scoresWithFatigue.Add(withFatigue.Throw(target).Score);
+                scoresWithoutFatigue.Add(withoutFatigue.Throw(target).Score);
             }
 
-            var firstHalfWithTremor = scoresWithTremor.Take(50).Average();
-            var secondHalfWithTremor = scoresWithTremor.Skip(50).Average();
+            var firstHalfWithFatigue = scoresWithFatigue.Take(50).Average();
+            var secondHalfWithFatigue = scoresWithFatigue.Skip(50).Average();
 
-            TestContext.Out.WriteLine($"With Tremor - First half: {firstHalfWithTremor:F2}, Second half: {secondHalfWithTremor:F2}");
-            TestContext.Out.WriteLine($"Without Tremor - Average: {scoresWithoutTremor.Average():F2}");
+            TestContext.Out.WriteLine($"With Fatigue - First half: {firstHalfWithFatigue:F2}, Second half: {secondHalfWithFatigue:F2}");
+            TestContext.Out.WriteLine($"Without Fatigue - Average: {scoresWithoutFatigue.Average():F2}");
 
             // Both configurations should deliver valid results
-            Assert.That(scoresWithTremor.All(s => s >= 0 && s <= 60), Is.True);
-            Assert.That(scoresWithoutTremor.All(s => s >= 0 && s <= 60), Is.True);
+            Assert.That(scoresWithFatigue.All(s => s >= 0 && s <= 60), Is.True);
+            Assert.That(scoresWithoutFatigue.All(s => s >= 0 && s <= 60), Is.True);
         }
 
         [Test]
@@ -514,8 +514,8 @@ public class EnhancedSimulatorBuilderTests
         }
     }
 
-    private sealed class NoOpTremorModel : ITremorModel
+    private sealed class NoOpFatigueModel : IFatigueModel
     {
-        public double CalculateTremor(SessionState state, PlayerProfile profile) => 0.0;
+        public double CalculateFatigue(SessionState state, PlayerProfile profile) => 0.0;
     }
 }

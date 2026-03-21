@@ -19,7 +19,7 @@ internal sealed class SystematicBiasDeviationCalculator : IContextualDeviationCa
 
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
-        double effectiveSkill = profile.BaseSkill + context.SessionTremor;
+        double effectiveSkill = profile.BaseSkill + context.SessionFatigue;
         var (dx, dy) = _baseCalculator.CalculateDeviation(effectiveSkill);
         double biasedDx = dx + profile.SystematicBiasX;
         double biasedDy = dy + profile.SystematicBiasY;

@@ -18,21 +18,21 @@ public class EnhancedSimulatorAnalysisTests
     }
 
     [TestFixture]
-    public class TremorAnalysisTests
+    public class FatigueAnalysisTests
     {
         [Test]
-        public void Throw_LinearTremorOverManyThrows_TremorExceedsThreshold()
+        public void Throw_LinearFatigueOverManyThrows_FatigueExceedsThreshold()
         {
             const int throwsPerCheckpoint = 50;
             const int checkpoints = 10;
             var target = Target.Triple(20);
 
             var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
-                .WithProfessionalPlayer("TremorTest")
-                .WithLinearTremor());
+                .WithProfessionalPlayer("FatigueTest")
+                .WithLinearFatigue());
 
-            TestContext.Out.WriteLine("=== Tremor Impact Analysis on T20 (Linear Model) ===\n");
-            TestContext.Out.WriteLine($"{"Checkpoint",-12} {"Throws",-8} {"Tremor",-12} {"Avg Score",-12} {"Target Hit %",-12}");
+            TestContext.Out.WriteLine("=== Fatigue Impact Analysis on T20 (Linear Model) ===\n");
+            TestContext.Out.WriteLine($"{"Checkpoint",-12} {"Throws",-8} {"Fatigue",-12} {"Avg Score",-12} {"Target Hit %",-12}");
             TestContext.Out.WriteLine(new string('-', 60));
 
             for (int checkpoint = 0; checkpoint < checkpoints; checkpoint++)
@@ -50,30 +50,30 @@ public class EnhancedSimulatorAnalysisTests
 
                 var avgScore = scores.Average();
                 var hitRate = hits * 100.0 / throwsPerCheckpoint;
-                var tremor = session.CurrentTremor;
+                var fatigue = session.CurrentFatigue;
                 var totalThrows = (checkpoint + 1) * throwsPerCheckpoint;
 
-                TestContext.Out.WriteLine($"{checkpoint + 1,-12} {totalThrows,-8} {tremor,-12:F6} {avgScore,-12:F2} {hitRate,-11:F1}%");
+                TestContext.Out.WriteLine($"{checkpoint + 1,-12} {totalThrows,-8} {fatigue,-12:F6} {avgScore,-12:F2} {hitRate,-11:F1}%");
             }
 
-            Assert.That(session.CurrentTremor, Is.GreaterThan(0.01));
+            Assert.That(session.CurrentFatigue, Is.GreaterThan(0.01));
         }
 
         [Test]
-        public void Throw_RealisticVsLinearTremor_BothAccumulatePositively()
+        public void Throw_RealisticVsLinearFatigue_BothAccumulatePositively()
         {
             const int totalThrows = 500;
             var target = Target.Triple(20);
 
             var linearSession = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithLinearTremor());
+                .WithLinearFatigue());
 
             var realisticSession = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithRealisticTremor());
+                .WithRealisticFatigue());
 
-            TestContext.Out.WriteLine("=== Tremor Model Comparison ===\n");
+            TestContext.Out.WriteLine("=== Fatigue Model Comparison ===\n");
             TestContext.Out.WriteLine($"{"Throws",-10} {"Linear",-15} {"Realistic",-15}");
             TestContext.Out.WriteLine(new string('-', 45));
 
@@ -86,20 +86,20 @@ public class EnhancedSimulatorAnalysisTests
 
                 if (checkpoints.Contains(i + 1))
                 {
-                    TestContext.Out.WriteLine($"{i + 1,-10} {linearSession.CurrentTremor,-15:F6} {realisticSession.CurrentTremor,-15:F6}");
+                    TestContext.Out.WriteLine($"{i + 1,-10} {linearSession.CurrentFatigue,-15:F6} {realisticSession.CurrentFatigue,-15:F6}");
                 }
             }
 
-            Assert.That(linearSession.CurrentTremor, Is.GreaterThan(0));
-            Assert.That(realisticSession.CurrentTremor, Is.GreaterThan(0));
+            Assert.That(linearSession.CurrentFatigue, Is.GreaterThan(0));
+            Assert.That(realisticSession.CurrentFatigue, Is.GreaterThan(0));
         }
 
         [Test]
-        public void Reset_AfterFatigue_TremorDecreases()
+        public void Reset_AfterFatigue_FatigueDecreases()
         {
             var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithAmateurPlayer()
-                .WithLinearTremor());
+                .WithLinearFatigue());
 
             TestContext.Out.WriteLine("=== Fatigue and Recovery Analysis ===\n");
 
@@ -108,13 +108,13 @@ public class EnhancedSimulatorAnalysisTests
                 session.Throw(Target.Triple(20));
             }
 
-            var tremorAfterGame1 = session.CurrentTremor;
-            TestContext.Out.WriteLine($"After Game 1 (100 throws): Tremor = {tremorAfterGame1:F6}");
+            var fatigueAfterGame1 = session.CurrentFatigue;
+            TestContext.Out.WriteLine($"After Game 1 (100 throws): Fatigue = {fatigueAfterGame1:F6}");
 
             // Reset (Pause)
             session.Reset();
-            var tremorAfterReset = session.CurrentTremor;
-            TestContext.Out.WriteLine($"After Reset: Tremor = {tremorAfterReset:F6}");
+            var fatigueAfterReset = session.CurrentFatigue;
+            TestContext.Out.WriteLine($"After Reset: Fatigue = {fatigueAfterReset:F6}");
 
             // Game 2
             for (int i = 0; i < 100; i++)
@@ -122,10 +122,10 @@ public class EnhancedSimulatorAnalysisTests
                 session.Throw(Target.Triple(20));
             }
 
-            var tremorAfterGame2 = session.CurrentTremor;
-            TestContext.Out.WriteLine($"After Game 2 (100 throws): Tremor = {tremorAfterGame2:F6}");
+            var fatigueAfterGame2 = session.CurrentFatigue;
+            TestContext.Out.WriteLine($"After Game 2 (100 throws): Fatigue = {fatigueAfterGame2:F6}");
 
-            Assert.That(tremorAfterReset, Is.LessThan(tremorAfterGame1));
+            Assert.That(fatigueAfterReset, Is.LessThan(fatigueAfterGame1));
         }
     }
 
@@ -315,7 +315,7 @@ public class EnhancedSimulatorAnalysisTests
 
             var session = EnhancedSimulatorAnalysisTests.CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithLinearTremor());
+                .WithLinearFatigue());
 
             TestContext.Out.WriteLine("=== 3-Dart Average Progression ===\n");
             TestContext.Out.WriteLine($"{"Visit",-8} {"Dart 1",-8} {"Dart 2",-8} {"Dart 3",-8} {"Total",-8} {"Avg",-10}");
@@ -346,7 +346,7 @@ public class EnhancedSimulatorAnalysisTests
 
             var overallAvg = allVisitScores.Average();
             TestContext.Out.WriteLine($"\nOverall 3-dart average: {overallAvg:F2}");
-            TestContext.Out.WriteLine($"Final tremor level: {session.CurrentTremor:F6}");
+            TestContext.Out.WriteLine($"Final fatigue level: {session.CurrentFatigue:F6}");
 
             Assert.That(overallAvg, Is.GreaterThan(0));
         }
@@ -360,7 +360,7 @@ public class EnhancedSimulatorAnalysisTests
         {
             var session = new EnhancedDartboardSimulatorBuilder()
                 .WithProfessionalPlayer("FullFeatureTest")
-                .WithRealisticTremor()
+                .WithRealisticFatigue()
                 .WithCheckoutPsychology()
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
@@ -370,10 +370,10 @@ public class EnhancedSimulatorAnalysisTests
                 .BuildSession();
 
             int remainingScore = 501;
-            var visitStats = new List<(int Visit, int Score, int Darts, int Remaining, double Tremor)>();
+            var visitStats = new List<(int Visit, int Score, int Darts, int Remaining, double Fatigue)>();
 
             TestContext.Out.WriteLine("=== Full Feature 501 Game Analysis ===\n");
-            TestContext.Out.WriteLine($"{"Visit",-8} {"Darts",-8} {"Score",-8} {"Remain",-10} {"Tremor",-12}");
+            TestContext.Out.WriteLine($"{"Visit",-8} {"Darts",-8} {"Score",-8} {"Remain",-10} {"Fatigue",-12}");
             TestContext.Out.WriteLine(new string('-', 55));
 
             int visitNumber = 0;
@@ -424,12 +424,12 @@ public class EnhancedSimulatorAnalysisTests
                     remainingScore -= visitScore;
                 }
 
-                var tremor = session.CurrentTremor;
-                visitStats.Add((visitNumber, visitScore, dartsInVisit, remainingScore, tremor));
+                var fatigue = session.CurrentFatigue;
+                visitStats.Add((visitNumber, visitScore, dartsInVisit, remainingScore, fatigue));
 
                 if (visitNumber <= 10 || visitNumber % 5 == 0 || remainingScore == 0)
                 {
-                    TestContext.Out.WriteLine($"{visitNumber,-8} {dartsInVisit,-8} {visitScore,-8} {remainingScore,-10} {tremor,-12:F6}");
+                    TestContext.Out.WriteLine($"{visitNumber,-8} {dartsInVisit,-8} {visitScore,-8} {remainingScore,-10} {fatigue,-12:F6}");
                 }
 
                 if (remainingScore == 0)
@@ -446,7 +446,7 @@ public class EnhancedSimulatorAnalysisTests
             TestContext.Out.WriteLine($"Total darts: {totalDarts}");
             TestContext.Out.WriteLine($"Total visits: {visitNumber}");
             TestContext.Out.WriteLine($"3-dart average: {threeDartAvg:F2}");
-            TestContext.Out.WriteLine($"Final tremor: {session.CurrentTremor:F6}");
+            TestContext.Out.WriteLine($"Final fatigue: {session.CurrentFatigue:F6}");
 
             Assert.That(totalDarts, Is.GreaterThan(0));
         }
@@ -461,7 +461,7 @@ public class EnhancedSimulatorAnalysisTests
 
             var enhanced = new EnhancedDartboardSimulatorBuilder()
                 .WithProfessionalPlayer()
-                .WithRealisticTremor()
+                .WithRealisticFatigue()
                 .WithStandardPressure()
                 .WithStandardMomentum()
                 .WithSimpleGrouping()

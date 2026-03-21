@@ -8,7 +8,7 @@ public sealed record ThrowEvent
     /// <summary>The outcome of the throw: segment hit, score, and coordinates.</summary>
     public required ThrowResult Result { get; init; }
 
-    /// <summary>The behavioral modifiers (tremor, pressure, momentum) active when the throw was made.</summary>
+    /// <summary>The behavioral modifiers (fatigue, pressure, momentum) active when the throw was made.</summary>
     public required ThrowContext Context { get; init; }
 
     /// <summary>The player profile used for the throw.</summary>

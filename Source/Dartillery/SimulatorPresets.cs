@@ -30,7 +30,7 @@ public static class SimulatorPresets
     {
         var builder = new EnhancedDartboardSimulatorBuilder()
             .WithAmateurPlayer(playerName)
-            .WithRealisticTremor()
+            .WithRealisticFatigue()
             .WithCheckoutPsychology()
             .WithStandardMomentum()
             .WithSimpleGrouping()
@@ -48,7 +48,7 @@ public static class SimulatorPresets
     {
         var builder = new EnhancedDartboardSimulatorBuilder()
             .WithProfessionalPlayer(playerName)
-            .WithRealisticTremor()
+            .WithRealisticFatigue()
             .WithStandardPressure()
             .WithStandardMomentum();
         return BuildWithSeed(builder, seed);
@@ -68,7 +68,7 @@ public static class SimulatorPresets
     {
         var builder = new EnhancedDartboardSimulatorBuilder()
             .WithAmateurPlayer(playerName)
-            .WithRealisticTremor()
+            .WithRealisticFatigue()
             .WithCheckoutPsychology()
             .WithStandardMomentum()
             .WithSimpleGrouping()

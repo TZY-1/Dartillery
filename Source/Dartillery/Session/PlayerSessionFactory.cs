@@ -24,7 +24,7 @@ internal static class PlayerSessionFactory
         return new PlayerSession(
             simulator,
             config.Profile,
-            config.TremorModel,
+            config.FatigueModel,
             config.PressureModel,
             config.MomentumModel,
             config.GroupingModel,

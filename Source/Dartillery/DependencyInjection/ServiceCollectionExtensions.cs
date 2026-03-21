@@ -1,11 +1,11 @@
 using Dartillery;
 using Dartillery.Core.Abstractions;
 using Dartillery.Simulation.Geometry;
+using Dartillery.Simulation.Models.FatigueModels;
 using Dartillery.Simulation.Models.GroupingModels;
 using Dartillery.Simulation.Models.MomentumModels;
 using Dartillery.Simulation.Models.PressureModels;
 using Dartillery.Simulation.Models.TargetDifficultyModels;
-using Dartillery.Simulation.Models.TremorModels;
 using Dartillery.Simulation.Services;
 using Dartillery.Simulation.Simulators;
 
@@ -65,7 +65,7 @@ public static class DartilleryServiceCollectionExtensions
 
     /// <summary>
     /// Registers Dartillery simulation services plus enhanced session services
-    /// (default behavioral models for tremor, pressure, momentum, grouping, target difficulty).
+    /// (default behavioral models for fatigue, pressure, momentum, grouping, target difficulty).
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Optional configuration action.</param>
@@ -77,7 +77,7 @@ public static class DartilleryServiceCollectionExtensions
         AddDartillerySimulation(services, configure);
 
         // Register default behavioral models (can be overridden by consumer)
-        services.AddSingleton<ITremorModel, LinearTremorModel>();
+        services.AddSingleton<IFatigueModel, LinearFatigueModel>();
         services.AddSingleton<IPressureModel, NoPressureModel>();
         services.AddSingleton<IMomentumModel, NoMomentumModel>();
         services.AddSingleton<IGroupingModel, NoGroupingModel>();

@@ -58,7 +58,7 @@ public class PlayerSessionTests
         [Test]
         public void Reset_ClearsSessionState()
         {
-            var session = CreateSession(b => b.WithLinearTremor());
+            var session = CreateSession(b => b.WithLinearFatigue());
 
             // Throw some darts
             for (int i = 0; i < 50; i++)
@@ -67,14 +67,14 @@ public class PlayerSessionTests
             }
 
             var throwCountBeforeReset = session.ThrowCount;
-            var tremorBeforeReset = session.CurrentTremor;
+            var fatigueBeforeReset = session.CurrentFatigue;
 
             session.Reset();
 
             Assert.That(throwCountBeforeReset, Is.GreaterThan(0));
             Assert.That(session.ThrowCount, Is.EqualTo(0));
             Assert.That(session.ThrowHistory, Is.Empty);
-            Assert.That(session.CurrentTremor, Is.LessThanOrEqualTo(tremorBeforeReset));
+            Assert.That(session.CurrentFatigue, Is.LessThanOrEqualTo(fatigueBeforeReset));
         }
 
         [Test]
@@ -103,90 +103,90 @@ public class PlayerSessionTests
     }
 
     [TestFixture]
-    public class TremorAccumulationTests
+    public class FatigueAccumulationTests
     {
         [Test]
-        public void Throw_LinearTremorOver100Throws_TremorMonotonicallyIncreases()
+        public void Throw_LinearFatigueOver100Throws_FatigueMonotonicallyIncreases()
         {
-            var session = CreateSession(b => b.WithProfessionalPlayer().WithLinearTremor());
+            var session = CreateSession(b => b.WithProfessionalPlayer().WithLinearFatigue());
 
-            var initialTremor = session.CurrentTremor;
-            var tremorValues = new List<double> { initialTremor };
+            var initialFatigue = session.CurrentFatigue;
+            var fatigueValues = new List<double> { initialFatigue };
 
             for (int i = 0; i < 100; i++)
             {
                 session.Throw(Target.Triple(20));
-                tremorValues.Add(session.CurrentTremor);
+                fatigueValues.Add(session.CurrentFatigue);
             }
 
-            var finalTremor = session.CurrentTremor;
+            var finalFatigue = session.CurrentFatigue;
 
-            TestContext.Out.WriteLine($"Initial tremor: {initialTremor:F6}");
-            TestContext.Out.WriteLine($"Final tremor: {finalTremor:F6}");
-            TestContext.Out.WriteLine($"Increase: {finalTremor - initialTremor:F6}");
+            TestContext.Out.WriteLine($"Initial fatigue: {initialFatigue:F6}");
+            TestContext.Out.WriteLine($"Final fatigue: {finalFatigue:F6}");
+            TestContext.Out.WriteLine($"Increase: {finalFatigue - initialFatigue:F6}");
 
-            // Tremor should rise
-            Assert.That(finalTremor, Is.GreaterThan(initialTremor));
+            // Fatigue should rise
+            Assert.That(finalFatigue, Is.GreaterThan(initialFatigue));
 
-            // Tremor should monotonically increase (or at least not decrease)
-            for (int i = 1; i < tremorValues.Count; i++)
+            // Fatigue should monotonically increase (or at least not decrease)
+            for (int i = 1; i < fatigueValues.Count; i++)
             {
-                Assert.That(tremorValues[i], Is.GreaterThanOrEqualTo(tremorValues[i - 1]),
-                    $"Tremor decreased at throw {i}");
+                Assert.That(fatigueValues[i], Is.GreaterThanOrEqualTo(fatigueValues[i - 1]),
+                    $"Fatigue decreased at throw {i}");
             }
         }
 
         [Test]
-        public void Throw_RealisticTremorOver200Throws_EarlyIncreaseExceedsLate()
+        public void Throw_RealisticFatigueOver200Throws_EarlyIncreaseExceedsLate()
         {
-            var session = CreateSession(b => b.WithProfessionalPlayer().WithRealisticTremor());
+            var session = CreateSession(b => b.WithProfessionalPlayer().WithRealisticFatigue());
 
-            var tremorCheckpoints = new List<(int ThrowCount, double Tremor)>();
+            var fatigueCheckpoints = new List<(int ThrowCount, double Fatigue)>();
 
             for (int i = 0; i < 200; i++)
             {
                 session.Throw(Target.Triple(20));
 
-                // Store tremor at certain checkpoints
+                // Store fatigue at certain checkpoints
                 if (i % 20 == 0)
                 {
-                    tremorCheckpoints.Add((i, session.CurrentTremor));
+                    fatigueCheckpoints.Add((i, session.CurrentFatigue));
                 }
             }
 
-            TestContext.Out.WriteLine("Tremor progression:");
-            foreach (var (count, tremor) in tremorCheckpoints)
+            TestContext.Out.WriteLine("Fatigue progression:");
+            foreach (var (count, fatigue) in fatigueCheckpoints)
             {
-                TestContext.Out.WriteLine($"  After {count} throws: {tremor:F6}");
+                TestContext.Out.WriteLine($"  After {count} throws: {fatigue:F6}");
             }
 
             // First half should have stronger increase than second half
-            var earlyIncrease = tremorCheckpoints[tremorCheckpoints.Count / 2].Tremor -
-                                tremorCheckpoints[0].Tremor;
-            var lateIncrease = tremorCheckpoints[^1].Tremor -
-                               tremorCheckpoints[tremorCheckpoints.Count / 2].Tremor;
+            var earlyIncrease = fatigueCheckpoints[fatigueCheckpoints.Count / 2].Fatigue -
+                                fatigueCheckpoints[0].Fatigue;
+            var lateIncrease = fatigueCheckpoints[^1].Fatigue -
+                               fatigueCheckpoints[fatigueCheckpoints.Count / 2].Fatigue;
 
             Assert.That(earlyIncrease, Is.GreaterThanOrEqualTo(lateIncrease),
-                "Logarithmic tremor should increase more rapidly at the beginning");
+                "Logarithmic fatigue should increase more rapidly at the beginning");
         }
 
         [Test]
-        public void Reset_AfterLinearTremorAccumulation_TremorResetsToZero()
+        public void Reset_AfterLinearFatigueAccumulation_FatigueResetsToZero()
         {
-            var session = CreateSession(b => b.WithLinearTremor());
+            var session = CreateSession(b => b.WithLinearFatigue());
 
-            // Build up tremor
+            // Build up fatigue
             for (int i = 0; i < 50; i++)
             {
                 session.Throw(Target.Triple(20));
             }
 
-            var tremorBeforeReset = session.CurrentTremor;
+            var fatigueBeforeReset = session.CurrentFatigue;
 
             session.Reset();
 
-            Assert.That(tremorBeforeReset, Is.GreaterThan(0));
-            Assert.That(session.CurrentTremor, Is.EqualTo(0));
+            Assert.That(fatigueBeforeReset, Is.GreaterThan(0));
+            Assert.That(session.CurrentFatigue, Is.EqualTo(0));
         }
     }
 
@@ -301,9 +301,9 @@ public class PlayerSessionTests
     public class LongSessionTests
     {
         [Test]
-        public void Throw_500ThrowsWithTremor_AllScoresInValidRange()
+        public void Throw_500ThrowsWithFatigue_AllScoresInValidRange()
         {
-            var session = CreateSession(b => b.WithAmateurPlayer().WithLinearTremor());
+            var session = CreateSession(b => b.WithAmateurPlayer().WithLinearFatigue());
 
             var allScores = new List<int>();
             for (int i = 0; i < 500; i++)
@@ -317,13 +317,13 @@ public class PlayerSessionTests
             Assert.That(allScores.All(s => s >= 0 && s <= 60), Is.True);
 
             TestContext.Out.WriteLine($"Average score over 500 throws: {allScores.Average():F2}");
-            TestContext.Out.WriteLine($"Final tremor: {session.CurrentTremor:F6}");
+            TestContext.Out.WriteLine($"Final fatigue: {session.CurrentFatigue:F6}");
         }
 
         [Test]
         public void Reset_FiveConsecutiveGames_EachResetClearsState()
         {
-            var session = CreateSession(b => b.WithLinearTremor());
+            var session = CreateSession(b => b.WithLinearFatigue());
 
             for (int game = 0; game < 5; game++)
             {
@@ -349,11 +349,11 @@ public class PlayerSessionTests
     public class RealisticScenarioTests
     {
         [Test]
-        public void Simulate501_ProfessionalWithTremorAndPressure_ThrowCountPositive()
+        public void Simulate501_ProfessionalWithFatigueAndPressure_ThrowCountPositive()
         {
             var session = CreateSession(b => b
                 .WithProfessionalPlayer()
-                .WithRealisticTremor()
+                .WithRealisticFatigue()
                 .WithCheckoutPsychology());
 
             int remainingScore = 501;

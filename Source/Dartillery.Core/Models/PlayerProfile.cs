@@ -38,9 +38,9 @@ public sealed record PlayerProfile
     public double SystematicBiasY { get; init; }
 
     /// <summary>
-    /// Rate at which tremor accumulates during a session.
+    /// Rate at which fatigue accumulates during a session.
     /// 0.0 = no fatigue, 0.01 = moderate, 0.02+ = high fatigue.
-    /// Tremor increases precision (sigma) over time.
+    /// Fatigue increases precision (sigma) over time.
     /// </summary>
     public double FatigueRate { get; init; } = 0.005;
 
@@ -52,13 +52,13 @@ public sealed record PlayerProfile
     public double PressureResistance { get; init; } = 0.5;
 
     /// <summary>
-    /// Maximum tremor magnitude cap (prevents unrealistic fatigue).
+    /// Maximum fatigue magnitude cap (prevents unrealistic degradation).
     /// Added to base skill as session progresses.
     /// </summary>
-    public double MaxTremor { get; init; } = 0.05;
+    public double MaxFatigue { get; init; } = 0.05;
 
     /// <summary>
-    /// Creates a professional-level profile (BaseSkill 0.02, FatigueRate 0.003, PressureResistance 0.8, MaxTremor 0.03).
+    /// Creates a professional-level profile (BaseSkill 0.02, FatigueRate 0.003, PressureResistance 0.8, MaxFatigue 0.03).
     /// </summary>
     /// <param name="name">Player name. Defaults to "Pro".</param>
     /// <returns>A <see cref="PlayerProfile"/> configured for a top-tier player.</returns>
@@ -68,11 +68,11 @@ public sealed record PlayerProfile
         BaseSkill = 0.02,
         FatigueRate = 0.003,
         PressureResistance = 0.8,
-        MaxTremor = 0.03
+        MaxFatigue = 0.03
     };
 
     /// <summary>
-    /// Creates an amateur-level profile (BaseSkill 0.05, FatigueRate 0.007, PressureResistance 0.5, MaxTremor 0.05).
+    /// Creates an amateur-level profile (BaseSkill 0.05, FatigueRate 0.007, PressureResistance 0.5, MaxFatigue 0.05).
     /// </summary>
     /// <param name="name">Player name. Defaults to "Amateur".</param>
     /// <returns>A <see cref="PlayerProfile"/> configured for a recreational club player.</returns>
@@ -82,11 +82,11 @@ public sealed record PlayerProfile
         BaseSkill = 0.05,
         FatigueRate = 0.007,
         PressureResistance = 0.5,
-        MaxTremor = 0.05
+        MaxFatigue = 0.05
     };
 
     /// <summary>
-    /// Creates a beginner-level profile (BaseSkill 0.08, FatigueRate 0.01, PressureResistance 0.3, MaxTremor 0.08).
+    /// Creates a beginner-level profile (BaseSkill 0.08, FatigueRate 0.01, PressureResistance 0.3, MaxFatigue 0.08).
     /// </summary>
     /// <param name="name">Player name. Defaults to "Beginner".</param>
     /// <returns>A <see cref="PlayerProfile"/> configured for a novice player.</returns>
@@ -96,6 +96,6 @@ public sealed record PlayerProfile
         BaseSkill = 0.08,
         FatigueRate = 0.01,
         PressureResistance = 0.3,
-        MaxTremor = 0.08
+        MaxFatigue = 0.08
     };
 }

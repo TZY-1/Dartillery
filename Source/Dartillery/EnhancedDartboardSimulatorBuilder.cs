@@ -1,11 +1,11 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 using Dartillery.Session;
+using Dartillery.Simulation.Models.FatigueModels;
 using Dartillery.Simulation.Models.GroupingModels;
 using Dartillery.Simulation.Models.MomentumModels;
 using Dartillery.Simulation.Models.PressureModels;
 using Dartillery.Simulation.Models.TargetDifficultyModels;
-using Dartillery.Simulation.Models.TremorModels;
 using Dartillery.Simulation.Services;
 using Dartillery.Simulation.Simulators;
 
@@ -24,7 +24,7 @@ namespace Dartillery;
 /// </para>
 /// <list type="bullet">
 /// <item><description><strong>Player Profiles</strong>: Professional, Amateur, Beginner, or custom profiles</description></item>
-/// <item><description><strong>Tremor Models</strong>: Fatigue simulation (linear, logarithmic, or custom)</description></item>
+/// <item><description><strong>Fatigue Models</strong>: Fatigue simulation (linear, logarithmic, or custom)</description></item>
 /// <item><description><strong>Pressure Models</strong>: Psychological effects during high-stakes throws</description></item>
 /// <item><description><strong>Momentum Models</strong>: Hot/cold streak effects based on recent performance</description></item>
 /// <item><description><strong>Grouping Models</strong>: Dart clustering effects within the same visit</description></item>
@@ -40,16 +40,16 @@ namespace Dartillery;
 /// </remarks>
 /// <example>
 /// <code>
-/// // Simple professional player with linear tremor
+/// // Simple professional player with linear fatigue
 /// var session = new EnhancedDartboardSimulatorBuilder()
 ///     .WithProfessionalPlayer("Alice")
-///     .WithLinearTremor()
+///     .WithLinearFatigue()
 ///     .BuildSession();
 ///
 /// // Full-featured simulation with all behavioral models
 /// var advancedSession = new EnhancedDartboardSimulatorBuilder()
 ///     .WithAmateurPlayer("Bob")
-///     .WithRealisticTremor()
+///     .WithRealisticFatigue()
 ///     .WithCheckoutPsychology()
 ///     .WithStandardMomentum()
 ///     .WithSimpleGrouping()
@@ -63,7 +63,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
 {
     private readonly List<IThrowEventListener> _eventListeners = new();
     private PlayerProfile? _profile;
-    private ITremorModel? _tremorModel;
+    private IFatigueModel? _fatigueModel;
     private IPressureModel? _pressureModel;
     private IMomentumModel? _momentumModel;
     private IGroupingModel? _groupingModel;
@@ -118,37 +118,47 @@ public sealed class EnhancedDartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Configures the builder with a custom tremor (fatigue) model.
+    /// Configures the builder with a custom fatigue model.
     /// </summary>
-    /// <param name="model">The tremor model implementing fatigue accumulation logic.</param>
+    /// <param name="model">The fatigue model implementing fatigue accumulation logic.</param>
     /// <returns>The builder instance for method chaining.</returns>
-    /// <seealso cref="WithLinearTremor"/>
-    /// <seealso cref="WithRealisticTremor"/>
-    public EnhancedDartboardSimulatorBuilder WithTremorModel(ITremorModel model)
+    /// <seealso cref="WithLinearFatigue"/>
+    /// <seealso cref="WithRealisticFatigue"/>
+    public EnhancedDartboardSimulatorBuilder WithFatigueModel(IFatigueModel model)
     {
-        _tremorModel = model;
+        _fatigueModel = model;
         return this;
     }
 
     /// <summary>
-    /// Configures the builder with a linear tremor model that accumulates fatigue at a constant rate.
+    /// Configures the builder with a linear fatigue model that accumulates fatigue at a constant rate.
     /// </summary>
     /// <returns>The builder instance for method chaining.</returns>
-    /// <seealso cref="WithRealisticTremor"/>
-    public EnhancedDartboardSimulatorBuilder WithLinearTremor()
+    /// <seealso cref="WithRealisticFatigue"/>
+    public EnhancedDartboardSimulatorBuilder WithLinearFatigue()
     {
-        _tremorModel = new LinearTremorModel();
+        _fatigueModel = new LinearFatigueModel();
         return this;
     }
 
     /// <summary>
-    /// Configures the builder with a logarithmic tremor model that rises quickly then plateaus, matching real fatigue patterns.
+    /// Configures the builder with a logarithmic fatigue model that rises quickly then plateaus, matching real fatigue patterns.
     /// </summary>
     /// <returns>The builder instance for method chaining.</returns>
-    /// <seealso cref="WithLinearTremor"/>
-    public EnhancedDartboardSimulatorBuilder WithRealisticTremor()
+    /// <seealso cref="WithLinearFatigue"/>
+    public EnhancedDartboardSimulatorBuilder WithRealisticFatigue()
     {
-        _tremorModel = new LogarithmicTremorModel();
+        _fatigueModel = new LogarithmicFatigueModel();
+        return this;
+    }
+
+    /// <summary>
+    /// Disables fatigue simulation entirely. The player's accuracy will not degrade over the session.
+    /// </summary>
+    /// <returns>The builder instance for method chaining.</returns>
+    public EnhancedDartboardSimulatorBuilder WithNoFatigue()
+    {
+        _fatigueModel = new NoFatigueModel();
         return this;
     }
 
@@ -304,7 +314,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
 
     /// <summary>
     /// Builds and returns a configured <see cref="PlayerSession"/> ready for simulation.
-    /// Unset components receive sensible defaults (Amateur profile, linear tremor, no pressure/momentum/grouping/difficulty, no truncation).
+    /// Unset components receive sensible defaults (Amateur profile, linear fatigue, no pressure/momentum/grouping/difficulty, no truncation).
     /// The builder can be reused — each call produces an independent session.
     /// </summary>
     /// <returns>A fully configured <see cref="PlayerSession"/> with all behavioral models wired together.</returns>
@@ -315,7 +325,7 @@ public sealed class EnhancedDartboardSimulatorBuilder
         var config = new SessionConfiguration
         {
             Profile = _profile ?? PlayerProfile.Amateur(),
-            TremorModel = _tremorModel ?? new LinearTremorModel(),
+            FatigueModel = _fatigueModel ?? new LinearFatigueModel(),
             PressureModel = _pressureModel ?? new NoPressureModel(),
             MomentumModel = _momentumModel ?? new NoMomentumModel(),
             GroupingModel = _groupingModel ?? new NoGroupingModel(),

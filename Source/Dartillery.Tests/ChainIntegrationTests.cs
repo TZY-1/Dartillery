@@ -137,7 +137,7 @@ public class ChainIntegrationTests
     {
         return new EnhancedDartboardSimulatorBuilder()
             .WithProfessionalPlayer("Test")
-            .WithRealisticTremor()
+            .WithRealisticFatigue()
             .WithCheckoutPsychology()
             .WithStandardMomentum()
             .WithSeed(seed)

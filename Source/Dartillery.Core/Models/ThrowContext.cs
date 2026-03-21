@@ -7,10 +7,10 @@ namespace Dartillery.Core.Models;
 public sealed record ThrowContext
 {
     /// <summary>
-    /// Session-specific tremor magnitude (accumulated fatigue).
+    /// Session-specific fatigue magnitude.
     /// Added to base skill to simulate declining accuracy.
     /// </summary>
-    public double SessionTremor { get; init; }
+    public double SessionFatigue { get; init; }
 
     /// <summary>
     /// Pressure-based precision modifier (multiplier).

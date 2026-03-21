@@ -15,6 +15,6 @@ public sealed class ConsoleLoggingListener : IThrowEventListener
         ArgumentNullException.ThrowIfNull(evt);
         Console.WriteLine($"[{evt.Timestamp:HH:mm:ss}] {evt.Profile.Name}: " +
             $"{evt.Result.SegmentType} {evt.Result.SectorNumber} " +
-            $"(Score: {evt.Result.Score}, Tremor: {evt.Context.SessionTremor:F4})");
+            $"(Score: {evt.Result.Score}, Fatigue: {evt.Context.SessionFatigue:F4})");
     }
 }

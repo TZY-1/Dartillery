@@ -1,30 +1,30 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 
-namespace Dartillery.Simulation.Models.TremorModels;
+namespace Dartillery.Simulation.Models.FatigueModels;
 
 /// <summary>
-/// Time-based tremor model (not throw-based).
+/// Time-based fatigue model (not throw-based).
 /// Fatigue accumulates based on actual session duration.
 /// More realistic for long practice sessions.
 /// </summary>
-internal sealed class TimeBasedTremorModel : ITremorModel
+internal sealed class TimeBasedFatigueModel : IFatigueModel
 {
     private readonly double _fatiguePerMinute;
 
     /// <summary>
-    /// Creates a time-based tremor model.
+    /// Creates a time-based fatigue model.
     /// </summary>
     /// <param name="fatiguePerMinute">Fatigue accumulation per minute (default: 0.002).</param>
-    public TimeBasedTremorModel(double fatiguePerMinute = 0.002)
+    public TimeBasedFatigueModel(double fatiguePerMinute = 0.002)
     {
         _fatiguePerMinute = fatiguePerMinute;
     }
 
-    public double CalculateTremor(SessionState state, PlayerProfile profile)
+    public double CalculateFatigue(SessionState state, PlayerProfile profile)
     {
         double minutes = state.SessionDuration.TotalMinutes;
-        double tremor = minutes * _fatiguePerMinute * profile.FatigueRate;
-        return Math.Min(tremor, profile.MaxTremor);
+        double fatigue = minutes * _fatiguePerMinute * profile.FatigueRate;
+        return Math.Min(fatigue, profile.MaxFatigue);
     }
 }

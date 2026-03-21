@@ -23,7 +23,7 @@ public sealed class CsvDataLogger : IThrowEventListener, IDisposable
         if (new FileInfo(filePath).Length == 0)
         {
             _writer.WriteLine("Timestamp,SessionId,ThrowIndex,PlayerName,BaseSkill," +
-                "Tremor,Pressure,Momentum,AimX,AimY,HitX,HitY," +
+                "Fatigue,Pressure,Momentum,AimX,AimY,HitX,HitY," +
                 "Score,SegmentType,SectorNumber");
         }
     }
@@ -37,7 +37,7 @@ public sealed class CsvDataLogger : IThrowEventListener, IDisposable
             $"{evt.Context.ThrowIndexInSession}," +
             $"{evt.Profile.Name}," +
             $"{evt.Profile.BaseSkill}," +
-            $"{evt.Context.SessionTremor}," +
+            $"{evt.Context.SessionFatigue}," +
             $"{evt.Context.PressureModifier}," +
             $"{evt.Context.MomentumModifier}," +
             $"{evt.Result.AimedPoint.X}," +

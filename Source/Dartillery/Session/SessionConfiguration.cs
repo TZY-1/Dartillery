@@ -1,10 +1,10 @@
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
+using Dartillery.Simulation.Models.FatigueModels;
 using Dartillery.Simulation.Models.GroupingModels;
 using Dartillery.Simulation.Models.MomentumModels;
 using Dartillery.Simulation.Models.PressureModels;
 using Dartillery.Simulation.Models.TargetDifficultyModels;
-using Dartillery.Simulation.Models.TremorModels;
 
 namespace Dartillery.Session;
 
@@ -17,8 +17,8 @@ internal sealed record SessionConfiguration
     /// <summary>The player profile defining skill characteristics and biases.</summary>
     public PlayerProfile Profile { get; init; } = PlayerProfile.Amateur();
 
-    /// <summary>The tremor model used for fatigue simulation.</summary>
-    public ITremorModel TremorModel { get; init; } = new LinearTremorModel();
+    /// <summary>The fatigue model used for fatigue simulation.</summary>
+    public IFatigueModel FatigueModel { get; init; } = new LinearFatigueModel();
 
     /// <summary>The pressure model used for psychological effects.</summary>
     public IPressureModel PressureModel { get; init; } = new NoPressureModel();

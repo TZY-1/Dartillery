@@ -84,7 +84,7 @@ public sealed class SessionStateManager
     }
 
     /// <summary>
-    /// Returns a point-in-time snapshot of the current session metrics for use by tremor and other time-dependent models.
+    /// Returns a point-in-time snapshot of the current session metrics for use by fatigue and other time-dependent models.
     /// </summary>
     /// <returns>A <see cref="SessionState"/> with current throw count, duration, and time since last throw.</returns>
     public SessionState GetCurrentState()
@@ -95,7 +95,7 @@ public sealed class SessionStateManager
             ThrowCount = _throwCount,
             SessionDuration = now - _sessionStart,
             TimeSinceLastThrow = now - _lastThrowTime,
-            CurrentTremor = 0.0 // Will be set by ThrowContextBuilder
+            CurrentFatigue = 0.0 // Will be set by ThrowContextBuilder
         };
     }
 

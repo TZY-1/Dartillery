@@ -23,12 +23,12 @@
                 <span class="diag-val">@Svc.CustomSigma.ToString("F3")</span>
             </div>
             <div class="diag-row">
-                <span class="diag-label">+ Tremor</span>
-                <span class="diag-val @(Svc.CurrentTremor > 0 ? "warn" : "")">+@Svc.CurrentTremor.ToString("F4")</span>
+                <span class="diag-label">+ Fatigue</span>
+                <span class="diag-val @(Svc.CurrentFatigue > 0 ? "warn" : "")">+@Svc.CurrentFatigue.ToString("F4")</span>
             </div>
             <div class="diag-row total">
                 <span class="diag-label">Effective Sigma</span>
-                <span class="diag-val highlight">@((Svc.CustomSigma + Svc.CurrentTremor).ToString("F4"))</span>
+                <span class="diag-val highlight">@((Svc.CustomSigma + Svc.CurrentFatigue).ToString("F4"))</span>
             </div>
         }
         else

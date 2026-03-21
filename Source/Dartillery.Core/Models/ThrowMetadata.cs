@@ -8,8 +8,8 @@ public sealed record ThrowMetadata
     /// <summary>Net horizontal systematic bias (meters) applied by <c>SystematicBiasDeviationCalculator</c>.</summary>
     public double SystematicBiasApplied { get; init; }
 
-    /// <summary>Tremor magnitude (sigma increase) active at the moment of the throw.</summary>
-    public double TremorMagnitude { get; init; }
+    /// <summary>Fatigue magnitude (sigma increase) active at the moment of the throw.</summary>
+    public double FatigueMagnitude { get; init; }
 
     /// <summary>Pressure multiplier applied to deviation (&gt;1.0 = worse accuracy under pressure).</summary>
     public double PressureModifier { get; init; }
