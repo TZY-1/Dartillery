@@ -1,66 +1,71 @@
 using Dartillery.Core.Abstractions;
-using Dartillery.Core.Enums;
 using Dartillery.Core.Models;
 
 namespace Dartillery.Simulation.Models.MomentumModels;
 
 /// <summary>
-/// Standard momentum model tracking hot hand / cold streak effects.
-/// Analyzes recent throw history to detect performance trends.
+/// Deviation-based momentum model: measures throw consistency relative to base sigma.
+/// Good throws (low deviation) build hot streaks, bad throws (high deviation) trigger cold streaks.
 /// </summary>
 internal sealed class StandardMomentumModel : IMomentumModel
 {
+    private readonly double _baseSigma;
     private readonly int _windowSize;
     private readonly double _hotHandBonus;
     private readonly double _coldStreakPenalty;
+    private readonly double _hotThreshold;
+    private readonly double _coldThreshold;
+    private readonly double _goodDeviationFactor;
+    private readonly double _badDeviationFactor;
 
-    /// <summary>
-    /// Creates a standard momentum model.
-    /// </summary>
-    /// <param name="windowSize">Number of recent throws to analyze (default: 6).</param>
-    /// <param name="hotHandBonus">Bonus for hot hand - reduces deviation (default: 0.05 = 5% better).</param>
-    /// <param name="coldStreakPenalty">Penalty for cold streak - increases deviation (default: 0.1 = 10% worse).</param>
     public StandardMomentumModel(
+        double baseSigma,
         int windowSize = 6,
         double hotHandBonus = 0.05,
-        double coldStreakPenalty = 0.1)
+        double coldStreakPenalty = 0.1,
+        double hotThreshold = 0.7,
+        double coldThreshold = 0.5,
+        double goodDeviationFactor = 1.0,
+        double badDeviationFactor = 2.5)
     {
+        _baseSigma = baseSigma;
         _windowSize = windowSize;
         _hotHandBonus = hotHandBonus;
         _coldStreakPenalty = coldStreakPenalty;
+        _hotThreshold = hotThreshold;
+        _coldThreshold = coldThreshold;
+        _goodDeviationFactor = goodDeviationFactor;
+        _badDeviationFactor = badDeviationFactor;
     }
 
     public double CalculateMomentumModifier(IReadOnlyList<ThrowResult> recentHistory)
     {
-        if (recentHistory.Count < 3)
+        if (recentHistory.Count == 0)
         {
-            return 1.0; // Not enough data
+            return 1.0;
         }
 
-        // Take last N throws
         var window = recentHistory.TakeLast(_windowSize).ToList();
 
-        // Count successes (hitting high-value targets)
-        int triples = window.Count(r => r.SegmentType == SegmentType.Triple);
-        int doubles = window.Count(r => r.SegmentType == SegmentType.Double);
-        int bulls = window.Count(r => r.IsBull);
-        int misses = window.Count(r => !r.IsHit);
+        double goodThreshold = _baseSigma * _goodDeviationFactor;
+        double badThreshold = _baseSigma * _badDeviationFactor;
 
-        int successes = triples + doubles + bulls;
-        double successRate = successes / (double)window.Count;
+        int successes = window.Count(r => r.Deviation < goodThreshold);
+        int failures = window.Count(r => r.Deviation > badThreshold);
 
-        // Hot hand: > 70% success rate
-        if (successRate > 0.7)
+        double successRate = successes / (double)_windowSize;
+        double failureRate = failures / (double)_windowSize;
+
+        if (successRate >= _hotThreshold)
         {
-            return 1.0 - _hotHandBonus; // Less deviation (better)
+            return 1.0 - _hotHandBonus;
         }
 
-        // Cold streak: > 50% misses
-        if (misses > window.Count / 2)
+        if (failureRate >= _coldThreshold)
         {
-            return 1.0 + _coldStreakPenalty; // More deviation (worse)
+            return 1.0 + _coldStreakPenalty;
         }
 
-        return 1.0; // Neutral
+        return 1.0;
     }
 }

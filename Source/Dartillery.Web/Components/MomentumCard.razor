@@ -1,4 +1,5 @@
 @using Dartillery.Core.Models
+@using Dartillery.Core.Enums
 @using Dartillery.Web.Services
 
 <div class="factor-card @(!Svc.EnableMomentum ? "card-inactive" : "")">
@@ -13,37 +14,150 @@
         </label>
     </div>
     <div class="card-body">
-        <small class="card-desc">Hot streaks improve accuracy, cold streaks worsen it. Analyzes last 6 throws for triples, doubles, and bulls.</small>
+        <small class="card-desc">Measures throw consistency via deviation. Consistently precise throws trigger a hot streak bonus, scattered throws trigger a cold streak penalty.</small>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Window Size</span>
+                <span class="slider-value">@Svc.MomentumWindowSize</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="3" max="12" step="1"
+                   value="@Svc.MomentumWindowSize.ToString(Inv)"
+                   @oninput="e => OnSliderInt(e, v => Svc.MomentumWindowSize = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">Number of recent throws to analyze.</small>
+        </div>
+
+        <div class="slider-pair">
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Hot Threshold</span>
+                    <span class="slider-value">@((Svc.MomentumHotThreshold * 100).ToString("F0"))%</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.2" max="1.0" step="0.05"
+                       value="@Svc.MomentumHotThreshold.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumHotThreshold = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Percentage of "good" throws in the window needed to trigger hot streak.</small>
+            </div>
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Cold Threshold</span>
+                    <span class="slider-value">@((Svc.MomentumColdThreshold * 100).ToString("F0"))%</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.1" max="0.8" step="0.05"
+                       value="@Svc.MomentumColdThreshold.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumColdThreshold = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Percentage of "bad" throws in the window needed to trigger cold streak.</small>
+            </div>
+        </div>
+
+        <div class="slider-pair">
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Hot Bonus</span>
+                    <span class="slider-value">-@((Svc.MomentumHotBonus * 100).ToString("F0"))%</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.01" max="0.3" step="0.01"
+                       value="@Svc.MomentumHotBonus.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumHotBonus = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Deviation reduction when hot streak is active.</small>
+            </div>
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Cold Penalty</span>
+                    <span class="slider-value">+@((Svc.MomentumColdPenalty * 100).ToString("F0"))%</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.01" max="0.3" step="0.01"
+                       value="@Svc.MomentumColdPenalty.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumColdPenalty = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Deviation increase when cold streak is active.</small>
+            </div>
+        </div>
+
+        <div class="slider-pair">
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Good Deviation</span>
+                    <span class="slider-value">&lt; @Svc.MomentumGoodDeviation.ToString("F1")x&sigma;</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.5" max="3.0" step="0.1"
+                       value="@Svc.MomentumGoodDeviation.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumGoodDeviation = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Throws with deviation below this &times; sigma count as good. Threshold: @((Svc.CustomSigma * Svc.MomentumGoodDeviation).ToString("F3"))</small>
+            </div>
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Bad Deviation</span>
+                    <span class="slider-value">&gt; @Svc.MomentumBadDeviation.ToString("F1")x&sigma;</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="1.0" max="5.0" step="0.1"
+                       value="@Svc.MomentumBadDeviation.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.MomentumBadDeviation = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Throws with deviation above this &times; sigma count as bad. Threshold: @((Svc.CustomSigma * Svc.MomentumBadDeviation).ToString("F3"))</small>
+            </div>
+        </div>
 
         <div class="card-divider"></div>
 
-        @if (Svc.EnableMomentum && Svc.LastThrow?.Metadata is { } meta)
+        @if (Svc.EnableMomentum && Svc.Throws.Count > 0)
         {
+            var streakInfo = GetStreakInfo();
+            var modifier = streakInfo.CurrentModifier;
+            var dist = Math.Abs(modifier - 1.0);
+            var w = Math.Clamp(dist / 0.3 * 50.0, 0, 50);
+            var barOffset = modifier < 1.0 ? 50.0 - w : 50.0;
+            var cls = modifier < 0.99 ? "bar-good" : modifier > 1.01 ? "bar-danger" : "bar-neutral";
+
             <div class="diag-bar-row">
                 <span class="diag-label">Modifier</span>
                 <div class="diag-bar-track momentum-track">
-                    @{
-                        var dist = Math.Abs(meta.MomentumModifier - 1.0);
-                        var w = Math.Clamp(dist / 0.15 * 50.0, 0, 50);
-                        var offset = meta.MomentumModifier < 1.0 ? 50.0 - w : 50.0;
-                        var cls = meta.MomentumModifier < 0.99 ? "bar-good" : meta.MomentumModifier > 1.01 ? "bar-danger" : "bar-neutral";
-                    }
-                    <div class="diag-bar-fill @cls" style="width: @w.ToString("F1", Inv)%; margin-left: @offset.ToString("F1", Inv)%"></div>
+                    <div class="diag-bar-fill @cls" style="width: @w.ToString("F1", Inv)%; margin-left: @barOffset.ToString("F1", Inv)%"></div>
                 </div>
-                <span class="diag-bar-val">x@(meta.MomentumModifier.ToString("F2"))</span>
+                <span class="diag-bar-val">x@(modifier.ToString("F2"))</span>
             </div>
-            <div class="diag-detail @(meta.MomentumModifier < 0.99 ? "good" : meta.MomentumModifier > 1.01 ? "warn" : "neutral")">
-                @if (meta.MomentumModifier < 0.99)
+
+            <div class="diag-row">
+                <span class="diag-label">Window</span>
+                <span class="diag-val">@streakInfo.WindowCount / @Svc.MomentumWindowSize throws</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Good (dev &lt; @((Svc.CustomSigma * Svc.MomentumGoodDeviation).ToString("F3")))</span>
+                <span class="diag-val good">@streakInfo.Good (@streakInfo.GoodRate.ToString("F0")%)</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Bad (dev &gt; @((Svc.CustomSigma * Svc.MomentumBadDeviation).ToString("F3")))</span>
+                <span class="diag-val warn">@streakInfo.Bad (@streakInfo.BadRate.ToString("F0")%)</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">Neutral</span>
+                <span class="diag-val">@(streakInfo.WindowCount - streakInfo.Good - streakInfo.Bad)</span>
+            </div>
+
+            <div class="diag-detail @(modifier < 0.99 ? "good" : modifier > 1.01 ? "warn" : "neutral")">
+                @if (modifier < 0.99)
                 {
-                    <span>Hot streak — accuracy improved by @(((1.0 - meta.MomentumModifier) * 100).ToString("F0"))%</span>
+                    <span>Hot streak! Good rate @streakInfo.GoodRate.ToString("F0")% &ge; @((Svc.MomentumHotThreshold * 100).ToString("F0"))% threshold</span>
                 }
-                else if (meta.MomentumModifier > 1.01)
+                else if (modifier > 1.01)
                 {
-                    <span>Cold streak — accuracy reduced by @(((meta.MomentumModifier - 1.0) * 100).ToString("F0"))%</span>
+                    <span>Cold streak! Bad rate @streakInfo.BadRate.ToString("F0")% &ge; @((Svc.MomentumColdThreshold * 100).ToString("F0"))% threshold</span>
                 }
                 else
                 {
-                    <span>Neutral — no streak detected</span>
+                    <span>Neutral — good @streakInfo.GoodRate.ToString("F0")% (need &ge;@((Svc.MomentumHotThreshold * 100).ToString("F0"))%), bad @streakInfo.BadRate.ToString("F0")% (need &ge;@((Svc.MomentumColdThreshold * 100).ToString("F0"))%)</span>
                 }
             </div>
         }
@@ -64,10 +178,53 @@
 
     private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
 
+    private static void OnSlider(ChangeEventArgs e, Action<double> setter)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, Inv, out var v))
+            setter(v);
+    }
+
+    private static void OnSliderInt(ChangeEventArgs e, Action<int> setter)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+            setter(v);
+    }
+
+    private async Task OnChanged()
+    {
+        Svc.SelectedSkillLevel = "Custom";
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+
     private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
     {
         setter((bool)(e.Value ?? false));
         Svc.RebuildSession();
         await OnParameterChanged.InvokeAsync();
     }
+
+    private StreakInfo GetStreakInfo()
+    {
+        var throws = Svc.Throws;
+        if (throws.Count == 0) return new StreakInfo(0, 0, 0, 0, 0, 1.0);
+
+        var window = throws.TakeLast(Svc.MomentumWindowSize).ToList();
+        double goodThreshold = Svc.CustomSigma * Svc.MomentumGoodDeviation;
+        double badThreshold = Svc.CustomSigma * Svc.MomentumBadDeviation;
+        int good = window.Count(r => r.Deviation < goodThreshold);
+        int bad = window.Count(r => r.Deviation > badThreshold);
+        double goodRate = good / (double)Svc.MomentumWindowSize * 100;
+        double badRate = bad / (double)Svc.MomentumWindowSize * 100;
+
+        double modifier = 1.0;
+        if (goodRate / 100.0 >= Svc.MomentumHotThreshold)
+            modifier = 1.0 - Svc.MomentumHotBonus;
+        else if (badRate / 100.0 >= Svc.MomentumColdThreshold)
+            modifier = 1.0 + Svc.MomentumColdPenalty;
+
+        return new StreakInfo(window.Count, good, bad, goodRate, badRate, modifier);
+    }
+
+    private sealed record StreakInfo(int WindowCount, int Good, int Bad, double GoodRate, double BadRate, double CurrentModifier);
 }

@@ -203,9 +203,15 @@ public sealed class EnhancedDartboardSimulatorBuilder
     /// Configures the builder with a standard momentum model that boosts accuracy on hot streaks and penalizes cold ones.
     /// </summary>
     /// <returns>The builder instance for method chaining.</returns>
-    public EnhancedDartboardSimulatorBuilder WithStandardMomentum()
+    public EnhancedDartboardSimulatorBuilder WithStandardMomentum(
+        int windowSize = 6, double hotHandBonus = 0.05, double coldStreakPenalty = 0.1,
+        double hotThreshold = 0.7, double coldThreshold = 0.5,
+        double goodDeviationFactor = 1.0, double badDeviationFactor = 2.5)
     {
-        _momentumModel = new StandardMomentumModel();
+        double baseSigma = _profile?.BaseSkill ?? 0.05;
+        _momentumModel = new StandardMomentumModel(
+            baseSigma, windowSize, hotHandBonus, coldStreakPenalty,
+            hotThreshold, coldThreshold, goodDeviationFactor, badDeviationFactor);
         return this;
     }
 

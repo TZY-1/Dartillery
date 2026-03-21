@@ -4,7 +4,6 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     transition: border-color var(--transition-base);
@@ -29,6 +28,7 @@
     gap: var(--spacing-xs);
     padding: var(--spacing-xs) var(--spacing-sm);
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--neutral-white);
@@ -70,6 +70,13 @@
     height: 1px;
     background: var(--border);
     margin: var(--spacing-xs) 0;
+}
+
+/* Slider Pairs (2-column layout for related sliders) */
+.slider-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--spacing-sm);
 }
 
 /* Slider Groups */

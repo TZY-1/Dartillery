@@ -40,6 +40,20 @@ public sealed class SimulationService
 
     public bool EnableMomentum { get; set; }
 
+    public int MomentumWindowSize { get; set; } = 6;
+
+    public double MomentumHotThreshold { get; set; } = 0.7;
+
+    public double MomentumColdThreshold { get; set; } = 0.5;
+
+    public double MomentumHotBonus { get; set; } = 0.05;
+
+    public double MomentumColdPenalty { get; set; } = 0.1;
+
+    public double MomentumGoodDeviation { get; set; } = 1.0;
+
+    public double MomentumBadDeviation { get; set; } = 2.5;
+
     public bool EnableGrouping { get; set; }
 
     public bool EnableTargetDifficulty { get; set; }
@@ -110,7 +124,10 @@ public sealed class SimulationService
 
         if (EnableMomentum)
         {
-            builder.WithStandardMomentum();
+            builder.WithStandardMomentum(
+                MomentumWindowSize, MomentumHotBonus, MomentumColdPenalty,
+                MomentumHotThreshold, MomentumColdThreshold,
+                MomentumGoodDeviation, MomentumBadDeviation);
         }
 
         if (EnableGrouping)
