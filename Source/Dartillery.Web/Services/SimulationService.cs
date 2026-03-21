@@ -38,6 +38,10 @@ public sealed class SimulationService
 
     public double MaxFatigue { get; set; } = 0.05;
 
+    public FatigueModelType FatigueModelType { get; set; } = FatigueModelType.Logarithmic;
+
+    public double FatigueGrowthRate { get; set; } = 0.01;
+
     public bool EnableMomentum { get; set; }
 
     public int MomentumWindowSize { get; set; } = 6;
@@ -61,6 +65,20 @@ public sealed class SimulationService
     public bool EnableManualTargeting { get; set; }
 
     public SpreadMode SpreadMode { get; set; } = SpreadMode.Gaussian;
+
+    public bool ShowSpreadCircle { get; set; } = true;
+
+    public double SpreadRadius => SpreadMode switch
+    {
+        SpreadMode.Uniform => CustomSigma,
+        _ => CustomSigma * 3
+    };
+
+    public double EffectiveSpreadRadius => SpreadMode switch
+    {
+        SpreadMode.Uniform => CustomSigma + CurrentFatigue,
+        _ => (CustomSigma + CurrentFatigue) * 3
+    };
 
     // Current state properties
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
@@ -114,7 +132,22 @@ public sealed class SimulationService
         // Apply behavioral models based on toggles
         if (EnableFatigue)
         {
-            builder.WithRealisticFatigue();
+            switch (FatigueModelType)
+            {
+                case FatigueModelType.Logarithmic:
+                    builder.WithRealisticFatigue(FatigueGrowthRate);
+                    break;
+                case FatigueModelType.Linear:
+                    builder.WithLinearFatigue();
+                    break;
+                case FatigueModelType.None:
+                    builder.WithNoFatigue();
+                    break;
+            }
+        }
+        else
+        {
+            builder.WithNoFatigue();
         }
 
         if (EnablePressure)
@@ -141,7 +174,8 @@ public sealed class SimulationService
         }
 
         builder.WithSpreadMode(SpreadMode);
-        builder.WithTruncation(CustomSigma * 3);
+        var maxEffectiveSigma = EnableFatigue ? CustomSigma + MaxFatigue : CustomSigma;
+        builder.WithTruncation(maxEffectiveSigma * 3);
 
         // Build the session
         _session = builder.BuildSession();
