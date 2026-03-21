@@ -146,9 +146,9 @@ public sealed class EnhancedDartboardSimulatorBuilder
     /// </summary>
     /// <returns>The builder instance for method chaining.</returns>
     /// <seealso cref="WithLinearFatigue"/>
-    public EnhancedDartboardSimulatorBuilder WithRealisticFatigue()
+    public EnhancedDartboardSimulatorBuilder WithRealisticFatigue(double growthRate = 0.01)
     {
-        _fatigueModel = new LogarithmicFatigueModel();
+        _fatigueModel = new LogarithmicFatigueModel(growthRate);
         return this;
     }
 
