@@ -68,17 +68,9 @@ public sealed class SimulationService
 
     public bool ShowSpreadCircle { get; set; } = true;
 
-    public double SpreadRadius => SpreadMode switch
-    {
-        SpreadMode.Uniform => CustomSigma,
-        _ => CustomSigma * 3
-    };
+    public ISpreadBounds? BaseBounds { get; private set; }
 
-    public double EffectiveSpreadRadius => SpreadMode switch
-    {
-        SpreadMode.Uniform => CustomSigma + CurrentFatigue,
-        _ => (CustomSigma + CurrentFatigue) * 3
-    };
+    public ISpreadBounds? EffectiveBounds { get; private set; }
 
     // Current state properties
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
@@ -174,8 +166,12 @@ public sealed class SimulationService
         }
 
         builder.WithSpreadMode(SpreadMode);
-        var maxEffectiveSigma = EnableFatigue ? CustomSigma + MaxFatigue : CustomSigma;
-        builder.WithTruncation(maxEffectiveSigma * 3);
+        builder.WithTruncation();
+
+        // Compute bounds for visualization using the spread algorithm's own logic
+        BaseBounds = SpreadBoundsFactory.Create(SpreadMode, CustomSigma);
+        var effectivePrecision = CustomSigma + (EnableFatigue ? MaxFatigue : 0);
+        EffectiveBounds = SpreadBoundsFactory.Create(SpreadMode, effectivePrecision);
 
         // Build the session
         _session = builder.BuildSession();

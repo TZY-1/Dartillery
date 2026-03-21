@@ -365,7 +365,7 @@ public class EnhancedSimulatorAnalysisTests
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
                 .WithStandardTargetDifficulty()
-                .WithTruncation(0.25)
+                .WithTruncation()
                 .WithSeed(42)
                 .BuildSession();
 

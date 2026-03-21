@@ -1,4 +1,5 @@
 using Dartillery.Core.Abstractions;
+using Dartillery.Core.Models;
 using Dartillery.Simulation.Calculators;
 
 namespace Dartillery.Session;
@@ -10,7 +11,7 @@ internal sealed class DeviationCalculatorChainBuilder
 {
     private readonly IDeviationCalculator _baseCalculator;
     private bool _useTruncation;
-    private double _maxDeviation = 0.25;
+    private ISpreadBounds? _truncationBounds;
 
     public DeviationCalculatorChainBuilder(IDeviationCalculator baseCalculator)
     {
@@ -19,12 +20,12 @@ internal sealed class DeviationCalculatorChainBuilder
     }
 
     /// <summary>
-    /// Enables truncation with the specified maximum deviation.
+    /// Enables truncation using the specified spread bounds.
     /// </summary>
-    public DeviationCalculatorChainBuilder WithTruncation(bool use, double maxDeviation = 0.25)
+    public DeviationCalculatorChainBuilder WithTruncation(bool use, ISpreadBounds? bounds = null)
     {
         _useTruncation = use;
-        _maxDeviation = maxDeviation;
+        _truncationBounds = bounds;
         return this;
     }
 
@@ -39,8 +40,8 @@ internal sealed class DeviationCalculatorChainBuilder
         chain = new PressureModifiedDeviationCalculator(chain);
         chain = new MomentumModifiedDeviationCalculator(chain);
 
-        if (_useTruncation)
-            chain = new TruncatedDeviationCalculator(chain, _maxDeviation);
+        if (_useTruncation && _truncationBounds != null)
+            chain = new TruncatedDeviationCalculator(chain, _truncationBounds);
 
         return chain;
     }

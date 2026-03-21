@@ -56,4 +56,7 @@ internal sealed class GaussianDeviationCalculator : IDeviationCalculator
 
         return (dx, dy);
     }
+
+    /// <inheritdoc />
+    public ISpreadBounds GetBounds(double precision) => new CircleBounds(precision * 3);
 }

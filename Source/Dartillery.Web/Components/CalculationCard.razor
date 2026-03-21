@@ -102,7 +102,10 @@
                     <span class="diag-val">@Svc.LastThrow!.Deviation.ToString("F4")</span>
                 </div>
                 @{
-                    var ratio = Svc.SpreadRadius > 0 ? Svc.LastThrow!.Deviation / Svc.SpreadRadius : 0;
+                    var lastThrow = Svc.LastThrow!;
+                    var ratio = Svc.BaseBounds != null
+                        ? Svc.BaseBounds.NormalizedDistance(lastThrow.HitPoint.X - lastThrow.AimedPoint.X, lastThrow.HitPoint.Y - lastThrow.AimedPoint.Y)
+                        : 0;
                     string ratingText;
                     string ratingClass;
                     if (ratio < 0.15) { ratingText = "Bullseye"; ratingClass = "good"; }

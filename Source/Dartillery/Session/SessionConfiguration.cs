@@ -38,9 +38,6 @@ internal sealed record SessionConfiguration
     /// <summary>Whether deviation truncation is enabled.</summary>
     public bool UseTruncation { get; init; }
 
-    /// <summary>Maximum allowed deviation when truncation is enabled.</summary>
-    public double MaxDeviation { get; init; } = 0.25;
-
     /// <summary>Optional seed for the random number generator. <c>null</c> means non-deterministic.</summary>
     public int? Seed { get; init; }
 

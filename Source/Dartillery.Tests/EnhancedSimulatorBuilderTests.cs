@@ -357,7 +357,7 @@ public class EnhancedSimulatorBuilderTests
         [Test]
         public void WithTruncation_CustomMaxDeviation_BuildsSuccessfully()
         {
-            var session = CreateSession(b => b.WithTruncation(0.15));
+            var session = CreateSession(b => b.WithTruncation());
 
             Assert.That(session, Is.Not.Null);
 
@@ -384,7 +384,7 @@ public class EnhancedSimulatorBuilderTests
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
                 .WithStandardTargetDifficulty()
-                .WithTruncation(0.2)
+                .WithTruncation()
                 .WithSeed(999)
                 .BuildSession();
 
@@ -421,7 +421,7 @@ public class EnhancedSimulatorBuilderTests
                 .WithStandardMomentum()
                 .WithSimpleGrouping()
                 .WithStandardTargetDifficulty()
-                .WithTruncation(0.25)
+                .WithTruncation()
                 .WithSeed(12345)
                 .BuildSession();
 

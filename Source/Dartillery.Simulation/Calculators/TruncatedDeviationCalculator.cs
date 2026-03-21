@@ -4,34 +4,42 @@ using Dartillery.Core.Models;
 namespace Dartillery.Simulation.Calculators;
 
 /// <summary>
-/// Optional decorator that caps maximum deviation magnitude.
-/// Prevents unrealistic outlier throws (e.g., beyond 3 standard deviations).
+/// Optional decorator that caps deviation to within the spread algorithm's bounds.
+/// Shape-agnostic — works for circles, ellipses, and any future boundary type.
 /// </summary>
 internal sealed class TruncatedDeviationCalculator : IContextualDeviationCalculator
 {
     private readonly IContextualDeviationCalculator _inner;
-    private readonly double _maxDeviationMeters;
+    private readonly ISpreadBounds _bounds;
 
     public TruncatedDeviationCalculator(
         IContextualDeviationCalculator inner,
-        double maxDeviationMeters = 0.25)
+        ISpreadBounds bounds)
     {
         ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(bounds);
         _inner = inner;
-        _maxDeviationMeters = maxDeviationMeters;
+        _bounds = bounds;
     }
 
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);
 
-        double magnitude = Math.Sqrt((dx * dx) + (dy * dy));
-
-        // If deviation exceeds max, scale it down proportionally
-        if (magnitude > _maxDeviationMeters)
+        if (!_bounds.Contains(dx, dy))
         {
-            double scale = _maxDeviationMeters / magnitude;
-            return (dx * scale, dy * scale);
+            // Scale down proportionally to land on the boundary
+            double distance = Math.Sqrt((dx * dx) + (dy * dy));
+            if (distance > 0)
+            {
+                // Use NormalizedDistance to find the scale factor
+                double normalized = _bounds.NormalizedDistance(dx, dy);
+                if (normalized > 0)
+                {
+                    double scale = 1.0 / normalized;
+                    return (dx * scale, dy * scale);
+                }
+            }
         }
 
         return (dx, dy);

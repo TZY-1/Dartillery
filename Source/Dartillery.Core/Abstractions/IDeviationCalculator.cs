@@ -27,4 +27,10 @@ public interface IDeviationCalculator
     /// </list>
     /// </returns>
     (double DX, double DY) CalculateDeviation(double precision);
+
+    /// <summary>
+    /// Returns the spread boundary shape for the given precision value.
+    /// The bounds describe the area within which throws are expected to land.
+    /// </summary>
+    ISpreadBounds GetBounds(double precision);
 }

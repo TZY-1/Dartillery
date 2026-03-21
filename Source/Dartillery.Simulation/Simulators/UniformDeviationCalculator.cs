@@ -41,4 +41,7 @@ internal sealed class UniformDeviationCalculator : IDeviationCalculator
 
         return (dx, dy);
     }
+
+    /// <inheritdoc />
+    public ISpreadBounds GetBounds(double precision) => new CircleBounds(precision);
 }

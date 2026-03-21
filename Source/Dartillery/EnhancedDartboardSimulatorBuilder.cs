@@ -54,7 +54,7 @@ namespace Dartillery;
 ///     .WithStandardMomentum()
 ///     .WithSimpleGrouping()
 ///     .WithStandardTargetDifficulty()
-///     .WithTruncation(0.3)
+///     .WithTruncation()
 ///     .AddEventListener(new ConsoleLogger())
 ///     .BuildSession();
 /// </code>
@@ -70,7 +70,6 @@ public sealed class EnhancedDartboardSimulatorBuilder
     private ITargetDifficultyModel? _targetDifficultyModel;
     private SpreadMode _spreadMode = SpreadMode.Gaussian;
     private bool _useTruncation;
-    private double _maxDeviation = 0.25;
     private int? _seed;
 
     /// <summary>
@@ -280,13 +279,12 @@ public sealed class EnhancedDartboardSimulatorBuilder
 
     /// <summary>
     /// Enables deviation truncation to prevent statistical outliers from landing impossibly far from the target.
+    /// The truncation bounds are automatically derived from the spread algorithm and player profile.
     /// </summary>
-    /// <param name="maxDeviation">Maximum allowed deviation in normalized board units (1.0 = outer double ring radius). Defaults to 0.25.</param>
     /// <returns>The builder instance for method chaining.</returns>
-    public EnhancedDartboardSimulatorBuilder WithTruncation(double maxDeviation = 0.25)
+    public EnhancedDartboardSimulatorBuilder WithTruncation()
     {
         _useTruncation = true;
-        _maxDeviation = maxDeviation;
         return this;
     }
 
@@ -332,7 +330,6 @@ public sealed class EnhancedDartboardSimulatorBuilder
             TargetDifficultyModel = _targetDifficultyModel ?? new NoTargetDifficultyModel(),
             SpreadMode = _spreadMode,
             UseTruncation = _useTruncation,
-            MaxDeviation = _maxDeviation,
             Seed = _seed,
             EventListeners = _eventListeners.AsReadOnly()
         };
@@ -347,8 +344,12 @@ public sealed class EnhancedDartboardSimulatorBuilder
             _ => new GaussianDeviationCalculator(rng)
         };
 
+        // Compute truncation bounds from the spread algorithm using the worst-case precision
+        var maxPrecision = config.Profile.BaseSkill + config.Profile.MaxFatigue;
+        var bounds = baseCalc.GetBounds(maxPrecision);
+
         var chain = new DeviationCalculatorChainBuilder(baseCalc)
-            .WithTruncation(config.UseTruncation, config.MaxDeviation)
+            .WithTruncation(config.UseTruncation, bounds)
             .Build();
 
         return PlayerSessionFactory.Create(config, chain);

@@ -50,7 +50,7 @@
 
         <div class="diag-row">
             <span class="diag-label">Spread Radius</span>
-            <span class="diag-val highlight">@Svc.SpreadRadius.ToString("F3")</span>
+            <span class="diag-val highlight">@(Svc.BaseBounds is Dartillery.Core.Models.CircleBounds cb ? cb.Radius.ToString("F3") : "—")</span>
         </div>
         <div class="diag-detail neutral">
             @switch (Svc.SpreadMode)

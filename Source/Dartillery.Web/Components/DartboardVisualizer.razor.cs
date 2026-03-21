@@ -1,4 +1,5 @@
 using System.Text;
+using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 using Dartillery.Shared;
 using Microsoft.AspNetCore.Components;
@@ -43,10 +44,10 @@ public partial class DartboardVisualizer
     public bool ShowSpreadCircle { get; set; }
 
     [Parameter]
-    public double SpreadRadius { get; set; }
+    public ISpreadBounds? BaseBounds { get; set; }
 
     [Parameter]
-    public double EffectiveSpreadRadius { get; set; }
+    public ISpreadBounds? EffectiveBounds { get; set; }
 
     [Parameter]
     public bool EnableManualTargeting { get; set; }
