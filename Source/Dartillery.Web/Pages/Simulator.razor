@@ -9,15 +9,15 @@
 <div class="simulator-dashboard">
     <div class="dashboard-toolbar">
         <SimulatorToolbar SimulationService="@SimulationService"
-                          OnThrowExecuted="@OnThrowExecuted"
-                          @bind-ShowSpreadCircle="ShowSpreadCircle" />
+                          OnThrowExecuted="@OnThrowExecuted" />
     </div>
 
     <div class="dashboard-board">
         <DartboardVisualizer Throws="@SimulationService.Throws.ToList()"
                              ShowDeviationLines="@ShowDeviationLines"
-                             ShowSpreadCircle="@ShowSpreadCircle"
-                             SpreadRadius="@GetSpreadRadius()"
+                             ShowSpreadCircle="@SimulationService.ShowSpreadCircle"
+                             SpreadRadius="@SimulationService.SpreadRadius"
+                             EffectiveSpreadRadius="@SimulationService.EffectiveSpreadRadius"
                              EnableManualTargeting="@SimulationService.EnableManualTargeting"
                              OnManualTargetSelected="@HandleManualTargetSelected" />
         <CompactStats SimulationService="@SimulationService" />
@@ -31,18 +31,12 @@
         <MomentumCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
         <GroupingCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
         <TargetDifficultyCard Svc="@SimulationService" OnParameterChanged="@OnThrowExecuted" />
+        <CalculationCard Svc="@SimulationService" />
     </div>
 </div>
 
 @code {
     private bool ShowDeviationLines { get; set; } = true;
-    private bool ShowSpreadCircle { get; set; } = true;
-
-    private double GetSpreadRadius() => SimulationService.SpreadMode switch
-    {
-        Dartillery.SpreadMode.Uniform => SimulationService.CustomSigma,
-        _ => SimulationService.CustomSigma * 3
-    };
 
     protected override void OnInitialized()
     {

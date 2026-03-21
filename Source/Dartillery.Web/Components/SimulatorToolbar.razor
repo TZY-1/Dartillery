@@ -24,13 +24,6 @@
             <span>Manual</span>
         </label>
 
-        <label class="toolbar-check">
-            <input type="checkbox"
-                   checked="@ShowSpreadCircle"
-                   @onchange="e => ShowSpreadCircleChanged.InvokeAsync((bool)(e.Value ?? false))" />
-            <span>Spread</span>
-        </label>
-
         @if (!SimulationService.EnableManualTargeting)
         {
             <select class="toolbar-select" @bind="SelectedTarget">
@@ -47,12 +40,6 @@
             </select>
         }
 
-        <select class="toolbar-select" @bind="SelectedSpreadMode" @bind:after="OnParameterChanged">
-            @foreach (var mode in Enum.GetValues<Dartillery.SpreadMode>())
-            {
-                <option value="@mode">@mode</option>
-            }
-        </select>
     </div>
 
     <!-- Actions -->
@@ -75,16 +62,7 @@
 @code {
     [Parameter] public SimulationService SimulationService { get; set; } = null!;
     [Parameter] public EventCallback OnThrowExecuted { get; set; }
-    [Parameter] public bool ShowSpreadCircle { get; set; }
-    [Parameter] public EventCallback<bool> ShowSpreadCircleChanged { get; set; }
-
     private string SelectedTarget { get; set; } = "T20";
-
-    private Dartillery.SpreadMode SelectedSpreadMode
-    {
-        get => SimulationService.SpreadMode;
-        set => SimulationService.SpreadMode = value;
-    }
 
     private static readonly PresetInfo[] _presets =
     [

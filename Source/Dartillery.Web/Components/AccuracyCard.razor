@@ -7,34 +7,69 @@
         <span class="card-value">@GetAccuracyPercent().ToString("F0")%</span>
     </div>
     <div class="card-body">
-        <input type="range" class="form-range"
-               min="0.015" max="0.15" step="0.001"
-               value="@Svc.CustomSigma.ToString(Inv)"
-               @oninput="e => OnSlider(e, v => Svc.CustomSigma = v)"
-               @onchange="OnChanged" />
-        <small class="card-desc">How tightly darts cluster around the target. High = pro-level precision.</small>
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Precision</span>
+                <span class="slider-value">@Svc.CustomSigma.ToString("F3")</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.015" max="0.15" step="0.001"
+                   value="@Svc.CustomSigma.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.CustomSigma = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">How tightly darts cluster around the target. High = pro-level precision.</small>
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Spread Algorithm</span>
+                <span class="slider-value">@Svc.SpreadMode</span>
+            </div>
+            <select class="form-select"
+                    value="@Svc.SpreadMode"
+                    @onchange="OnSpreadModeChanged">
+                @foreach (var mode in Enum.GetValues<Dartillery.SpreadMode>())
+                {
+                    <option value="@mode">@mode</option>
+                }
+            </select>
+            <small class="card-desc">
+                @switch (Svc.SpreadMode)
+                {
+                    case Dartillery.SpreadMode.Gaussian:
+                        <span>Bell curve — most throws land near the target, rare outliers further out.</span>
+                        break;
+                    case Dartillery.SpreadMode.Uniform:
+                        <span>Every point within the spread radius is equally likely.</span>
+                        break;
+                }
+            </small>
+        </div>
 
         <div class="card-divider"></div>
 
-        @if (Svc.ThrowCount > 0)
-        {
-            <div class="diag-row">
-                <span class="diag-label">Base Sigma</span>
-                <span class="diag-val">@Svc.CustomSigma.ToString("F3")</span>
-            </div>
-            <div class="diag-row">
-                <span class="diag-label">+ Fatigue</span>
-                <span class="diag-val @(Svc.CurrentFatigue > 0 ? "warn" : "")">+@Svc.CurrentFatigue.ToString("F4")</span>
-            </div>
-            <div class="diag-row total">
-                <span class="diag-label">Effective Sigma</span>
-                <span class="diag-val highlight">@((Svc.CustomSigma + Svc.CurrentFatigue).ToString("F4"))</span>
-            </div>
-        }
-        else
-        {
-            <div class="diag-empty">Throw darts to see diagnostics</div>
-        }
+        <div class="diag-row">
+            <span class="diag-label">Spread Radius</span>
+            <span class="diag-val highlight">@Svc.SpreadRadius.ToString("F3")</span>
+        </div>
+        <div class="diag-detail neutral">
+            @switch (Svc.SpreadMode)
+            {
+                case Dartillery.SpreadMode.Gaussian:
+                    <span>3× precision — covers 99.7% of all throws</span>
+                    break;
+                case Dartillery.SpreadMode.Uniform:
+                    <span>Max radius — no throw lands beyond this</span>
+                    break;
+            }
+        </div>
+
+        <label class="toolbar-check" style="margin-top: 4px;">
+            <input type="checkbox"
+                   checked="@Svc.ShowSpreadCircle"
+                   @onchange="OnSpreadCircleToggled" />
+            <span>Show spread circle on board</span>
+        </label>
     </div>
 </div>
 
@@ -56,6 +91,23 @@
     {
         Svc.SelectedSkillLevel = "Custom";
         Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
+
+    private async Task OnSpreadModeChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<Dartillery.SpreadMode>(e.Value?.ToString(), out var mode))
+        {
+            Svc.SpreadMode = mode;
+            Svc.SelectedSkillLevel = "Custom";
+            Svc.RebuildSession();
+            await OnParameterChanged.InvokeAsync();
+        }
+    }
+
+    private async Task OnSpreadCircleToggled(ChangeEventArgs e)
+    {
+        Svc.ShowSpreadCircle = (bool)(e.Value ?? false);
         await OnParameterChanged.InvokeAsync();
     }
 }

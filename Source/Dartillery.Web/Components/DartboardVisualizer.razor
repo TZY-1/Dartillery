@@ -6,7 +6,10 @@
          class="dartboard-svg @(EnableManualTargeting ? "manual-targeting" : "")"
          transform="scale(1, -1)"
          style="transform-origin: center;"
-         @onclick="HandleSvgClick">
+         @onclick="HandleSvgClick"
+         @onmousemove="HandleMouseMove"
+         @onmousemove:preventDefault
+         @onmouseleave="HandleMouseLeave">
         <!-- Background -->
         <circle cx="0" cy="0" r="1.15" fill="#1a1a1a" />
 
@@ -76,19 +79,35 @@
             </g>
         }
 
-        <!-- Spread Circle -->
-        @if (ShowSpreadCircle && SpreadRadius > 0 && Throws != null && Throws.Any())
+        <!-- Spread Circles (follow mouse) -->
+        @if (ShowSpreadCircle && SpreadRadius > 0 && _mouseOver)
         {
-            var lastAim = Throws.Last().AimedPoint;
             var c = System.Globalization.CultureInfo.InvariantCulture;
-            <circle cx="@lastAim.X.ToString("F4", c)"
-                    cy="@lastAim.Y.ToString("F4", c)"
+
+            @* Effective spread circle (fatigue) — outer, only when fatigue is active *@
+            @if (EffectiveSpreadRadius > SpreadRadius + 0.001)
+            {
+                <circle cx="@_mouseX.ToString("F4", c)"
+                        cy="@_mouseY.ToString("F4", c)"
+                        r="@EffectiveSpreadRadius.ToString("F4", c)"
+                        fill="rgba(239, 68, 68, 0.06)"
+                        stroke="#ef4444"
+                        stroke-width="0.006"
+                        stroke-dasharray="0.015,0.01"
+                        stroke-opacity="0.5"
+                        pointer-events="none" />
+            }
+
+            @* Base spread circle — inner *@
+            <circle cx="@_mouseX.ToString("F4", c)"
+                    cy="@_mouseY.ToString("F4", c)"
                     r="@SpreadRadius.ToString("F4", c)"
                     fill="rgba(251, 191, 36, 0.08)"
                     stroke="#fbbf24"
                     stroke-width="0.008"
                     stroke-dasharray="0.02,0.01"
-                    stroke-opacity="0.6" />
+                    stroke-opacity="0.6"
+                    pointer-events="none" />
         }
 
         <!-- Throws Visualization -->

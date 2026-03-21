@@ -46,6 +46,9 @@ public partial class DartboardVisualizer
     public double SpreadRadius { get; set; }
 
     [Parameter]
+    public double EffectiveSpreadRadius { get; set; }
+
+    [Parameter]
     public bool EnableManualTargeting { get; set; }
 
     [Parameter]
@@ -53,6 +56,10 @@ public partial class DartboardVisualizer
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = null!;
+
+    private bool _mouseOver;
+    private double _mouseX;
+    private double _mouseY;
 
     private static string GetSectorPath(int index, double innerRadius, double outerRadius)
     {
@@ -87,6 +94,31 @@ public partial class DartboardVisualizer
         var radius = DoubleRingOuter + 0.12;
 
         return (Math.Cos(angle) * radius, Math.Sin(angle) * radius);
+    }
+
+    private async Task HandleMouseMove(MouseEventArgs e)
+    {
+        try
+        {
+            var coords = await JSRuntime.InvokeAsync<SvgCoordinates>(
+                "dartboardInterop.getSvgCoordinates",
+                svgElementRef,
+                e.ClientX,
+                e.ClientY);
+
+            _mouseX = coords.X;
+            _mouseY = coords.Y;
+            _mouseOver = true;
+        }
+        catch
+        {
+            // Ignore coordinate conversion errors
+        }
+    }
+
+    private void HandleMouseLeave(MouseEventArgs e)
+    {
+        _mouseOver = false;
     }
 
     private async Task HandleSvgClick(MouseEventArgs e)

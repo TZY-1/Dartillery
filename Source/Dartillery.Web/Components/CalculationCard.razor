@@ -1,0 +1,145 @@
+@using Dartillery.Core.Models
+@using Dartillery.Web.Services
+
+<div class="factor-card">
+    <div class="card-header">
+        <i class="bi bi-calculator card-icon"></i>
+        <span class="card-title">Calculation Breakdown</span>
+        @if (Svc.LastThrow?.Metadata is { } m)
+        {
+            var effectiveSigma = Svc.CustomSigma + m.FatigueMagnitude;
+            var combined = m.PressureModifier * m.MomentumModifier * m.GroupingMultiplier * m.DifficultyMultiplier;
+            var finalSigma = effectiveSigma * combined;
+            <span class="card-value">σ @finalSigma.ToString("F4")</span>
+        }
+    </div>
+    <div class="card-body">
+        <small class="card-desc">Shows how all active factors combine into the final throw precision (effective sigma).</small>
+
+        @if (Svc.ThrowCount > 0 && Svc.LastThrow?.Metadata is { } meta)
+        {
+            var effectiveSigma = Svc.CustomSigma + meta.FatigueMagnitude;
+            var combined = meta.PressureModifier * meta.MomentumModifier * meta.GroupingMultiplier * meta.DifficultyMultiplier;
+            var finalSigma = effectiveSigma * combined;
+
+            <!-- Step 1: Base Sigma -->
+            <div class="calc-section">
+                <div class="calc-section-title">Sigma (Spread)</div>
+                <div class="diag-row">
+                    <span class="diag-label">Base Sigma</span>
+                    <span class="diag-val">@Svc.CustomSigma.ToString("F4")</span>
+                </div>
+                @if (meta.FatigueMagnitude > 0.0001)
+                {
+                    <div class="diag-row">
+                        <span class="diag-label">+ Fatigue</span>
+                        <span class="diag-val warn">+@meta.FatigueMagnitude.ToString("F4")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="diag-row">
+                        <span class="diag-label">+ Fatigue</span>
+                        <span class="diag-val" style="opacity:0.4">0.0000</span>
+                    </div>
+                }
+                <div class="diag-row total">
+                    <span class="diag-label">Effective Sigma</span>
+                    <span class="diag-val highlight">@effectiveSigma.ToString("F4")</span>
+                </div>
+            </div>
+
+            <div class="card-divider"></div>
+
+            <!-- Step 2: Multiplicative Modifiers -->
+            <div class="calc-section">
+                <div class="calc-section-title">Modifiers (× Deviation)</div>
+
+                <div class="diag-row">
+                    <span class="diag-label">Pressure</span>
+                    <span class="diag-val @GetModClass(meta.PressureModifier)">×@meta.PressureModifier.ToString("F2")</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">Momentum</span>
+                    <span class="diag-val @GetModClass(meta.MomentumModifier)">×@meta.MomentumModifier.ToString("F2")</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">Grouping</span>
+                    <span class="diag-val @GetModClass(meta.GroupingMultiplier)">×@meta.GroupingMultiplier.ToString("F2")</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">Difficulty</span>
+                    <span class="diag-val @GetModClass(meta.DifficultyMultiplier)">×@meta.DifficultyMultiplier.ToString("F2")</span>
+                </div>
+                <div class="diag-row total">
+                    <span class="diag-label">Combined</span>
+                    <span class="diag-val @GetModClass(combined)">×@combined.ToString("F2")</span>
+                </div>
+            </div>
+
+            <div class="card-divider"></div>
+
+            <!-- Step 3: Final Result -->
+            <div class="calc-section">
+                <div class="calc-section-title">Last Throw</div>
+                @{
+                    var changePct = finalSigma > 0 && Svc.CustomSigma > 0
+                        ? ((finalSigma / Svc.CustomSigma) - 1.0) * 100.0
+                        : 0;
+                }
+                <div class="diag-row total">
+                    <span class="diag-label">Effective Spread</span>
+                    <span class="diag-val highlight">@finalSigma.ToString("F4")</span>
+                </div>
+                @if (Math.Abs(changePct) > 0.5)
+                {
+                    <div class="diag-detail @(changePct > 0 ? "warn" : "good")">
+                        @(changePct > 0 ? "+" : "")@changePct.ToString("F0")% vs. base — @(changePct > 0 ? "less accurate" : "more accurate")
+                    </div>
+                }
+                <div class="diag-row">
+                    <span class="diag-label">Deviation</span>
+                    <span class="diag-val">@Svc.LastThrow!.Deviation.ToString("F4")</span>
+                </div>
+                @{
+                    var ratio = Svc.SpreadRadius > 0 ? Svc.LastThrow!.Deviation / Svc.SpreadRadius : 0;
+                    string ratingText;
+                    string ratingClass;
+                    if (ratio < 0.15) { ratingText = "Bullseye"; ratingClass = "good"; }
+                    else if (ratio < 0.4) { ratingText = "Good throw"; ratingClass = "good"; }
+                    else if (ratio < 0.65) { ratingText = "Average"; ratingClass = ""; }
+                    else if (ratio < 0.85) { ratingText = "Off target"; ratingClass = "warn"; }
+                    else { ratingText = "Outlier"; ratingClass = "warn"; }
+                }
+                <div class="diag-row">
+                    <span class="diag-label">Rating</span>
+                    <span class="diag-val @ratingClass">@ratingText</span>
+                </div>
+            </div>
+
+            @if (Math.Abs(meta.SystematicBiasApplied) > 0.0001)
+            {
+                <div class="card-divider"></div>
+                <div class="diag-row">
+                    <span class="diag-label">Sys. Bias X</span>
+                    <span class="diag-val warn">@meta.SystematicBiasApplied.ToString("F4")</span>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="diag-empty">Throw darts to see the calculation breakdown</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public SimulationService Svc { get; set; } = null!;
+
+    private static string GetModClass(double mod) => mod switch
+    {
+        > 1.02 => "warn",
+        < 0.98 => "good",
+        _ => ""
+    };
+}

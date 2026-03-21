@@ -12,6 +12,54 @@
         </label>
     </div>
     <div class="card-body">
+        <small class="card-desc">Simulates accuracy degradation over the course of a session. Choose a fatigue curve and tune how quickly and how much accuracy drops.</small>
+
+        <!-- Model type dropdown -->
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Model</span>
+                <span class="slider-value">@Svc.FatigueModelType</span>
+            </div>
+            <select class="form-select"
+                    value="@Svc.FatigueModelType"
+                    @onchange="OnModelChanged">
+                <option value="@FatigueModelType.Logarithmic">Logarithmic</option>
+                <option value="@FatigueModelType.Linear">Linear</option>
+                <option value="@FatigueModelType.None">None</option>
+            </select>
+            <small class="card-desc">
+                @switch (Svc.FatigueModelType)
+                {
+                    case FatigueModelType.Logarithmic:
+                        <span>Fast initial fatigue, then plateau — matches real fatigue patterns.</span>
+                        break;
+                    case FatigueModelType.Linear:
+                        <span>Constant fatigue rate per throw — simple and predictable.</span>
+                        break;
+                    case FatigueModelType.None:
+                        <span>No fatigue — accuracy never degrades.</span>
+                        break;
+                }
+            </small>
+        </div>
+
+        <!-- Growth Rate slider (only for Logarithmic) -->
+        @if (Svc.FatigueModelType == FatigueModelType.Logarithmic)
+        {
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Growth Rate</span>
+                    <span class="slider-value">@Svc.FatigueGrowthRate.ToString("F3")</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.001" max="0.05" step="0.001"
+                       value="@Svc.FatigueGrowthRate.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.FatigueGrowthRate = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">How quickly fatigue reaches the plateau. Low = slow onset, high = rapid initial fatigue.</small>
+            </div>
+        }
+
         <!-- Stamina slider -->
         <div class="slider-group">
             <div class="slider-header">
@@ -23,7 +71,7 @@
                    value="@Svc.FatigueRate.ToString(Inv)"
                    @oninput="e => OnSlider(e, v => Svc.FatigueRate = v)"
                    @onchange="OnChanged" />
-            <small class="card-desc">How quickly the player tires. Low = accuracy degrades faster each throw.</small>
+            <small class="card-desc">Player endurance. High stamina = fatigue builds slowly. Low stamina = accuracy drops faster per throw.</small>
         </div>
 
         <!-- Stability slider -->
@@ -37,13 +85,16 @@
                    value="@Svc.MaxFatigue.ToString(Inv)"
                    @oninput="e => OnSlider(e, v => Svc.MaxFatigue = v)"
                    @onchange="OnChanged" />
-            <small class="card-desc">Max fatigue cap. High = even when exhausted, accuracy has a floor.</small>
+            <small class="card-desc">Limits how much fatigue can accumulate. Current cap: @Svc.MaxFatigue.ToString("F3") sigma added to base at most.</small>
         </div>
 
         <div class="card-divider"></div>
 
         @if (Svc.EnableFatigue && Svc.ThrowCount > 0)
         {
+            var effectiveSigma = Svc.CustomSigma + Svc.CurrentFatigue;
+            var spreadIncrease = Svc.CustomSigma > 0 ? (Svc.CurrentFatigue / Svc.CustomSigma) * 100.0 : 0;
+
             <div class="diag-bar-row">
                 <span class="diag-label">Fatigue</span>
                 <div class="diag-bar-track">
@@ -55,11 +106,32 @@
                 <span class="diag-label">Fatigue Value</span>
                 <span class="diag-val">@Svc.CurrentFatigue.ToString("F4")</span>
             </div>
+
+            <div class="card-divider"></div>
+
+            <!-- Sigma comparison: base vs effective -->
             <div class="diag-row">
-                <span class="diag-label">Throws</span>
+                <span class="diag-label">Base Sigma</span>
+                <span class="diag-val">@Svc.CustomSigma.ToString("F4")</span>
+            </div>
+            <div class="diag-row">
+                <span class="diag-label">+ Fatigue</span>
+                <span class="diag-val @(Svc.CurrentFatigue > 0.001 ? "warn" : "")">+@Svc.CurrentFatigue.ToString("F4")</span>
+            </div>
+            <div class="diag-row total">
+                <span class="diag-label">Effective Sigma</span>
+                <span class="diag-val highlight">@effectiveSigma.ToString("F4")</span>
+            </div>
+
+            @if (spreadIncrease > 0.5)
+            {
+                <div class="diag-detail warn">Spread is @spreadIncrease.ToString("F0")% wider than without fatigue</div>
+            }
+
+            <div class="diag-row" style="margin-top: 4px;">
+                <span class="diag-label">After throws</span>
                 <span class="diag-val">@Svc.ThrowCount</span>
             </div>
-            <div class="diag-detail warn">Accuracy lost: @((Svc.CurrentFatigue / Svc.CustomSigma * 100).ToString("F1"))% of base sigma</div>
         }
         else if (!Svc.EnableFatigue)
         {
@@ -93,6 +165,17 @@
         Svc.SelectedSkillLevel = "Custom";
         Svc.RebuildSession();
         await OnParameterChanged.InvokeAsync();
+    }
+
+    private async Task OnModelChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<FatigueModelType>(e.Value?.ToString(), out var model))
+        {
+            Svc.FatigueModelType = model;
+            Svc.SelectedSkillLevel = "Custom";
+            Svc.RebuildSession();
+            await OnParameterChanged.InvokeAsync();
+        }
     }
 
     private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
