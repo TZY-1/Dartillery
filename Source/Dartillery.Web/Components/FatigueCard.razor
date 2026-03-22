@@ -1,4 +1,5 @@
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="factor-card @(!Svc.EnableFatigue ? "card-inactive" : "")">
     <div class="card-header">
@@ -49,7 +50,7 @@
             <div class="slider-group">
                 <div class="slider-header">
                     <span class="slider-label">Growth Rate</span>
-                    <span class="slider-value">@Svc.FatigueGrowthRate.ToString("F3")</span>
+                    <span class="slider-value">@DisplayFormat.MmShort(Svc.FatigueGrowthRate)</span>
                 </div>
                 <input type="range" class="form-range"
                        min="0.001" max="0.05" step="0.001"
@@ -85,7 +86,7 @@
                    value="@Svc.MaxFatigue.ToString(Inv)"
                    @oninput="e => OnSlider(e, v => Svc.MaxFatigue = v)"
                    @onchange="OnChanged" />
-            <small class="card-desc">Limits how much fatigue can accumulate. Current cap: @Svc.MaxFatigue.ToString("F3") sigma added to base at most.</small>
+            <small class="card-desc">Limits how much fatigue can accumulate. Current cap: @DisplayFormat.MmShort(Svc.MaxFatigue) added to base at most.</small>
         </div>
 
         <div class="card-divider"></div>
@@ -104,7 +105,7 @@
             </div>
             <div class="diag-row">
                 <span class="diag-label">Fatigue Value</span>
-                <span class="diag-val">@Svc.CurrentFatigue.ToString("F4")</span>
+                <span class="diag-val">@DisplayFormat.Mm(Svc.CurrentFatigue)</span>
             </div>
 
             <div class="card-divider"></div>
@@ -112,15 +113,15 @@
             <!-- Sigma comparison: base vs effective -->
             <div class="diag-row">
                 <span class="diag-label">Base Sigma</span>
-                <span class="diag-val">@Svc.CustomSigma.ToString("F4")</span>
+                <span class="diag-val">@DisplayFormat.Sigma(Svc.CustomSigma)</span>
             </div>
             <div class="diag-row">
                 <span class="diag-label">+ Fatigue</span>
-                <span class="diag-val @(Svc.CurrentFatigue > 0.001 ? "warn" : "")">+@Svc.CurrentFatigue.ToString("F4")</span>
+                <span class="diag-val @(Svc.CurrentFatigue > 0.001 ? "warn" : "")">@DisplayFormat.Delta(Svc.CurrentFatigue)</span>
             </div>
             <div class="diag-row total">
                 <span class="diag-label">Effective Sigma</span>
-                <span class="diag-val highlight">@effectiveSigma.ToString("F4")</span>
+                <span class="diag-val highlight">@DisplayFormat.Sigma(effectiveSigma)</span>
             </div>
 
             @if (spreadIncrease > 0.5)

@@ -1,6 +1,7 @@
 @using Dartillery.Core.Models
 @using Dartillery.Core.Enums
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="compact-stats">
     @if (SimulationService.ThrowCount == 0)
@@ -33,7 +34,7 @@
                 <span class="last-label">Last:</span>
                 <span class="last-score @GetScoreClass(last.Score)">@last.Score</span>
                 <span class="last-segment">@FormatSegment(last)</span>
-                <span class="last-deviation">dev @last.Deviation.ToString("F3")</span>
+                <span class="last-deviation">dev @DisplayFormat.Mm(last.Deviation)</span>
             </div>
 
             @if (last.Metadata is { } meta)

@@ -4,8 +4,7 @@ using Dartillery.Core.Models;
 namespace Dartillery.Simulation.Calculators;
 
 /// <summary>
-/// Decorator that adds systematic player bias to throw deviation.
-/// First decorator in chain - applies player-specific constant offset.
+/// Applies player-specific systematic bias offset to throw deviation.
 /// </summary>
 internal sealed class SystematicBiasDeviationCalculator : IContextualDeviationCalculator
 {

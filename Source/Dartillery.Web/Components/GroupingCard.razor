@@ -1,5 +1,6 @@
 @using Dartillery.Core.Models
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="factor-card @(!Svc.EnableGrouping ? "card-inactive" : "")">
     <div class="card-header">
@@ -18,7 +19,7 @@
         <div class="slider-group">
             <div class="slider-header">
                 <span class="slider-label">Cluster Radius</span>
-                <span class="slider-value">@((Svc.GroupingClusterRadius * 170).ToString("F0")) mm</span>
+                <span class="slider-value">@DisplayFormat.MmShort(Svc.GroupingClusterRadius)</span>
             </div>
             <input type="range" class="form-range"
                    min="0.02" max="0.20" step="0.01"
@@ -31,7 +32,7 @@
         <div class="slider-group">
             <div class="slider-header">
                 <span class="slider-label">Max Deflection</span>
-                <span class="slider-value">@((Svc.GroupingMaxDeflection * 170).ToString("F1")) mm</span>
+                <span class="slider-value">@DisplayFormat.MmShort(Svc.GroupingMaxDeflection)</span>
             </div>
             <input type="range" class="form-range"
                    min="0.01" max="0.10" step="0.005"
@@ -50,7 +51,7 @@
                 <span class="diag-val @(meta.WasDeflected ? "warn" : "good")">
                     @if (meta.WasDeflected)
                     {
-                        @((meta.DeflectionDistance * 170).ToString("F1"))@:mm
+                        @DisplayFormat.MmShort(meta.DeflectionDistance)
                     }
                     else
                     {
@@ -61,7 +62,7 @@
             <div class="diag-detail @(meta.WasDeflected ? "warn" : "neutral")">
                 @if (meta.WasDeflected)
                 {
-                    <span>Deflected! Dart pushed @((meta.DeflectionDistance * 170).ToString("F1"))mm away from sticking dart</span>
+                    <span>Deflected! Dart pushed @DisplayFormat.MmShort(meta.DeflectionDistance) away from sticking dart</span>
                 }
                 else
                 {

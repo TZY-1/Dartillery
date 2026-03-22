@@ -10,6 +10,9 @@ public static class BoardDimensions
     // Normalized radii (relative to double ring outer radius)
     // =========================================================================
 
+    /// <summary>Distance from board center to outer edge of the double ring.</summary>
+    public const double DartBoardRadiusInMM = 170.0;
+
     /// <summary>Radius of the inner bull (double bull / bullseye).</summary>
     public const double InnerBullRadius =
         InnerBullRadiusInMM / DartBoardRadiusInMM; // ≈ 0.03735
@@ -60,9 +63,6 @@ public static class BoardDimensions
     // =========================================================================
     // Reference measurements (millimeters)
     // =========================================================================
-
-    /// <summary>Distance from board center to outer edge of the double ring.</summary>
-    private const double DartBoardRadiusInMM = 170.0;
 
     /// <summary>Radius of the inner bull (double bull).</summary>
     private const double InnerBullRadiusInMM = 6.35;

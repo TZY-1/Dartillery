@@ -117,7 +117,6 @@ public sealed class SimulationService
             MaxFatigue = MaxFatigue
         });
 
-        // Apply behavioral models based on toggles
         if (EnableFatigue)
         {
             switch (FatigueModelType)
@@ -169,7 +168,6 @@ public sealed class SimulationService
         var effectivePrecision = CustomSigma + (EnableFatigue ? MaxFatigue : 0);
         EffectiveBounds = SpreadBoundsFactory.Create(SpreadMode, effectivePrecision);
 
-        // Build the session
         _session = builder.BuildSession();
         _throws.Clear();
 

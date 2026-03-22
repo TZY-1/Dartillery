@@ -1,6 +1,7 @@
 @using Dartillery.Core.Models
 @using Dartillery.Core.Enums
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="factor-card @(!Svc.EnableMomentum ? "card-inactive" : "")">
     <div class="card-header">
@@ -94,7 +95,7 @@
                        value="@Svc.MomentumGoodDeviation.ToString(Inv)"
                        @oninput="e => OnSlider(e, v => Svc.MomentumGoodDeviation = v)"
                        @onchange="OnChanged" />
-                <small class="card-desc">Throws with deviation below this &times; sigma count as good. Threshold: @((Svc.CustomSigma * Svc.MomentumGoodDeviation).ToString("F3"))</small>
+                <small class="card-desc">Throws with deviation below this &times; sigma count as good. Threshold: @DisplayFormat.MmShort(Svc.CustomSigma * Svc.MomentumGoodDeviation)</small>
             </div>
             <div class="slider-group">
                 <div class="slider-header">
@@ -106,7 +107,7 @@
                        value="@Svc.MomentumBadDeviation.ToString(Inv)"
                        @oninput="e => OnSlider(e, v => Svc.MomentumBadDeviation = v)"
                        @onchange="OnChanged" />
-                <small class="card-desc">Throws with deviation above this &times; sigma count as bad. Threshold: @((Svc.CustomSigma * Svc.MomentumBadDeviation).ToString("F3"))</small>
+                <small class="card-desc">Throws with deviation above this &times; sigma count as bad. Threshold: @DisplayFormat.MmShort(Svc.CustomSigma * Svc.MomentumBadDeviation)</small>
             </div>
         </div>
 
@@ -134,11 +135,11 @@
                 <span class="diag-val">@streakInfo.WindowCount / @Svc.MomentumWindowSize throws</span>
             </div>
             <div class="diag-row">
-                <span class="diag-label">Good (dev &lt; @((Svc.CustomSigma * Svc.MomentumGoodDeviation).ToString("F3")))</span>
+                <span class="diag-label">Good (dev &lt; @DisplayFormat.MmShort(Svc.CustomSigma * Svc.MomentumGoodDeviation))</span>
                 <span class="diag-val good">@streakInfo.Good (@streakInfo.GoodRate.ToString("F0")%)</span>
             </div>
             <div class="diag-row">
-                <span class="diag-label">Bad (dev &gt; @((Svc.CustomSigma * Svc.MomentumBadDeviation).ToString("F3")))</span>
+                <span class="diag-label">Bad (dev &gt; @DisplayFormat.MmShort(Svc.CustomSigma * Svc.MomentumBadDeviation))</span>
                 <span class="diag-val warn">@streakInfo.Bad (@streakInfo.BadRate.ToString("F0")%)</span>
             </div>
             <div class="diag-row">

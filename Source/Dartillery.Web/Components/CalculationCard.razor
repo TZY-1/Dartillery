@@ -1,5 +1,6 @@
 @using Dartillery.Core.Models
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="factor-card">
     <div class="card-header">
@@ -10,7 +11,7 @@
             var effectiveSigma = Svc.CustomSigma + m.FatigueMagnitude;
             var combined = m.PressureModifier * m.MomentumModifier * m.DifficultyMultiplier;
             var finalSigma = effectiveSigma * combined;
-            <span class="card-value">σ @finalSigma.ToString("F4")</span>
+            <span class="card-value">@DisplayFormat.MmShort(finalSigma)</span>
         }
     </div>
     <div class="card-body">
@@ -22,36 +23,36 @@
             var combined = meta.PressureModifier * meta.MomentumModifier * meta.DifficultyMultiplier;
             var finalSigma = effectiveSigma * combined;
 
-            <!-- Step 1: Base Sigma -->
+            <!-- Base Sigma -->
             <div class="calc-section">
                 <div class="calc-section-title">Sigma (Spread)</div>
                 <div class="diag-row">
                     <span class="diag-label">Base Sigma</span>
-                    <span class="diag-val">@Svc.CustomSigma.ToString("F4")</span>
+                    <span class="diag-val">@DisplayFormat.Sigma(Svc.CustomSigma)</span>
                 </div>
                 @if (meta.FatigueMagnitude > 0.0001)
                 {
                     <div class="diag-row">
                         <span class="diag-label">+ Fatigue</span>
-                        <span class="diag-val warn">+@meta.FatigueMagnitude.ToString("F4")</span>
+                        <span class="diag-val warn">@DisplayFormat.Delta(meta.FatigueMagnitude)</span>
                     </div>
                 }
                 else
                 {
                     <div class="diag-row">
                         <span class="diag-label">+ Fatigue</span>
-                        <span class="diag-val" style="opacity:0.4">0.0000</span>
+                        <span class="diag-val" style="opacity:0.4">+0.0 mm</span>
                     </div>
                 }
                 <div class="diag-row total">
                     <span class="diag-label">Effective Sigma</span>
-                    <span class="diag-val highlight">@effectiveSigma.ToString("F4")</span>
+                    <span class="diag-val highlight">@DisplayFormat.Sigma(effectiveSigma)</span>
                 </div>
             </div>
 
             <div class="card-divider"></div>
 
-            <!-- Step 2: Multiplicative Modifiers -->
+            <!-- Multiplicative Modifiers -->
             <div class="calc-section">
                 <div class="calc-section-title">Modifiers (× Deviation)</div>
 
@@ -65,7 +66,7 @@
                 </div>
                 <div class="diag-row">
                     <span class="diag-label">Grouping</span>
-                    <span class="diag-val @(meta.WasDeflected ? "warn" : "")">@(meta.WasDeflected ? $"deflected {(meta.DeflectionDistance * 170):F1}mm" : "—")</span>
+                    <span class="diag-val @(meta.WasDeflected ? "warn" : "")">@(meta.WasDeflected ? $"deflected {DisplayFormat.MmShort(meta.DeflectionDistance)}" : "—")</span>
                 </div>
                 <div class="diag-row">
                     <span class="diag-label">Difficulty</span>
@@ -79,7 +80,6 @@
 
             <div class="card-divider"></div>
 
-            <!-- Step 3: Final Result -->
             <div class="calc-section">
                 <div class="calc-section-title">Last Throw</div>
                 @{
@@ -89,7 +89,7 @@
                 }
                 <div class="diag-row total">
                     <span class="diag-label">Effective Spread</span>
-                    <span class="diag-val highlight">@finalSigma.ToString("F4")</span>
+                    <span class="diag-val highlight">@DisplayFormat.Sigma(finalSigma)</span>
                 </div>
                 @if (Math.Abs(changePct) > 0.5)
                 {
@@ -99,7 +99,7 @@
                 }
                 <div class="diag-row">
                     <span class="diag-label">Deviation</span>
-                    <span class="diag-val">@Svc.LastThrow!.Deviation.ToString("F4")</span>
+                    <span class="diag-val">@DisplayFormat.Mm(Svc.LastThrow!.Deviation)</span>
                 </div>
                 @{
                     var lastThrow = Svc.LastThrow!;
@@ -125,7 +125,7 @@
                 <div class="card-divider"></div>
                 <div class="diag-row">
                     <span class="diag-label">Sys. Bias X</span>
-                    <span class="diag-val warn">@meta.SystematicBiasApplied.ToString("F4")</span>
+                    <span class="diag-val warn">@DisplayFormat.Mm(Math.Abs(meta.SystematicBiasApplied))</span>
                 </div>
             }
         }

@@ -1,4 +1,5 @@
 @using Dartillery.Web.Services
+@using Dartillery.Web.Utilities
 
 <div class="factor-card">
     <div class="card-header">
@@ -10,7 +11,7 @@
         <div class="slider-group">
             <div class="slider-header">
                 <span class="slider-label">Precision</span>
-                <span class="slider-value">@Svc.CustomSigma.ToString("F3")</span>
+                <span class="slider-value">@DisplayFormat.MmShort(Svc.CustomSigma)</span>
             </div>
             <input type="range" class="form-range"
                    min="0.015" max="0.15" step="0.001"
@@ -50,7 +51,7 @@
 
         <div class="diag-row">
             <span class="diag-label">Spread Radius</span>
-            <span class="diag-val highlight">@(Svc.BaseBounds is Dartillery.Core.Models.CircleBounds cb ? cb.Radius.ToString("F3") : "—")</span>
+            <span class="diag-val highlight">@(Svc.BaseBounds is Dartillery.Core.Models.CircleBounds cb ? DisplayFormat.Mm(cb.Radius) : "—")</span>
         </div>
         <div class="diag-detail neutral">
             @switch (Svc.SpreadMode)
