@@ -1,49 +1,92 @@
+using System.Linq;
 using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 
 namespace Dartillery.Simulation.Models.GroupingModels;
 
 /// <summary>
-/// Simple dart grouping model.
-/// If 2+ darts are close to aim point, increase deviation for next dart (blocking effect).
+/// Distance-based dart deflection model.
+/// If a dart lands near a sticking dart, it gets pushed away proportionally to how close it is.
 /// </summary>
 internal sealed class SimpleGroupingModel : IGroupingModel
 {
     private readonly double _clusterRadius;
-    private readonly double _blockingPenalty;
+    private readonly double _maxDeflection;
 
     /// <summary>
-    /// Creates a simple grouping model.
+    /// Creates a simple grouping model with distance-based deflection.
     /// </summary>
-    /// <param name="clusterRadius">Radius to consider darts "clustered" (default: 0.03m = 3cm).</param>
-    /// <param name="blockingPenalty">Deviation increase when blocking occurs (default: 0.15 = 15% worse).</param>
+    /// <param name="clusterRadius">Normalized radius within which blocking occurs (default: 0.08 ≈ 14mm).</param>
+    /// <param name="maxDeflection">Maximum deflection offset when darts overlap exactly (default: 0.04 ≈ 7mm).</param>
     public SimpleGroupingModel(
-        double clusterRadius = 0.03,
-        double blockingPenalty = 0.15)
+        double clusterRadius = 0.08,
+        double maxDeflection = 0.04)
     {
         _clusterRadius = clusterRadius;
-        _blockingPenalty = blockingPenalty;
+        _maxDeflection = maxDeflection;
     }
 
-    public (Point2D AdjustedAimPoint, double DeviationMultiplier) AdjustForGrouping(
-        Point2D originalAimPoint,
+    public DeflectionResult ApplyDeflection(
+        Point2D hitPoint,
         List<ThrowResult> previousThrowsInVisit)
     {
-        if (previousThrowsInVisit.Count < 2)
+        if (previousThrowsInVisit.Count == 0)
+            return DeflectionResult.None(hitPoint);
+
+        double currentX = hitPoint.X;
+        double currentY = hitPoint.Y;
+        Point2D? closestBlocker = null;
+        double closestDist = double.MaxValue;
+
+        foreach (var prevHitPoint in previousThrowsInVisit.Select(prev => prev.HitPoint))
         {
-            return (originalAimPoint, 1.0); // No grouping effect with 0-1 darts
+            double dx = currentX - prevHitPoint.X;
+            double dy = currentY - prevHitPoint.Y;
+            double dist = Math.Sqrt((dx * dx) + (dy * dy));
+
+            if (dist < _clusterRadius)
+            {
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestBlocker = prevHitPoint;
+                }
+
+                double factor = 1.0 - (dist / _clusterRadius);
+                double offset = _maxDeflection * factor;
+
+                if (dist < 0.0001)
+                {
+                    double centerDist = Math.Sqrt((currentX * currentX) + (currentY * currentY));
+                    if (centerDist < 0.0001)
+                    {
+                        currentX += offset;
+                    }
+                    else
+                    {
+                        currentX += (currentX / centerDist) * offset;
+                        currentY += (currentY / centerDist) * offset;
+                    }
+                }
+                else
+                {
+                    currentX += (dx / dist) * offset;
+                    currentY += (dy / dist) * offset;
+                }
+            }
         }
 
-        // Count darts near aim point
-        int nearbyDarts = previousThrowsInVisit
-            .Count(r => r.HitPoint.DistanceTo(originalAimPoint) < _clusterRadius);
+        if (closestBlocker == null)
+            return DeflectionResult.None(hitPoint);
 
-        if (nearbyDarts >= 2)
-        {
-            // Blocking effect: increase deviation
-            return (originalAimPoint, 1.0 + _blockingPenalty);
-        }
+        var deflectedPoint = new Point2D(currentX, currentY);
+        double deflectionDist = hitPoint.DistanceTo(deflectedPoint);
 
-        return (originalAimPoint, 1.0);
+        return new DeflectionResult(
+            deflectedPoint,
+            true,
+            deflectionDist,
+            hitPoint,
+            closestBlocker);
     }
 }

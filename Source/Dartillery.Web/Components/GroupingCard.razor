@@ -13,36 +13,69 @@
         </label>
     </div>
     <div class="card-body">
-        <small class="card-desc">Darts already in the board physically block the next throw. 2+ darts clustered within 3cm increase spread by 15%.</small>
+        <small class="card-desc">Darts sticking in the board physically deflect subsequent throws that land nearby. Closer hits get deflected more. Deflected darts show a yellow dashed line (normal deviation) followed by a red arrow (deflection push), plus a thin red line back to the blocking dart.</small>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Cluster Radius</span>
+                <span class="slider-value">@((Svc.GroupingClusterRadius * 170).ToString("F0")) mm</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.02" max="0.20" step="0.01"
+                   value="@Svc.GroupingClusterRadius.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.GroupingClusterRadius = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">Distance within which a sticking dart causes deflection.</small>
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Max Deflection</span>
+                <span class="slider-value">@((Svc.GroupingMaxDeflection * 170).ToString("F1")) mm</span>
+            </div>
+            <input type="range" class="form-range"
+                   min="0.01" max="0.10" step="0.005"
+                   value="@Svc.GroupingMaxDeflection.ToString(Inv)"
+                   @oninput="e => OnSlider(e, v => Svc.GroupingMaxDeflection = v)"
+                   @onchange="OnChanged" />
+            <small class="card-desc">Maximum push distance when a dart lands directly on a sticking dart.</small>
+        </div>
 
         <div class="card-divider"></div>
 
         @if (Svc.EnableGrouping && Svc.LastThrow?.Metadata is { } meta)
         {
             <div class="diag-row">
-                <span class="diag-label">Multiplier</span>
-                <span class="diag-val @(meta.GroupingMultiplier > 1.01 ? "warn" : "good")">
-                    x@(meta.GroupingMultiplier.ToString("F2"))
+                <span class="diag-label">Deflection</span>
+                <span class="diag-val @(meta.WasDeflected ? "warn" : "good")">
+                    @if (meta.WasDeflected)
+                    {
+                        @((meta.DeflectionDistance * 170).ToString("F1"))@:mm
+                    }
+                    else
+                    {
+                        @:none
+                    }
                 </span>
             </div>
-            <div class="diag-detail @(meta.GroupingMultiplier > 1.01 ? "warn" : "neutral")">
-                @if (meta.GroupingMultiplier > 1.01)
+            <div class="diag-detail @(meta.WasDeflected ? "warn" : "neutral")">
+                @if (meta.WasDeflected)
                 {
-                    <span>Blocked! Nearby darts increased spread by @(((meta.GroupingMultiplier - 1.0) * 100).ToString("F0"))%</span>
+                    <span>Deflected! Dart pushed @((meta.DeflectionDistance * 170).ToString("F1"))mm away from sticking dart</span>
                 }
                 else
                 {
-                    <span>No blocking — darts not clustered tightly enough</span>
+                    <span>No deflection — no sticking darts nearby</span>
                 }
             </div>
         }
         else if (!Svc.EnableGrouping)
         {
-            <div class="diag-empty">Enable grouping to simulate dart-blocking effects</div>
+            <div class="diag-empty">Enable grouping to simulate dart deflection</div>
         }
         else
         {
-            <div class="diag-empty">Throw darts to see grouping diagnostics</div>
+            <div class="diag-empty">Throw darts to see deflection diagnostics</div>
         }
     </div>
 </div>
@@ -50,6 +83,21 @@
 @code {
     [Parameter] public SimulationService Svc { get; set; } = null!;
     [Parameter] public EventCallback OnParameterChanged { get; set; }
+
+    private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private static void OnSlider(ChangeEventArgs e, Action<double> setter)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, Inv, out var v))
+            setter(v);
+    }
+
+    private async Task OnChanged()
+    {
+        Svc.SelectedSkillLevel = "Custom";
+        Svc.RebuildSession();
+        await OnParameterChanged.InvokeAsync();
+    }
 
     private async Task OnToggle(Action<bool> setter, ChangeEventArgs e)
     {

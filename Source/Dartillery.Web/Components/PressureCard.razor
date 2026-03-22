@@ -33,7 +33,7 @@
             <div class="diag-bar-row">
                 <span class="diag-label">Modifier</span>
                 <div class="diag-bar-track">
-                    <div class="diag-bar-fill @(meta.PressureModifier > 1.1 ? "bar-danger" : meta.PressureModifier > 1.01 ? "bar-warn" : "bar-neutral")"
+                    <div class="diag-bar-fill @GetPressureBarClass(meta.PressureModifier)"
                          style="width: @(Math.Clamp((meta.PressureModifier - 1.0) / 0.5 * 100.0, 0, 100).ToString("F1", Inv))%"></div>
                 </div>
                 <span class="diag-bar-val">x@(meta.PressureModifier.ToString("F2"))</span>
@@ -69,6 +69,13 @@
     [Parameter] public EventCallback OnParameterChanged { get; set; }
 
     private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private static string GetPressureBarClass(double modifier) => modifier switch
+    {
+        > 1.1 => "bar-danger",
+        > 1.01 => "bar-warn",
+        _ => "bar-neutral"
+    };
 
     private static void OnSlider(ChangeEventArgs e, Action<double> setter)
     {

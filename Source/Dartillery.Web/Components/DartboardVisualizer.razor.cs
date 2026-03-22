@@ -28,9 +28,14 @@ public partial class DartboardVisualizer
 
     private const double StartAngle = (-Math.PI / 2) - (SectorAngle / 2);
 
+    private const double ZoomViewRadius = 0.08;
+
     private static readonly int[] SectorOrder = BoardDimensions.SectorOrderClockwise;
 
     private ElementReference svgElementRef;
+    private bool _mouseOver;
+    private double _mouseX;
+    private double _mouseY;
 
 #pragma warning disable CA2227 // Blazor [Parameter] properties require a setter
     [Parameter]
@@ -53,14 +58,30 @@ public partial class DartboardVisualizer
     public bool EnableManualTargeting { get; set; }
 
     [Parameter]
+    public bool EnableGrouping { get; set; }
+
+    [Parameter]
+    public double GroupingClusterRadius { get; set; }
+
+    [Parameter]
     public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = null!;
 
-    private bool _mouseOver;
-    private double _mouseX;
-    private double _mouseY;
+    /// <summary>
+    /// Returns the top-left corner for the zoom inset, placed in the
+    /// quadrant opposite to the last throw so it never overlaps the action.
+    /// </summary>
+    private static (double X, double Y) GetZoomPosition(Point2D lastHit)
+    {
+        const double inset = 0.02;
+        const double size = 0.64;
+
+        double x = lastHit.X >= 0 ? -1.15 + inset : 1.15 - size - inset;
+        double y = lastHit.Y >= 0 ? -1.15 + inset : 1.15 - size - inset;
+        return (x, y);
+    }
 
     private static string GetSectorPath(int index, double innerRadius, double outerRadius)
     {
@@ -97,6 +118,12 @@ public partial class DartboardVisualizer
         return (Math.Cos(angle) * radius, Math.Sin(angle) * radius);
     }
 
+    private Point2D GetZoomCenter()
+    {
+        if (Throws == null || Throws.Count == 0) return new Point2D(0, 0);
+        return Throws[^1].HitPoint;
+    }
+
     private async Task HandleMouseMove(MouseEventArgs e)
     {
         try
@@ -113,7 +140,9 @@ public partial class DartboardVisualizer
         }
         catch
         {
-            // Ignore coordinate conversion errors
+            // JS interop can fail during rapid mouse movement if the SVG element
+            // is not yet rendered or has been disposed. Safe to ignore — coordinates
+            // will update on the next mouse event.
         }
     }
 
@@ -128,20 +157,16 @@ public partial class DartboardVisualizer
 
         try
         {
-            // Play throw sound
             await JSRuntime.InvokeVoidAsync("playAudio", "/sounds/throw.mp3");
 
-            // Get SVG coordinates from screen coordinates
             var coords = await JSRuntime.InvokeAsync<SvgCoordinates>(
                 "dartboardInterop.getSvgCoordinates",
                 svgElementRef,
                 e.ClientX,
                 e.ClientY);
 
-            // Invoke callback with normalized coordinates
             await OnManualTargetSelected.InvokeAsync((coords.X, coords.Y));
 
-            // Play impact sound after a short delay (simulating dart flight)
             await Task.Delay(300);
             await JSRuntime.InvokeVoidAsync("playAudio", "/sounds/impact.mp3");
         }
@@ -151,8 +176,8 @@ public partial class DartboardVisualizer
         }
     }
 
-#pragma warning disable CA1812 // Instantiated by JSInterop deserialization
-#pragma warning disable S1144 // Properties set by JSInterop deserialization via reflection
+#pragma warning disable CA1812
+#pragma warning disable S1144
     private sealed class SvgCoordinates
     {
         public double X { get; set; }

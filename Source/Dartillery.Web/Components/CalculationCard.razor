@@ -8,7 +8,7 @@
         @if (Svc.LastThrow?.Metadata is { } m)
         {
             var effectiveSigma = Svc.CustomSigma + m.FatigueMagnitude;
-            var combined = m.PressureModifier * m.MomentumModifier * m.GroupingMultiplier * m.DifficultyMultiplier;
+            var combined = m.PressureModifier * m.MomentumModifier * m.DifficultyMultiplier;
             var finalSigma = effectiveSigma * combined;
             <span class="card-value">σ @finalSigma.ToString("F4")</span>
         }
@@ -19,7 +19,7 @@
         @if (Svc.ThrowCount > 0 && Svc.LastThrow?.Metadata is { } meta)
         {
             var effectiveSigma = Svc.CustomSigma + meta.FatigueMagnitude;
-            var combined = meta.PressureModifier * meta.MomentumModifier * meta.GroupingMultiplier * meta.DifficultyMultiplier;
+            var combined = meta.PressureModifier * meta.MomentumModifier * meta.DifficultyMultiplier;
             var finalSigma = effectiveSigma * combined;
 
             <!-- Step 1: Base Sigma -->
@@ -65,7 +65,7 @@
                 </div>
                 <div class="diag-row">
                     <span class="diag-label">Grouping</span>
-                    <span class="diag-val @GetModClass(meta.GroupingMultiplier)">×@meta.GroupingMultiplier.ToString("F2")</span>
+                    <span class="diag-val @(meta.WasDeflected ? "warn" : "")">@(meta.WasDeflected ? $"deflected {(meta.DeflectionDistance * 170):F1}mm" : "—")</span>
                 </div>
                 <div class="diag-row">
                     <span class="diag-label">Difficulty</span>

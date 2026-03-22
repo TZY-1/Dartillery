@@ -38,10 +38,10 @@
 
             @if (last.Metadata is { } meta)
             {
-                var total = meta.PressureModifier * meta.MomentumModifier * meta.GroupingMultiplier * meta.DifficultyMultiplier;
+                var total = meta.PressureModifier * meta.MomentumModifier * meta.DifficultyMultiplier;
                 <div class="combined-row">
                     <span class="combined-label">Combined Modifier:</span>
-                    <span class="combined-value @(total > 1.05 ? "val-warn" : total < 0.95 ? "val-good" : "")">
+                    <span class="combined-value @GetCombinedClass(total)">
                         x@(total.ToString("F2"))
                     </span>
                     @if (total > 1.05)
@@ -60,6 +60,13 @@
 
 @code {
     [Parameter] public SimulationService SimulationService { get; set; } = null!;
+
+    private static string GetCombinedClass(double total) => total switch
+    {
+        > 1.05 => "val-warn",
+        < 0.95 => "val-good",
+        _ => ""
+    };
 
     private static string GetScoreClass(int score) => score switch
     {

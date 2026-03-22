@@ -119,7 +119,7 @@
             var dist = Math.Abs(modifier - 1.0);
             var w = Math.Clamp(dist / 0.3 * 50.0, 0, 50);
             var barOffset = modifier < 1.0 ? 50.0 - w : 50.0;
-            var cls = modifier < 0.99 ? "bar-good" : modifier > 1.01 ? "bar-danger" : "bar-neutral";
+            var cls = GetModifierBarClass(modifier);
 
             <div class="diag-bar-row">
                 <span class="diag-label">Modifier</span>
@@ -146,7 +146,7 @@
                 <span class="diag-val">@(streakInfo.WindowCount - streakInfo.Good - streakInfo.Bad)</span>
             </div>
 
-            <div class="diag-detail @(modifier < 0.99 ? "good" : modifier > 1.01 ? "warn" : "neutral")">
+            <div class="diag-detail @GetModifierDetailClass(modifier)">
                 @if (modifier < 0.99)
                 {
                     <span>Hot streak! Good rate @streakInfo.GoodRate.ToString("F0")% &ge; @((Svc.MomentumHotThreshold * 100).ToString("F0"))% threshold</span>
@@ -224,6 +224,20 @@
             modifier = 1.0 + Svc.MomentumColdPenalty;
 
         return new StreakInfo(window.Count, good, bad, goodRate, badRate, modifier);
+    }
+
+    private static string GetModifierBarClass(double modifier)
+    {
+        if (modifier < 0.99) return "bar-good";
+        if (modifier > 1.01) return "bar-danger";
+        return "bar-neutral";
+    }
+
+    private static string GetModifierDetailClass(double modifier)
+    {
+        if (modifier < 0.99) return "good";
+        if (modifier > 1.01) return "warn";
+        return "neutral";
     }
 
     private sealed record StreakInfo(int WindowCount, int Good, int Bad, double GoodRate, double BadRate, double CurrentModifier);

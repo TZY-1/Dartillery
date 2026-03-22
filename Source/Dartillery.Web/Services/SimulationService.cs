@@ -1,4 +1,3 @@
-using Dartillery.Core.Abstractions;
 using Dartillery.Core.Models;
 
 namespace Dartillery.Web.Services;
@@ -8,16 +7,9 @@ namespace Dartillery.Web.Services;
 /// </summary>
 public sealed class SimulationService
 {
-    private readonly ITargetResolver _targetResolver;
-
     private readonly List<ThrowResult> _throws = new();
 
     private PlayerSession? _session;
-
-    public SimulationService(ITargetResolver targetResolver)
-    {
-        this._targetResolver = targetResolver;
-    }
 
 #pragma warning disable CA1003 // Blazor UI notification pattern uses Action, not EventHandler
     public event Action? OnStateChanged;
@@ -59,6 +51,10 @@ public sealed class SimulationService
     public double MomentumBadDeviation { get; set; } = 2.5;
 
     public bool EnableGrouping { get; set; }
+
+    public double GroupingClusterRadius { get; set; } = 0.08;
+
+    public double GroupingMaxDeflection { get; set; } = 0.04;
 
     public bool EnableTargetDifficulty { get; set; }
 
@@ -157,7 +153,7 @@ public sealed class SimulationService
 
         if (EnableGrouping)
         {
-            builder.WithSimpleGrouping();
+            builder.WithSimpleGrouping(GroupingClusterRadius, GroupingMaxDeflection);
         }
 
         if (EnableTargetDifficulty)
@@ -214,6 +210,13 @@ public sealed class SimulationService
             RebuildSession();
         }
 
+        // Build visit-aware game context for grouping model
+        gameContext ??= new GameContext();
+        gameContext = gameContext with
+        {
+            CurrentVisitResults = GetCurrentVisitResults()
+        };
+
         var result = _session!.Throw(target, gameContext);
         _throws.Add(result);
 
@@ -257,11 +260,33 @@ public sealed class SimulationService
             RebuildSession();
         }
 
+        // Build visit-aware game context for grouping model
+        gameContext ??= new GameContext();
+        gameContext = gameContext with
+        {
+            CurrentVisitResults = GetCurrentVisitResults()
+        };
+
         var result = _session!.ThrowAtPoint(new Point2D(x, y), gameContext);
         _throws.Add(result);
 
         NotifyStateChanged();
         return result;
+    }
+
+    /// <summary>
+    /// Returns the throw results from the current 3-dart visit.
+    /// Groups throws into visits of 3 darts each.
+    /// </summary>
+    private List<ThrowResult> GetCurrentVisitResults()
+    {
+        int dartInVisit = _throws.Count % 3;
+        if (dartInVisit == 0)
+        {
+            return new List<ThrowResult>();
+        }
+
+        return _throws.Skip(_throws.Count - dartInVisit).ToList();
     }
 
     /// <summary>

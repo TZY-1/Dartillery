@@ -8,8 +8,8 @@ namespace Dartillery.Simulation.Models.GroupingModels;
 /// </summary>
 internal sealed class NoGroupingModel : IGroupingModel
 {
-    public (Point2D AdjustedAimPoint, double DeviationMultiplier) AdjustForGrouping(
-        Point2D originalAimPoint,
+    public DeflectionResult ApplyDeflection(
+        Point2D hitPoint,
         List<ThrowResult> previousThrowsInVisit)
-        => (originalAimPoint, 1.0);
+        => DeflectionResult.None(hitPoint);
 }

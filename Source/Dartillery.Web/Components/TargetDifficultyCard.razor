@@ -25,7 +25,7 @@
                     x@(meta.DifficultyMultiplier.ToString("F2"))
                 </span>
             </div>
-            <div class="diag-detail @(meta.DifficultyMultiplier > 1.1 ? "warn" : meta.DifficultyMultiplier < 0.99 ? "good" : "neutral")">
+            <div class="diag-detail @GetDiffDetailClass(meta.DifficultyMultiplier)">
                 @GetExplanation(meta.DifficultyMultiplier)
             </div>
         }
@@ -44,7 +44,19 @@
     [Parameter] public SimulationService Svc { get; set; } = null!;
     [Parameter] public EventCallback OnParameterChanged { get; set; }
 
-    private static string GetDiffClass(double m) => m > 1.1 ? "warn" : m < 0.99 ? "good" : "";
+    private static string GetDiffDetailClass(double m) => m switch
+    {
+        > 1.1 => "warn",
+        < 0.99 => "good",
+        _ => "neutral"
+    };
+
+    private static string GetDiffClass(double m) => m switch
+    {
+        > 1.1 => "warn",
+        < 0.99 => "good",
+        _ => ""
+    };
 
     private static string GetExplanation(double m) => m switch
     {

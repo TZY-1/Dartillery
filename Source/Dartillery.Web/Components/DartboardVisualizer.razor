@@ -10,6 +10,22 @@
          @onmousemove="HandleMouseMove"
          @onmousemove:preventDefault
          @onmouseleave="HandleMouseLeave">
+        <defs>
+            <marker id="deflect-arrow" viewBox="0 0 10 10"
+                    refX="10" refY="5" markerWidth="4" markerHeight="4"
+                    orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" />
+            </marker>
+            <filter id="deflect-glow">
+                <feGaussianBlur stdDeviation="0.008" result="blur" />
+                <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+
+        <g id="board-content">
         <!-- Background -->
         <circle cx="0" cy="0" r="1.15" fill="#1a1a1a" />
 
@@ -94,6 +110,22 @@
                 "fill=\"rgba(251, 191, 36, 0.08)\" stroke=\"#fbbf24\" stroke-width=\"0.008\" stroke-dasharray=\"0.02,0.01\" stroke-opacity=\"0.6\" pointer-events=\"none\""))
         }
 
+        <!-- Cluster Radius Visualization (last aim point only) -->
+        @if (EnableGrouping && Throws?.Count > 0)
+        {
+            var culture0 = System.Globalization.CultureInfo.InvariantCulture;
+            var lastThrow = Throws[^1];
+            <circle cx="@lastThrow.AimedPoint.X.ToString("F4", culture0)"
+                    cy="@lastThrow.AimedPoint.Y.ToString("F4", culture0)"
+                    r="@GroupingClusterRadius.ToString("F4", culture0)"
+                    fill="none"
+                    stroke="#ef4444"
+                    stroke-width="0.005"
+                    stroke-dasharray="0.01,0.008"
+                    stroke-opacity="0.6"
+                    pointer-events="none" />
+        }
+
         <!-- Throws Visualization -->
         @if (Throws != null && Throws.Any())
         {
@@ -101,18 +133,57 @@
                 @foreach (var throw_ in Throws)
                 {
                     var culture = System.Globalization.CultureInfo.InvariantCulture;
+                    var isDeflected = throw_.Metadata?.WasDeflected == true;
 
                     @if (ShowDeviationLines)
                     {
-                        <!-- Deviation line from aim to hit -->
-                        <line x1="@throw_.AimedPoint.X.ToString("F4", culture)"
-                              y1="@throw_.AimedPoint.Y.ToString("F4", culture)"
-                              x2="@throw_.HitPoint.X.ToString("F4", culture)"
-                              y2="@throw_.HitPoint.Y.ToString("F4", culture)"
-                              stroke="#fbbf24"
-                              stroke-width="0.007"
-                              stroke-dasharray="0.01,0.005"
-                              stroke-opacity="0.7" />
+                        @if (isDeflected && throw_.Metadata?.PreDeflectionPoint is { } prePt)
+                        {
+                            <!-- Aim to pre-deflection (yellow, dashed — normal deviation) -->
+                            <line x1="@throw_.AimedPoint.X.ToString("F4", culture)"
+                                  y1="@throw_.AimedPoint.Y.ToString("F4", culture)"
+                                  x2="@prePt.X.ToString("F4", culture)"
+                                  y2="@prePt.Y.ToString("F4", culture)"
+                                  stroke="#fbbf24"
+                                  stroke-width="0.007"
+                                  stroke-dasharray="0.01,0.005"
+                                  stroke-opacity="0.8" />
+
+                            <!-- Pre-deflection to final hit (red arrow — deflection push) -->
+                            <line x1="@prePt.X.ToString("F4", culture)"
+                                  y1="@prePt.Y.ToString("F4", culture)"
+                                  x2="@throw_.HitPoint.X.ToString("F4", culture)"
+                                  y2="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                  stroke="#ef4444"
+                                  stroke-width="0.008"
+                                  stroke-opacity="0.9"
+                                  marker-end="url(#deflect-arrow)" />
+
+                            @if (throw_.Metadata?.DeflectedByPoint is { } blockerPt)
+                            {
+                                <!-- Thin line from blocking dart to deflected dart -->
+                                <line x1="@blockerPt.X.ToString("F4", culture)"
+                                      y1="@blockerPt.Y.ToString("F4", culture)"
+                                      x2="@throw_.HitPoint.X.ToString("F4", culture)"
+                                      y2="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                      stroke="#ef4444"
+                                      stroke-width="0.004"
+                                      stroke-dasharray="0.008,0.006"
+                                      stroke-opacity="0.6" />
+                            }
+                        }
+                        else
+                        {
+                            <!-- Deviation line from aim to hit (yellow, dashed) -->
+                            <line x1="@throw_.AimedPoint.X.ToString("F4", culture)"
+                                  y1="@throw_.AimedPoint.Y.ToString("F4", culture)"
+                                  x2="@throw_.HitPoint.X.ToString("F4", culture)"
+                                  y2="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                  stroke="#fbbf24"
+                                  stroke-width="0.007"
+                                  stroke-dasharray="0.01,0.005"
+                                  stroke-opacity="0.8" />
+                        }
                     }
 
                     <!-- Aim Point (Yellow) -->
@@ -123,14 +194,69 @@
                             stroke="#f59e0b"
                             stroke-width="0.005" />
 
-                    <!-- Hit Point (Orange) -->
-                    <circle cx="@throw_.HitPoint.X.ToString("F4", culture)"
-                            cy="@throw_.HitPoint.Y.ToString("F4", culture)"
-                            r="0.015"
-                            fill="#f97316"
-                            stroke="#ea580c"
-                            stroke-width="0.005" />
+                    <!-- Hit Point -->
+                    @if (isDeflected)
+                    {
+                        <!-- Deflected: red with glow -->
+                        <circle cx="@throw_.HitPoint.X.ToString("F4", culture)"
+                                cy="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                r="0.025"
+                                fill="rgba(239, 68, 68, 0.15)"
+                                stroke="#ef4444"
+                                stroke-width="0.003"
+                                pointer-events="none" />
+                        <circle cx="@throw_.HitPoint.X.ToString("F4", culture)"
+                                cy="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                r="0.015"
+                                fill="#ef4444"
+                                stroke="#dc2626"
+                                stroke-width="0.005"
+                                filter="url(#deflect-glow)" />
+                    }
+                    else
+                    {
+                        <!-- Normal: orange -->
+                        <circle cx="@throw_.HitPoint.X.ToString("F4", culture)"
+                                cy="@throw_.HitPoint.Y.ToString("F4", culture)"
+                                r="0.015"
+                                fill="#f97316"
+                                stroke="#ea580c"
+                                stroke-width="0.005" />
+                    }
                 }
+            </g>
+        }
+        </g> @* end board-content *@
+
+        @* Zoom Inset — magnified view of last throw area *@
+        @if (EnableGrouping && Throws?.Count > 0)
+        {
+            var zoomC = GetZoomCenter();
+            var zr = ZoomViewRadius;
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var zvb = $"{(zoomC.X - zr).ToString("F4", ci)} {(zoomC.Y - zr).ToString("F4", ci)} {(zr * 2).ToString("F4", ci)} {(zr * 2).ToString("F4", ci)}";
+            var zPos = GetZoomPosition(zoomC);
+            var zx = zPos.X.ToString("F4", ci);
+            var zy = zPos.Y.ToString("F4", ci);
+            var zbx = (zPos.X - 0.02).ToString("F4", ci);
+            var zby = (zPos.Y - 0.02).ToString("F4", ci);
+            var labelX = (zPos.X + 0.32).ToString("F4", ci);
+            var labelY = (-(zPos.Y + 0.64) + 0.04).ToString("F4", ci);
+
+            <!-- Zoom background + border -->
+            <rect x="@zbx" y="@zby" width="0.68" height="0.68"
+                  rx="0.03" fill="rgba(0,0,0,0.85)"
+                  stroke="#fbbf24" stroke-width="0.008" />
+            <!-- Zoomed content -->
+            <svg x="@zx" y="@zy" width="0.64" height="0.64"
+                 viewBox="@zvb">
+                <use href="#board-content" />
+            </svg>
+            <!-- Label -->
+            <g transform="scale(1,-1)">
+                <text x="@labelX" y="@labelY" text-anchor="middle"
+                      fill="#fbbf24" font-size="0.04" font-weight="bold"
+                      font-family="Arial, sans-serif">ZOOM</text>
             </g>
         }
 

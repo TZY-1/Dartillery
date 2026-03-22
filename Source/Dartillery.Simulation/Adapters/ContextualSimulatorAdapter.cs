@@ -39,23 +39,17 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
 
     public ThrowResult Throw(Target target, ThrowContext context)
     {
-        Point2D baseAimPoint = _aimPointCalculator.CalculateAimPoint(target);
-
-        var (adjustedAimPoint, groupingMultiplier) = _groupingModel.AdjustForGrouping(
-            baseAimPoint,
-            context.PreviousThrowsInVisit);
-
+        Point2D aimPoint = _aimPointCalculator.CalculateAimPoint(target);
         double difficultyMultiplier = _targetDifficultyModel.GetDifficultyModifier(target);
 
         var (dx, dy) = _deviationCalculator.CalculateDeviation(_profile, context);
+        dx *= difficultyMultiplier;
+        dy *= difficultyMultiplier;
 
-        dx *= groupingMultiplier * difficultyMultiplier;
-        dy *= groupingMultiplier * difficultyMultiplier;
+        Point2D hitPoint = new(aimPoint.X + dx, aimPoint.Y + dy);
+        var deflection = _groupingModel.ApplyDeflection(hitPoint, context.PreviousThrowsInVisit);
 
-        Point2D hitPoint = new(adjustedAimPoint.X + dx, adjustedAimPoint.Y + dy);
-
-        // use original aim point for deviation reference (not grouping-adjusted)
-        var result = _segmentResolver.Resolve(hitPoint, baseAimPoint);
+        var result = _segmentResolver.Resolve(deflection.HitPoint, aimPoint);
 
         return result with
         {
@@ -64,7 +58,10 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
                 FatigueMagnitude = context.SessionFatigue,
                 PressureModifier = context.PressureModifier,
                 MomentumModifier = context.MomentumModifier,
-                GroupingMultiplier = groupingMultiplier,
+                WasDeflected = deflection.WasDeflected,
+                DeflectionDistance = deflection.DeflectionDistance,
+                PreDeflectionPoint = deflection.PreDeflectionPoint,
+                DeflectedByPoint = deflection.DeflectedByPoint,
                 DifficultyMultiplier = difficultyMultiplier,
                 SystematicBiasApplied = _profile.SystematicBiasX,
                 PlayerName = _profile.Name,
@@ -78,8 +75,9 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         var (dx, dy) = _deviationCalculator.CalculateDeviation(_profile, context);
 
         Point2D hitPoint = new(aimPoint.X + dx, aimPoint.Y + dy);
+        var deflection = _groupingModel.ApplyDeflection(hitPoint, context.PreviousThrowsInVisit);
 
-        var result = _segmentResolver.Resolve(hitPoint, aimPoint);
+        var result = _segmentResolver.Resolve(deflection.HitPoint, aimPoint);
 
         return result with
         {
@@ -88,7 +86,10 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
                 FatigueMagnitude = context.SessionFatigue,
                 PressureModifier = context.PressureModifier,
                 MomentumModifier = context.MomentumModifier,
-                GroupingMultiplier = 1.0,
+                WasDeflected = deflection.WasDeflected,
+                DeflectionDistance = deflection.DeflectionDistance,
+                PreDeflectionPoint = deflection.PreDeflectionPoint,
+                DeflectedByPoint = deflection.DeflectedByPoint,
                 DifficultyMultiplier = 1.0,
                 SystematicBiasApplied = _profile.SystematicBiasX,
                 PlayerName = _profile.Name,

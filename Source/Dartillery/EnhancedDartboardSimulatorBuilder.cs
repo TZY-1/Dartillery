@@ -237,12 +237,14 @@ public sealed class EnhancedDartboardSimulatorBuilder
     }
 
     /// <summary>
-    /// Configures the builder with a simple grouping model that biases subsequent darts in a visit toward earlier hit positions.
+    /// Configures the builder with a distance-based deflection model for dart blocking.
     /// </summary>
     /// <returns>The builder instance for method chaining.</returns>
-    public EnhancedDartboardSimulatorBuilder WithSimpleGrouping()
+    public EnhancedDartboardSimulatorBuilder WithSimpleGrouping(
+        double clusterRadius = 0.08,
+        double maxDeflection = 0.04)
     {
-        _groupingModel = new SimpleGroupingModel();
+        _groupingModel = new SimpleGroupingModel(clusterRadius, maxDeflection);
         return this;
     }
 
