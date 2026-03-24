@@ -28,14 +28,13 @@ public partial class DartboardVisualizer
 
     private const double StartAngle = (-Math.PI / 2) - (SectorAngle / 2);
 
-    private const double ZoomViewRadius = 0.08;
-
     private static readonly int[] SectorOrder = BoardDimensions.SectorOrderClockwise;
 
     private ElementReference svgElementRef;
     private bool _mouseOver;
     private double _mouseX;
     private double _mouseY;
+    private int _hoveredThrowIndex = -1;
 
 #pragma warning disable CA2227 // Blazor [Parameter] properties require a setter
     [Parameter]
@@ -64,24 +63,19 @@ public partial class DartboardVisualizer
     public double GroupingClusterRadius { get; set; }
 
     [Parameter]
+    public bool EnableZoom { get; set; }
+
+    [Parameter]
+    public double ZoomLevel { get; set; } = 0.08;
+
+    [Parameter]
+    public double ZoomSize { get; set; } = 0.64;
+
+    [Parameter]
     public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = null!;
-
-    /// <summary>
-    /// Returns the top-left corner for the zoom inset, placed in the
-    /// quadrant opposite to the last throw so it never overlaps the action.
-    /// </summary>
-    private static (double X, double Y) GetZoomPosition(Point2D lastHit)
-    {
-        const double inset = 0.02;
-        const double size = 0.64;
-
-        double x = lastHit.X >= 0 ? -1.15 + inset : 1.15 - size - inset;
-        double y = lastHit.Y >= 0 ? -1.15 + inset : 1.15 - size - inset;
-        return (x, y);
-    }
 
     private static string GetSectorPath(int index, double innerRadius, double outerRadius)
     {
@@ -118,10 +112,20 @@ public partial class DartboardVisualizer
         return (Math.Cos(angle) * radius, Math.Sin(angle) * radius);
     }
 
+    private (double X, double Y) GetZoomPosition()
+    {
+        const double inset = 0.02;
+        var border = inset + 0.04;
+        var totalSize = ZoomSize + border;
+
+        double x = _mouseX >= 0 ? -1.15 + inset : 1.15 - totalSize;
+        double y = _mouseY >= 0 ? -1.15 + inset : 1.15 - totalSize;
+        return (x, y);
+    }
+
     private Point2D GetZoomCenter()
     {
-        if (Throws == null || Throws.Count == 0) return new Point2D(0, 0);
-        return Throws[^1].HitPoint;
+        return new Point2D(_mouseX, _mouseY);
     }
 
     private async Task HandleMouseMove(MouseEventArgs e)
