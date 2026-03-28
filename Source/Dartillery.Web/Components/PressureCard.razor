@@ -1,4 +1,5 @@
 @using Dartillery.Core.Models
+@using Dartillery.Web.Models
 @using Dartillery.Web.Services
 
 <div class="factor-card @(!Svc.EnablePressure ? "card-inactive" : "")">
@@ -26,40 +27,181 @@
             <small class="card-desc">Mental resistance to high-stakes moments. 100% = ice-cold under pressure.</small>
         </div>
 
+        <!-- Scenario selector -->
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-label">Scenario</span>
+                <span class="slider-value">@Svc.PressureScenario.Name</span>
+            </div>
+            <select class="form-select"
+                    value="@Svc.PressureScenario.Name"
+                    @onchange="OnScenarioChanged">
+                @foreach (var scenario in PressureScenarios.All)
+                {
+                    <option value="@scenario.Name">@scenario.Name</option>
+                }
+                @if (Svc.PressureScenario.Name == "Custom")
+                {
+                    <option value="Custom">Custom</option>
+                }
+            </select>
+            <small class="card-desc">@Svc.PressureScenario.Description</small>
+        </div>
+
+        <!-- Expandable detail fields -->
+        <div class="slider-group">
+            <button class="detail-toggle" type="button" @onclick="() => _showDetails = !_showDetails">
+                <i class="bi @(_showDetails ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                <span>Game State Details</span>
+            </button>
+
+            @if (_showDetails)
+            {
+                <div class="detail-fields">
+                    <div class="detail-row">
+                        <label class="detail-label">Remaining Score</label>
+                        <input type="number" class="detail-input"
+                               min="0" max="501"
+                               value="@Svc.PressureScenario.RemainingScore"
+                               @onchange="e => OnDetailChanged(remainingScore: ParseInt(e))" />
+                    </div>
+                    <div class="detail-row">
+                        <label class="detail-label">Checkout Attempts</label>
+                        <input type="number" class="detail-input"
+                               min="0" max="20"
+                               value="@Svc.PressureScenario.CheckoutAttempts"
+                               @onchange="e => OnDetailChanged(checkoutAttempts: ParseInt(e))" />
+                    </div>
+                    <div class="detail-row">
+                        <label class="detail-label detail-check-label">
+                            <input type="checkbox"
+                                   checked="@Svc.PressureScenario.IsCheckoutAttempt"
+                                   @onchange="e => OnDetailChanged(isCheckout: (bool)(e.Value ?? false))" />
+                            <span>Is Checkout Attempt</span>
+                        </label>
+                    </div>
+                    <div class="detail-row">
+                        <label class="detail-label detail-check-label">
+                            <input type="checkbox"
+                                   checked="@Svc.PressureScenario.IsMatchPoint"
+                                   @onchange="e => OnDetailChanged(isMatchPoint: (bool)(e.Value ?? false))" />
+                            <span>Is Match Point</span>
+                        </label>
+                    </div>
+                    <div class="detail-row">
+                        <label class="detail-label detail-check-label">
+                            <input type="checkbox"
+                                   checked="@Svc.PressureEnforceBust"
+                                   @onchange="OnBustToggled" />
+                            <span>Enforce Bust Rules</span>
+                        </label>
+                    </div>
+                </div>
+            }
+        </div>
+
         <div class="card-divider"></div>
 
-        @if (Svc.EnablePressure && Svc.LastThrow?.Metadata is { } meta)
+        <!-- Dynamic game state display -->
+        @if (Svc.EnablePressure)
         {
-            <div class="diag-bar-row">
-                <span class="diag-label">Modifier</span>
-                <div class="diag-bar-track">
-                    <div class="diag-bar-fill @GetPressureBarClass(meta.PressureModifier)"
-                         style="width: @(Math.Clamp((meta.PressureModifier - 1.0) / 0.5 * 100.0, 0, 100).ToString("F1", Inv))%"></div>
-                </div>
-                <span class="diag-bar-val">x@(meta.PressureModifier.ToString("F2"))</span>
+            var gs = Svc.GameState;
+            <div class="diag-row">
+                <span class="diag-label">Score</span>
+                <span class="diag-val highlight">@gs.CurrentScore</span>
             </div>
             <div class="diag-row">
-                <span class="diag-label">Resistance</span>
-                <span class="diag-val">@((Svc.PressureResistance * 100).ToString("F0"))%</span>
+                <span class="diag-label">Darts in Visit</span>
+                <span class="diag-val">@gs.DartsRemainingInVisit / 3</span>
             </div>
-            <div class="diag-detail @(meta.PressureModifier > 1.01 ? "warn" : "neutral")">
-                @if (meta.PressureModifier > 1.01)
+            @if (gs.CheckoutAttempts > 0)
+            {
+                <div class="diag-row">
+                    <span class="diag-label">Failed Checkouts</span>
+                    <span class="diag-val warn">@gs.CheckoutAttempts</span>
+                </div>
+            }
+            @if (gs.IsCheckoutAttempt)
+            {
+                <div class="diag-detail good">Checkout possible with @gs.DartsRemainingInVisit dart@(gs.DartsRemainingInVisit != 1 ? "s" : "")</div>
+            }
+            else if (gs.CurrentScore > 0 && gs.CurrentScore <= 170)
+            {
+                <div class="diag-detail warn">No checkout path with @gs.DartsRemainingInVisit dart@(gs.DartsRemainingInVisit != 1 ? "s" : "")</div>
+            }
+            @if (gs.LastDartWasBust)
+            {
+                <div class="diag-detail warn">BUST — visit annulled, score reset to @gs.CurrentScore</div>
+            }
+            @if (CheckoutTable.IsBogey(gs.CurrentScore))
+            {
+                <div class="diag-detail warn">Bogey number — no clean finish possible</div>
+            }
+
+            <!-- Visit progress timeline -->
+            @if (Svc.EnablePressure && Svc.ThrowCount > 0)
+            {
+                <div class="card-divider"></div>
+
+                var visitThrows = GetRecentVisitThrows();
+                @if (visitThrows.Count > 0)
                 {
-                    <span>Under pressure — deviation +@(((meta.PressureModifier - 1.0) * 100).ToString("F0"))%</span>
+                    <div class="visit-timeline">
+                        <span class="diag-label">Visit</span>
+                        <div class="visit-steps">
+                            <span class="visit-score visit-score-start">@Svc.PressureScenario.RemainingScore</span>
+                            @foreach (var vt in visitThrows)
+                            {
+                                var dotClass = GetPressureDotClass(vt.Metadata?.PressureModifier ?? 1.0);
+                                <span class="visit-arrow">-@vt.Score-</span>
+                                <span class="visit-dot @dotClass" title="x@((vt.Metadata?.PressureModifier ?? 1.0).ToString("F2"))"></span>
+                            }
+                            <span class="visit-score visit-score-current">@gs.CurrentScore</span>
+                        </div>
+                    </div>
                 }
-                else
-                {
-                    <span>No pressure effect on last throw</span>
-                }
-            </div>
+            }
+
+            <div class="card-divider"></div>
         }
-        else if (!Svc.EnablePressure)
+
+        @if (Svc.EnablePressure)
         {
-            <div class="diag-empty">Enable pressure to simulate checkout/match-point effects</div>
+            var preview = Svc.PreviewPressureModifier;
+
+            @if (Svc.GameState.CurrentScore == 0 && Svc.ThrowCount > 0)
+            {
+                <div class="diag-detail good">Checked out!</div>
+            }
+            else
+            {
+                <div class="diag-bar-row">
+                    <span class="diag-label">Next Dart</span>
+                    <div class="diag-bar-track">
+                        <div class="diag-bar-fill @GetPressureBarClass(preview)"
+                             style="width: @(Math.Clamp((preview - 1.0) / 0.5 * 100.0, 0, 100).ToString("F1", Inv))%"></div>
+                    </div>
+                    <span class="diag-bar-val">x@(preview.ToString("F2"))</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">Resistance</span>
+                    <span class="diag-val">@((Svc.PressureResistance * 100).ToString("F0"))%</span>
+                </div>
+                <div class="diag-detail @(preview > 1.01 ? "warn" : "neutral")">
+                    @if (preview > 1.01)
+                    {
+                        <span>Under pressure — next dart deviation +@(((preview - 1.0) * 100).ToString("F0"))%</span>
+                    }
+                    else
+                    {
+                        <span>No pressure on next dart</span>
+                    }
+                </div>
+            }
         }
         else
         {
-            <div class="diag-empty">Throw darts to see pressure diagnostics</div>
+            <div class="diag-empty">Enable pressure to simulate checkout/match-point effects</div>
         }
     </div>
 </div>
@@ -69,6 +211,7 @@
     [Parameter] public EventCallback OnParameterChanged { get; set; }
 
     private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+    private bool _showDetails;
 
     private static string GetPressureBarClass(double modifier) => modifier switch
     {
@@ -77,10 +220,79 @@
         _ => "bar-neutral"
     };
 
+    private static string GetPressureDotClass(double modifier) => modifier switch
+    {
+        > 1.1 => "dot-danger",
+        > 1.01 => "dot-warn",
+        _ => "dot-neutral"
+    };
+
     private static void OnSlider(ChangeEventArgs e, Action<double> setter)
     {
         if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, Inv, out var v))
             setter(v);
+    }
+
+    private static int ParseInt(ChangeEventArgs e)
+    {
+        return int.TryParse(e.Value?.ToString(), out var v) ? v : 0;
+    }
+
+    /// <summary>
+    /// Returns throws from the most recent visit for timeline display.
+    /// Uses the tracker's visit results when available, falls back to modulo grouping.
+    /// </summary>
+    private List<ThrowResult> GetRecentVisitThrows()
+    {
+        var trackerResults = Svc.GameState.VisitResults;
+        if (trackerResults.Count > 0)
+            return trackerResults.ToList();
+
+        // After a visit completes (tracker resets), show the last completed visit
+        var throws = Svc.Throws;
+        if (throws.Count == 0) return [];
+
+        int remainder = throws.Count % 3;
+        if (remainder == 0)
+            return throws.TakeLast(3).ToList();
+
+        return throws.TakeLast(remainder).ToList();
+    }
+
+    private async Task OnScenarioChanged(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        var scenario = PressureScenarios.All.FirstOrDefault(s => s.Name == name);
+        if (scenario != null)
+        {
+            Svc.PressureScenario = scenario;
+            Svc.ResetGameState();
+            await OnParameterChanged.InvokeAsync();
+        }
+    }
+
+    private async Task OnDetailChanged(
+        int? remainingScore = null,
+        int? checkoutAttempts = null,
+        bool? isCheckout = null,
+        bool? isMatchPoint = null)
+    {
+        var current = Svc.PressureScenario;
+        Svc.PressureScenario = new PressureScenario(
+            "Custom",
+            "Manual game state configuration",
+            remainingScore ?? current.RemainingScore,
+            isCheckout ?? current.IsCheckoutAttempt,
+            isMatchPoint ?? current.IsMatchPoint,
+            checkoutAttempts ?? current.CheckoutAttempts);
+        Svc.ResetGameState();
+        await OnParameterChanged.InvokeAsync();
+    }
+
+    private async Task OnBustToggled(ChangeEventArgs e)
+    {
+        Svc.PressureEnforceBust = (bool)(e.Value ?? true);
+        await OnParameterChanged.InvokeAsync();
     }
 
     private async Task OnChanged()

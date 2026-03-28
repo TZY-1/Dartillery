@@ -58,6 +58,14 @@ public sealed class ThrowContextBuilder
     public double CurrentFatigue => _currentFatigue;
 
     /// <summary>
+    /// Returns the pressure modifier that would be applied for the given game context without executing a throw.
+    /// </summary>
+    public double PreviewPressureModifier(GameContext gameContext)
+    {
+        return _pressureModel.GetPrecisionModifier(_profile, gameContext);
+    }
+
+    /// <summary>
     /// Evaluates all behavioral models and returns a <see cref="ThrowContext"/> containing the combined modifiers for the next throw.
     /// </summary>
     /// <param name="sessionState">Current session state including throw count and timing.</param>

@@ -73,3 +73,18 @@
     margin-left: auto;
     font-size: 0.7rem;
 }
+
+.strip-pressure {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.strip-pressure.pressure-mid {
+    background: var(--warning);
+}
+
+.strip-pressure.pressure-high {
+    background: #ef4444;
+}

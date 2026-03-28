@@ -240,6 +240,139 @@
     margin-bottom: 2px;
 }
 
+/* Detail Toggle & Fields (expandable sections) */
+.detail-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: none;
+    border: none;
+    color: var(--neutral-light);
+    opacity: 0.7;
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 2px 0;
+    width: 100%;
+    text-align: left;
+}
+
+.detail-toggle:hover {
+    opacity: 1;
+    color: var(--accent-gold);
+}
+
+.detail-toggle i {
+    font-size: 0.65rem;
+}
+
+.detail-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+    padding: var(--spacing-xs);
+    background: var(--surface-light);
+    border-radius: var(--radius-sm);
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xs);
+    font-size: 0.72rem;
+}
+
+.detail-label {
+    color: var(--neutral-light);
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.detail-check-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.detail-input {
+    width: 64px;
+    padding: 2px 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--neutral-white);
+    font-size: 0.72rem;
+    font-family: 'Courier New', monospace;
+    text-align: right;
+}
+
+.detail-input:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+/* Visit Timeline (pressure card) */
+.visit-timeline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.72rem;
+    padding: 2px 0;
+}
+
+.visit-steps {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.visit-score {
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+}
+
+.visit-score-start {
+    color: var(--neutral-light);
+    opacity: 0.6;
+}
+
+.visit-score-current {
+    color: var(--accent-gold);
+}
+
+.visit-arrow {
+    color: var(--neutral-light);
+    opacity: 0.5;
+    font-size: 0.65rem;
+    font-family: 'Courier New', monospace;
+    flex-shrink: 0;
+}
+
+.visit-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-neutral {
+    background: var(--success);
+}
+
+.dot-warn {
+    background: var(--warning);
+}
+
+.dot-danger {
+    background: #ef4444;
+}
+
 /* Empty State */
 .diag-empty {
     font-size: 0.68rem;

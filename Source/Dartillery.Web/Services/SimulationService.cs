@@ -24,6 +24,10 @@ public sealed class SimulationService
 
     public bool EnablePressure { get; set; }
 
+    public PressureScenario PressureScenario { get; set; } = PressureScenarios.Relaxed;
+
+    public bool PressureEnforceBust { get; set; } = true;
+
     public double FatigueRate { get; set; } = 0.007;
 
     public double PressureResistance { get; set; } = 0.5;
@@ -100,6 +104,19 @@ public sealed class SimulationService
     public ThrowResult? LastThrow => _throws.Count > 0 ? _throws[^1] : null;
 
     /// <summary>
+    /// Exposes the game state tracker for pressure visualization in UI components.
+    /// </summary>
+    public GameStateTracker GameState => _gameStateTracker;
+
+    /// <summary>
+    /// Returns the pressure modifier that would apply to the next throw based on current game state.
+    /// </summary>
+    public double PreviewPressureModifier =>
+        EnablePressure && _session != null
+            ? _session.PreviewPressureModifier(_gameStateTracker.ToGameContext())
+            : 1.0;
+
+    /// <summary>
     /// Rebuilds the session with current configuration settings.
     /// Called when parameters change to apply new settings.
     /// </summary>
@@ -170,6 +187,7 @@ public sealed class SimulationService
 
         _session = builder.BuildSession();
         _throws.Clear();
+        ResetGameState();
 
         NotifyStateChanged();
     }
@@ -208,15 +226,15 @@ public sealed class SimulationService
             RebuildSession();
         }
 
-        // Build visit-aware game context for grouping model
-        gameContext ??= new GameContext();
-        gameContext = gameContext with
-        {
-            CurrentVisitResults = GetCurrentVisitResults()
-        };
+        gameContext ??= BuildGameContext();
 
         var result = _session!.Throw(target, gameContext);
         _throws.Add(result);
+
+        if (EnablePressure)
+        {
+            _gameStateTracker.RecordThrow(result);
+        }
 
         NotifyStateChanged();
         return result;
@@ -230,6 +248,7 @@ public sealed class SimulationService
     {
         _throws.Clear();
         _session?.Reset();
+        ResetGameState();
 
         NotifyStateChanged();
     }
@@ -258,18 +277,48 @@ public sealed class SimulationService
             RebuildSession();
         }
 
-        // Build visit-aware game context for grouping model
-        gameContext ??= new GameContext();
-        gameContext = gameContext with
-        {
-            CurrentVisitResults = GetCurrentVisitResults()
-        };
+        gameContext ??= BuildGameContext();
 
         var result = _session!.ThrowAtPoint(new Point2D(x, y), gameContext);
         _throws.Add(result);
 
+        if (EnablePressure)
+        {
+            _gameStateTracker.RecordThrow(result);
+        }
+
         NotifyStateChanged();
         return result;
+    }
+
+    /// <summary>
+    /// Initializes the game state tracker with the current pressure scenario.
+    /// Called when pressure settings change or throws are cleared.
+    /// </summary>
+    public void ResetGameState()
+    {
+        _gameStateTracker.EnforceBustRules = PressureEnforceBust;
+        _gameStateTracker.StartScenario(PressureScenario);
+    }
+
+    /// <summary>
+    /// Builds the appropriate <see cref="GameContext"/> for the next throw.
+    /// Uses the dynamic game state tracker when pressure is enabled,
+    /// otherwise falls back to a neutral context with visit tracking.
+    /// </summary>
+    private GameContext BuildGameContext()
+    {
+        if (EnablePressure)
+        {
+            _gameStateTracker.EnforceBustRules = PressureEnforceBust;
+            return _gameStateTracker.ToGameContext();
+        }
+
+        // Non-pressure path: basic visit tracking for grouping model
+        return new GameContext
+        {
+            CurrentVisitResults = GetCurrentVisitResults()
+        };
     }
 
     /// <summary>

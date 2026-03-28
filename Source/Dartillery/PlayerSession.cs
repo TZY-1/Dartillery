@@ -130,6 +130,15 @@ public sealed class PlayerSession
     }
 
     /// <summary>
+    /// Returns what the pressure modifier would be for the given game context without throwing.
+    /// </summary>
+    public double PreviewPressureModifier(GameContext gameContext)
+    {
+        ArgumentNullException.ThrowIfNull(gameContext);
+        return _contextBuilder.PreviewPressureModifier(gameContext);
+    }
+
+    /// <summary>
     /// Resets the session to initial state: clears throw history, resets throw count and fatigue accumulation.
     /// The player profile and behavioral models are preserved.
     /// </summary>

@@ -11,44 +11,56 @@ internal sealed class CheckoutPsychologyModel : IPressureModel
 {
     private static readonly HashSet<int> BogeyNumbers = new()
     {
-        169, 168, 166, 165, 163, 162, 159, // Awkward finishes (no easy double-out)
+        169, 168, 166, 165, 163, 162, 159,
     };
 
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context)
     {
         double pressure = 1.0;
 
-        // Base checkout pressure
         if (context.IsCheckoutAttempt)
         {
-            pressure += 0.1 * context.CheckoutAttempts;
+            pressure += 0.05;
+            pressure += 0.05 * context.CheckoutAttempts;
 
-            // High-value checkout pressure (170, 167, etc.)
             if (context.RemainingScore >= 150)
-            {
-                pressure += 0.15;
-            }
-
-            // Bogey number pressure (awkward finishes)
-            if (BogeyNumbers.Contains(context.RemainingScore))
             {
                 pressure += 0.08;
             }
+
+            if (BogeyNumbers.Contains(context.RemainingScore))
+            {
+                pressure += 0.04;
+            }
         }
 
-        // Match point pressure
+        // Last dart in visit during checkout — now-or-never moment
+        if (context.ThrowsRemainingInVisit == 1 && context.IsCheckoutAttempt)
+        {
+            pressure += 0.06;
+        }
+        else if (context.ThrowsRemainingInVisit == 2 && context.IsCheckoutAttempt)
+        {
+            pressure += 0.03;
+        }
+
+        // Missed darts in the current visit compound frustration
+        if (context.CurrentVisitResults.Count > 0 && context.IsCheckoutAttempt)
+        {
+            int missedDarts = context.CurrentVisitResults.Count(r => r.Score == 0 || !r.IsHit);
+            pressure += 0.03 * missedDarts;
+        }
+
         if (context.IsMatchPoint)
         {
-            pressure += 0.2;
+            pressure += 0.10;
         }
 
-        // Score anxiety (fear of busting)
-        if (context.RemainingScore < 40)
+        if (context.RemainingScore is > 0 and < 40)
         {
-            pressure += 0.05; // Nervous about going bust
+            pressure += 0.03;
         }
 
-        // Apply player's pressure resistance
         return 1.0 + ((pressure - 1.0) * (1.0 - profile.PressureResistance));
     }
 }

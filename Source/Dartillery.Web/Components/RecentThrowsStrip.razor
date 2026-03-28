@@ -15,6 +15,11 @@
                     <span class="strip-score">@t.Score</span>
                     <span class="strip-seg">@Abbrev(t.SegmentType)</span>
                     <span class="strip-sector">@(t.SectorNumber > 0 ? t.SectorNumber.ToString() : "-")</span>
+                    @if (t.Metadata?.PressureModifier > 1.01)
+                    {
+                        <span class="strip-pressure @PressureDotClass(t.Metadata.PressureModifier)"
+                              title="Pressure x@(t.Metadata.PressureModifier.ToString("F2"))"></span>
+                    }
                 </div>
             }
         </div>
@@ -33,5 +38,12 @@
         SegmentType.Single => "S",
         SegmentType.Miss => "X",
         _ => "?"
+    };
+
+    private static string PressureDotClass(double modifier) => modifier switch
+    {
+        > 1.1 => "pressure-high",
+        > 1.01 => "pressure-mid",
+        _ => ""
     };
 }
