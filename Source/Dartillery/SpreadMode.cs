@@ -9,5 +9,8 @@ public enum SpreadMode
     Gaussian,
 
     /// <summary>Uniform distribution within a circle — every point within the spread radius is equally likely.</summary>
-    Uniform
+    Uniform,
+
+    /// <summary>Bivariate Gaussian — elliptical spread with independent axis sigma, rotation, and throw-to-throw consistency variation.</summary>
+    Bivariate
 }

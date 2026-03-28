@@ -9,7 +9,11 @@
 <div class="simulator-dashboard">
     <div class="dashboard-toolbar">
         <SimulatorToolbar SimulationService="@SimulationService"
-                          OnThrowExecuted="@OnThrowExecuted" />
+                          OnThrowExecuted="@OnThrowExecuted"
+                          EnableZoom="@_enableZoom"
+                          ZoomLevel="@_zoomLevel"
+                          ZoomSize="@_zoomSize"
+                          OnZoomChanged="@HandleZoomChanged" />
     </div>
 
     <div class="dashboard-board">
@@ -21,6 +25,9 @@
                              EnableManualTargeting="@SimulationService.EnableManualTargeting"
                              EnableGrouping="@SimulationService.EnableGrouping"
                              GroupingClusterRadius="@SimulationService.GroupingClusterRadius"
+                             EnableZoom="@_enableZoom"
+                             ZoomLevel="@_zoomLevel"
+                             ZoomSize="@_zoomSize"
                              OnManualTargetSelected="@HandleManualTargetSelected" />
         <CompactStats SimulationService="@SimulationService" />
         <RecentThrowsStrip SimulationService="@SimulationService" />
@@ -39,6 +46,9 @@
 
 @code {
     private bool ShowDeviationLines { get; set; } = true;
+    private bool _enableZoom;
+    private double _zoomLevel = 0.08;
+    private double _zoomSize = 0.64;
 
     protected override void OnInitialized()
     {
@@ -48,6 +58,14 @@
 
     private void OnThrowExecuted()
     {
+        StateHasChanged();
+    }
+
+    private void HandleZoomChanged((bool Enabled, double Level, double Size) zoom)
+    {
+        _enableZoom = zoom.Enabled;
+        _zoomLevel = zoom.Level;
+        _zoomSize = zoom.Size;
         StateHasChanged();
     }
 

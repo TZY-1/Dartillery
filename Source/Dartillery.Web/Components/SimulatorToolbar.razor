@@ -42,6 +42,29 @@
 
     </div>
 
+    <div class="toolbar-group">
+        <label class="toolbar-check">
+            <input type="checkbox" checked="@EnableZoom"
+                   @onchange="e => OnZoomToggle((bool)(e.Value ?? false))" />
+            <span>Zoom</span>
+        </label>
+        @if (EnableZoom)
+        {
+            <span class="toolbar-range-label">Level</span>
+            <input type="range" class="toolbar-range"
+                   min="0.03" max="0.15" step="0.01"
+                   value="@ZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                   @oninput="e => OnZoomSlider(e, level: true)"
+                   title="Zoom magnification" />
+            <span class="toolbar-range-label">Size</span>
+            <input type="range" class="toolbar-range"
+                   min="0.3" max="0.9" step="0.05"
+                   value="@ZoomSize.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                   @oninput="e => OnZoomSlider(e, level: false)"
+                   title="Inset window size" />
+        }
+    </div>
+
     <!-- Actions -->
     <div class="toolbar-group toolbar-actions">
         <button @onclick="ThrowDart" class="toolbar-btn toolbar-btn-primary" type="button">
@@ -62,6 +85,10 @@
 @code {
     [Parameter] public SimulationService SimulationService { get; set; } = null!;
     [Parameter] public EventCallback OnThrowExecuted { get; set; }
+    [Parameter] public bool EnableZoom { get; set; }
+    [Parameter] public double ZoomLevel { get; set; }
+    [Parameter] public double ZoomSize { get; set; }
+    [Parameter] public EventCallback<(bool Enabled, double Level, double Size)> OnZoomChanged { get; set; }
     private string SelectedTarget { get; set; } = "T20";
 
     private static readonly PresetInfo[] _presets =
@@ -136,6 +163,21 @@
         "S1" => Target.Single(1),
         _ => Target.Triple(20)
     };
+
+    private async Task OnZoomToggle(bool enabled)
+    {
+        await OnZoomChanged.InvokeAsync((enabled, ZoomLevel, ZoomSize));
+    }
+
+    private async Task OnZoomSlider(ChangeEventArgs e, bool level)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var val))
+        {
+            var newLevel = level ? val : ZoomLevel;
+            var newSize = level ? ZoomSize : val;
+            await OnZoomChanged.InvokeAsync((EnableZoom, newLevel, newSize));
+        }
+    }
 
     private sealed record PresetInfo(string Name, string Hint);
 }

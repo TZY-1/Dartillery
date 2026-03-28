@@ -32,8 +32,17 @@ internal sealed record SessionConfiguration
     /// <summary>The target difficulty model used for target-specific difficulty adjustments.</summary>
     public ITargetDifficultyModel TargetDifficultyModel { get; init; } = new NoTargetDifficultyModel();
 
-    /// <summary>The spread calculation mode (Gaussian or Uniform).</summary>
+    /// <summary>The spread calculation mode (Gaussian, Uniform, or Bivariate).</summary>
     public SpreadMode SpreadMode { get; init; } = SpreadMode.Gaussian;
+
+    /// <summary>Ratio of vertical to horizontal sigma for bivariate mode (0.3–1.0).</summary>
+    public double BivariateSigmaRatio { get; init; } = 0.7;
+
+    /// <summary>Rotation angle in degrees for the bivariate spread ellipse (-90 to +90).</summary>
+    public double BivariateAngleDegrees { get; init; }
+
+    /// <summary>Throw-to-throw consistency for bivariate mode (0.0–1.0). Lower = more variation.</summary>
+    public double BivariateConsistency { get; init; } = 0.8;
 
     /// <summary>Whether deviation truncation is enabled.</summary>
     public bool UseTruncation { get; init; }

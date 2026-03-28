@@ -69,6 +69,9 @@ public sealed class EnhancedDartboardSimulatorBuilder
     private IGroupingModel? _groupingModel;
     private ITargetDifficultyModel? _targetDifficultyModel;
     private SpreadMode _spreadMode = SpreadMode.Gaussian;
+    private double _bivariateSigmaRatio = 0.7;
+    private double _bivariateAngle;
+    private double _bivariateConsistency = 0.8;
     private bool _useTruncation;
     private int? _seed;
 
@@ -280,6 +283,21 @@ public sealed class EnhancedDartboardSimulatorBuilder
     }
 
     /// <summary>
+    /// Sets the bivariate spread parameters (only used when SpreadMode is Bivariate).
+    /// </summary>
+    /// <param name="sigmaRatio">Ratio of vertical to horizontal sigma (0.3–1.0).</param>
+    /// <param name="angleDegrees">Rotation angle in degrees (-90 to +90).</param>
+    /// <param name="consistency">Throw-to-throw consistency (0.0–1.0).</param>
+    public EnhancedDartboardSimulatorBuilder WithBivariateParameters(
+        double sigmaRatio = 0.7, double angleDegrees = 0.0, double consistency = 0.8)
+    {
+        _bivariateSigmaRatio = sigmaRatio;
+        _bivariateAngle = angleDegrees;
+        _bivariateConsistency = consistency;
+        return this;
+    }
+
+    /// <summary>
     /// Enables deviation truncation to prevent statistical outliers from landing impossibly far from the target.
     /// The truncation bounds are automatically derived from the spread algorithm and player profile.
     /// </summary>
@@ -331,6 +349,9 @@ public sealed class EnhancedDartboardSimulatorBuilder
             GroupingModel = _groupingModel ?? new NoGroupingModel(),
             TargetDifficultyModel = _targetDifficultyModel ?? new NoTargetDifficultyModel(),
             SpreadMode = _spreadMode,
+            BivariateSigmaRatio = _bivariateSigmaRatio,
+            BivariateAngleDegrees = _bivariateAngle,
+            BivariateConsistency = _bivariateConsistency,
             UseTruncation = _useTruncation,
             Seed = _seed,
             EventListeners = _eventListeners.AsReadOnly()
@@ -343,6 +364,9 @@ public sealed class EnhancedDartboardSimulatorBuilder
         IDeviationCalculator baseCalc = config.SpreadMode switch
         {
             SpreadMode.Uniform => new UniformDeviationCalculator(rng),
+            SpreadMode.Bivariate => new BivariateDeviationCalculator(
+                rng, config.BivariateSigmaRatio, config.BivariateAngleDegrees,
+                config.BivariateConsistency),
             _ => new GaussianDeviationCalculator(rng)
         };
 

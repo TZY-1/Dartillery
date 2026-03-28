@@ -43,24 +43,85 @@
                     case Dartillery.SpreadMode.Uniform:
                         <span>Every point within the spread radius is equally likely.</span>
                         break;
+                    case Dartillery.SpreadMode.Bivariate:
+                        <span>Elliptical Gaussian — models directional accuracy differences and throw-to-throw variation.</span>
+                        break;
                 }
             </small>
         </div>
 
+        @if (Svc.SpreadMode == Dartillery.SpreadMode.Bivariate)
+        {
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">V/H Ratio</span>
+                    <span class="slider-value">@Svc.BivariateSigmaRatio.ToString("F2", Inv)@(Svc.BivariateSigmaRatio >= 0.99 ? " (circular)" : "")</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.3" max="1.0" step="0.05"
+                       value="@Svc.BivariateSigmaRatio.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.BivariateSigmaRatio = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Ratio of vertical to horizontal spread. Lower = more elliptical.</small>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Rotation</span>
+                    <span class="slider-value">@Svc.BivariateAngleDegrees.ToString("F0", Inv)°@(Math.Abs(Svc.BivariateAngleDegrees) < 0.5 ? " (upright)" : "")</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="-45" max="45" step="1"
+                       value="@Svc.BivariateAngleDegrees.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.BivariateAngleDegrees = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">Tilt of the spread ellipse. Models natural release angle and hand drift.</small>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span class="slider-label">Consistency</span>
+                    <span class="slider-value">@GetConsistencyLabel()</span>
+                </div>
+                <input type="range" class="form-range"
+                       min="0.0" max="1.0" step="0.05"
+                       value="@Svc.BivariateConsistency.ToString(Inv)"
+                       @oninput="e => OnSlider(e, v => Svc.BivariateConsistency = v)"
+                       @onchange="OnChanged" />
+                <small class="card-desc">How stable the throw quality is. Low = some throws tight, some wild.</small>
+            </div>
+        }
+
         <div class="card-divider"></div>
 
         <div class="diag-row">
-            <span class="diag-label">Spread Radius</span>
-            <span class="diag-val highlight">@(Svc.BaseBounds is Dartillery.Core.Models.CircleBounds cb ? DisplayFormat.Mm(cb.Radius) : "—")</span>
+            <span class="diag-label">Spread @(Svc.BaseBounds is Dartillery.Core.Models.EllipseBounds ? "Axes" : "Radius")</span>
+            <span class="diag-val highlight">
+                @if (Svc.BaseBounds is Dartillery.Core.Models.EllipseBounds eb)
+                {
+                    @($"{DisplayFormat.Mm(eb.RadiusX)} x {DisplayFormat.Mm(eb.RadiusY)}")
+                }
+                else if (Svc.BaseBounds is Dartillery.Core.Models.CircleBounds cb)
+                {
+                    @DisplayFormat.Mm(cb.Radius)
+                }
+                else
+                {
+                    <text>—</text>
+                }
+            </span>
         </div>
         <div class="diag-detail neutral">
             @switch (Svc.SpreadMode)
             {
                 case Dartillery.SpreadMode.Gaussian:
-                    <span>3× precision — covers 99.7% of all throws</span>
+                    <span>3x precision — covers 99.7% of all throws</span>
                     break;
                 case Dartillery.SpreadMode.Uniform:
                     <span>Max radius — no throw lands beyond this</span>
+                    break;
+                case Dartillery.SpreadMode.Bivariate:
+                    <span>3x sigma per axis — covers 99.7% of throws</span>
                     break;
             }
         </div>
@@ -81,6 +142,13 @@
     private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
 
     private double GetAccuracyPercent() => Math.Clamp((1.0 - (Svc.CustomSigma / 0.15)) * 100.0, 0, 100);
+
+    private string GetConsistencyLabel() => Svc.BivariateConsistency switch
+    {
+        >= 0.9 => "Rock solid",
+        <= 0.3 => "Erratic",
+        _ => Svc.BivariateConsistency.ToString("F2", Inv)
+    };
 
     private static void OnSlider(ChangeEventArgs e, Action<double> setter)
     {
