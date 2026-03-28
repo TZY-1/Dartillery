@@ -72,9 +72,12 @@ public class IntegrationTests
             TestContext.Out.WriteLine($"Amateur hit rate: {amateurHitRate:P1}");
             TestContext.Out.WriteLine($"Beginner hit rate: {beginnerHitRate:P1}");
 
-            // Professionals should hit better than amateurs, amateurs better than beginners
-            Assert.That(proHitRate, Is.GreaterThan(amateurHitRate));
-            Assert.That(amateurHitRate, Is.GreaterThan(beginnerHitRate));
+            Assert.Multiple(() =>
+            {
+                // Professionals should hit better than amateurs, amateurs better than beginners
+                Assert.That(proHitRate, Is.GreaterThan(amateurHitRate));
+                Assert.That(amateurHitRate, Is.GreaterThan(beginnerHitRate));
+            });
         }
 
         [Test]
@@ -108,13 +111,16 @@ public class IntegrationTests
             TestContext.Out.WriteLine($"Gaussian - Bull hits: {gaussianBullHits}, Avg score: {gaussianAvg:F2}");
             TestContext.Out.WriteLine($"Uniform - Bull hits: {uniformBullHits}, Avg score: {uniformAvg:F2}");
 
-            // Both should hit the board
-            Assert.That(gaussianBullHits, Is.GreaterThan(0));
-            Assert.That(uniformBullHits, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                // Both should hit the board
+                Assert.That(gaussianBullHits, Is.GreaterThan(0));
+                Assert.That(uniformBullHits, Is.GreaterThan(0));
 
-            // Both should have reasonable average values
-            Assert.That(gaussianAvg, Is.GreaterThan(0));
-            Assert.That(uniformAvg, Is.GreaterThan(0));
+                // Both should have reasonable average values
+                Assert.That(gaussianAvg, Is.GreaterThan(0));
+                Assert.That(uniformAvg, Is.GreaterThan(0));
+            });
         }
 
         [Test]
@@ -262,13 +268,16 @@ public class IntegrationTests
                 TestContext.Out.WriteLine($"  D{number}: {rate:P1}");
             }
 
-            // All doubles should be hit at least once
-            Assert.That(successRates.Values.All(rate => rate > 0), Is.True,
-                "All doubles should be hit at least once");
+            Assert.Multiple(() =>
+            {
+                // All doubles should be hit at least once
+                Assert.That(successRates.Values.All(rate => rate > 0), Is.True,
+                    "All doubles should be hit at least once");
 
-            // Success rate should be reasonable for a professional
-            Assert.That(successRates.Values.Average(), Is.GreaterThan(0.05),
-                "Average success rate should be reasonable for professional");
+                // Success rate should be reasonable for a professional
+                Assert.That(successRates.Values.Average(), Is.GreaterThan(0.05),
+                    "Average success rate should be reasonable for professional");
+            });
         }
 
         private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)
@@ -375,7 +384,7 @@ public class IntegrationTests
             }
 
             TestContext.Out.WriteLine($"Unique sectors hit: {sectorHits.Count}/20");
-            Assert.That(sectorHits.Count, Is.EqualTo(20),
+            Assert.That(sectorHits, Has.Count.EqualTo(20),
                 "Should be able to hit all 20 sectors");
         }
 

@@ -8,6 +8,7 @@ namespace Dartillery.Simulation.Models.PressureModels;
 /// </summary>
 internal sealed class StandardPressureModel : IPressureModel
 {
+    /// <inheritdoc/>
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context)
     {
         double basePressure = 1.0;

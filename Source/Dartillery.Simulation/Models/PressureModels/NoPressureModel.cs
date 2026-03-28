@@ -9,5 +9,6 @@ namespace Dartillery.Simulation.Models.PressureModels;
 /// </summary>
 internal sealed class NoPressureModel : IPressureModel
 {
+    /// <inheritdoc/>
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context) => 1.0;
 }

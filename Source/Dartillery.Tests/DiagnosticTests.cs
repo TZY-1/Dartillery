@@ -89,8 +89,11 @@ public class DiagnosticTests
         TestContext.Out.WriteLine($"\nX direction: {positiveX} positive, {negativeX} negative (should be ~50/50)");
         TestContext.Out.WriteLine($"Y direction: {positiveY} positive, {negativeY} negative (should be ~50/50)");
 
-        Assert.That(Math.Abs(sumDx / 1000), Is.LessThan(0.01), "Mean dx bias should be near zero");
-        Assert.That(Math.Abs(sumDy / 1000), Is.LessThan(0.01), "Mean dy bias should be near zero");
+        Assert.Multiple(() =>
+        {
+            Assert.That(Math.Abs(sumDx / 1000), Is.LessThan(0.01), "Mean dx bias should be near zero");
+            Assert.That(Math.Abs(sumDy / 1000), Is.LessThan(0.01), "Mean dy bias should be near zero");
+        });
     }
 
     [Test]

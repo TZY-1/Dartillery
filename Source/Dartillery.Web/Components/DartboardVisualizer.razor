@@ -1,7 +1,7 @@
 @using Dartillery.Core.Models
 
 <div class="dartboard-container">
-    <svg @ref="svgElementRef"
+    <svg @ref="_svgElementRef"
          viewBox="-1.2 -1.2 2.4 2.4"
          class="dartboard-svg @(EnableManualTargeting ? "manual-targeting" : "")"
          transform="scale(1, -1)"
@@ -30,55 +30,55 @@
         <circle cx="0" cy="0" r="1.15" fill="#1a1a1a" />
 
         <!-- Double Ring -->
-        @for (int i = 0; i < SectorCount; i++)
+        @for (int i = 0; i < _sectorCount; i++)
         {
-            <path d="@GetSectorPath(i, DoubleRingInner, DoubleRingOuter)"
+            <path d="@GetSectorPath(i, _doubleRingInner, _doubleRingOuter)"
                   fill="@(i % 2 == 0 ? "#dc2626" : "#16a34a")"
                   stroke="#000"
                   stroke-width="0.002" />
         }
 
         <!-- Outer Single -->
-        @for (int i = 0; i < SectorCount; i++)
+        @for (int i = 0; i < _sectorCount; i++)
         {
-            <path d="@GetSectorPath(i, TripleRingOuter, DoubleRingInner)"
+            <path d="@GetSectorPath(i, _tripleRingOuter, _doubleRingInner)"
                   fill="@(i % 2 == 0 ? "#000" : "#f5f5f5")"
                   stroke="#000"
                   stroke-width="0.002" />
         }
 
         <!-- Triple Ring -->
-        @for (int i = 0; i < SectorCount; i++)
+        @for (int i = 0; i < _sectorCount; i++)
         {
-            <path d="@GetSectorPath(i, TripleRingInner, TripleRingOuter)"
+            <path d="@GetSectorPath(i, _tripleRingInner, _tripleRingOuter)"
                   fill="@(i % 2 == 0 ? "#dc2626" : "#16a34a")"
                   stroke="#000"
                   stroke-width="0.002" />
         }
 
         <!-- Inner Single -->
-        @for (int i = 0; i < SectorCount; i++)
+        @for (int i = 0; i < _sectorCount; i++)
         {
-            <path d="@GetSectorPath(i, OuterBullRadius, TripleRingInner)"
+            <path d="@GetSectorPath(i, _outerBullRadius, _tripleRingInner)"
                   fill="@(i % 2 == 0 ? "#000" : "#f5f5f5")"
                   stroke="#000"
                   stroke-width="0.002" />
         }
 
         <!-- Outer Bull (Single Bull - Green) -->
-        <circle cx="0" cy="0" r="@OuterBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+        <circle cx="0" cy="0" r="@_outerBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
                 fill="#16a34a"
                 stroke="#000"
                 stroke-width="0.002" />
 
         <!-- Inner Bull (Double Bull / Bullseye - Red) -->
-        <circle cx="0" cy="0" r="@InnerBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
+        <circle cx="0" cy="0" r="@_innerBullRadius.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)"
                 fill="#dc2626"
                 stroke="#000"
                 stroke-width="0.002" />
 
        <!-- Numbers -->
-        @for (int i = 0; i < SectorCount; i++)
+        @for (int i = 0; i < _sectorCount; i++)
         {
             var pos = GetSectorTextPosition(i);
             <g transform="scale(1, -1)">
@@ -90,7 +90,7 @@
                       font-size="0.1"
                       font-weight="bold"
                       font-family="Arial, sans-serif">
-                    @SectorOrder[i]
+                    @_sectorOrder[i]
                 </text>
             </g>
         }

@@ -10,12 +10,14 @@ internal sealed class SystematicBiasDeviationCalculator : IContextualDeviationCa
 {
     private readonly IDeviationCalculator _baseCalculator;
 
+    /// <summary>Initializes a bias decorator wrapping the given base calculator.</summary>
     public SystematicBiasDeviationCalculator(IDeviationCalculator baseCalculator)
     {
         ArgumentNullException.ThrowIfNull(baseCalculator);
         _baseCalculator = baseCalculator;
     }
 
+    /// <inheritdoc/>
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         double effectiveSkill = profile.BaseSkill + context.SessionFatigue;

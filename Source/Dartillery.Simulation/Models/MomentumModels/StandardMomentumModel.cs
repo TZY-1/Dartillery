@@ -18,6 +18,7 @@ internal sealed class StandardMomentumModel : IMomentumModel
     private readonly double _goodDeviationFactor;
     private readonly double _badDeviationFactor;
 
+    /// <summary>Initializes a new instance with configurable streak parameters.</summary>
     public StandardMomentumModel(
         double baseSigma,
         int windowSize = 6,
@@ -38,6 +39,7 @@ internal sealed class StandardMomentumModel : IMomentumModel
         _badDeviationFactor = badDeviationFactor;
     }
 
+    /// <inheritdoc/>
     public double CalculateMomentumModifier(IReadOnlyList<ThrowResult> recentHistory)
     {
         if (recentHistory.Count == 0)

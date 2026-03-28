@@ -25,6 +25,7 @@ internal sealed class RecoveryFatigueModel : IFatigueModel
         _recoveryRate = recoveryRate;
     }
 
+    /// <inheritdoc/>
     public double CalculateFatigue(SessionState state, PlayerProfile profile)
     {
         double baseFatigue = _baseFatigueModel.CalculateFatigue(state, profile);

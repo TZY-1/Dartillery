@@ -10,67 +10,79 @@ namespace Dartillery.Web.Components;
 
 public partial class DartboardVisualizer
 {
-    private const double InnerBullRadius = BoardDimensions.InnerBullRadius;
+    private const double _innerBullRadius = BoardDimensions.InnerBullRadius;
 
-    private const double OuterBullRadius = BoardDimensions.OuterBullRadius;
+    private const double _outerBullRadius = BoardDimensions.OuterBullRadius;
 
-    private const double TripleRingInner = BoardDimensions.TripleRingInner;
+    private const double _tripleRingInner = BoardDimensions.TripleRingInner;
 
-    private const double TripleRingOuter = BoardDimensions.TripleRingOuter;
+    private const double _tripleRingOuter = BoardDimensions.TripleRingOuter;
 
-    private const double DoubleRingInner = BoardDimensions.DoubleRingInner;
+    private const double _doubleRingInner = BoardDimensions.DoubleRingInner;
 
-    private const double DoubleRingOuter = BoardDimensions.DoubleRingOuter;
+    private const double _doubleRingOuter = BoardDimensions.DoubleRingOuter;
 
-    private const int SectorCount = BoardDimensions.SectorCount;
+    private const int _sectorCount = BoardDimensions.SectorCount;
 
-    private const double SectorAngle = BoardDimensions.SectorAngle;
+    private const double _sectorAngle = BoardDimensions.SectorAngle;
 
-    private const double StartAngle = (-Math.PI / 2) - (SectorAngle / 2);
+    private const double _startAngle = (-Math.PI / 2) - (_sectorAngle / 2);
 
-    private static readonly int[] SectorOrder = BoardDimensions.SectorOrderClockwise;
+    private static readonly int[] _sectorOrder = BoardDimensions.SectorOrderClockwise;
 
-    private ElementReference svgElementRef;
+    private ElementReference _svgElementRef;
     private bool _mouseOver;
     private double _mouseX;
     private double _mouseY;
     private int _hoveredThrowIndex = -1;
 
+/// <summary>Throw results to render on the board.</summary>
 #pragma warning disable CA2227 // Blazor [Parameter] properties require a setter
     [Parameter]
     public List<ThrowResult>? Throws { get; set; }
 #pragma warning restore CA2227
 
+    /// <summary>Whether to draw deviation lines from aim to hit point.</summary>
     [Parameter]
     public bool ShowDeviationLines { get; set; } = true;
 
+    /// <summary>Whether to show the spread shape overlay.</summary>
     [Parameter]
     public bool ShowSpreadCircle { get; set; }
 
+    /// <summary>Base spread bounds (without fatigue).</summary>
     [Parameter]
     public ISpreadBounds? BaseBounds { get; set; }
 
+    /// <summary>Effective spread bounds (with fatigue).</summary>
     [Parameter]
     public ISpreadBounds? EffectiveBounds { get; set; }
 
+    /// <summary>Whether clicking the board triggers a manual throw.</summary>
     [Parameter]
     public bool EnableManualTargeting { get; set; }
 
+    /// <summary>Whether dart grouping/deflection is active.</summary>
     [Parameter]
     public bool EnableGrouping { get; set; }
 
+    /// <summary>Cluster radius for grouping visualization.</summary>
     [Parameter]
     public double GroupingClusterRadius { get; set; }
 
+    /// <summary>Whether the zoom inset is enabled.</summary>
     [Parameter]
     public bool EnableZoom { get; set; }
 
+    /// <summary>Zoom magnification level.</summary>
     [Parameter]
     public double ZoomLevel { get; set; } = 0.08;
 
+    /// <summary>Zoom inset viewport size.</summary>
     [Parameter]
     public double ZoomSize { get; set; } = 0.64;
 
+    /// <summary>Callback when user clicks the board for manual targeting.</summary>
     [Parameter]
     public EventCallback<(double X, double Y)> OnManualTargetSelected { get; set; }
 
@@ -79,8 +91,8 @@ public partial class DartboardVisualizer
 
     private static string GetSectorPath(int index, double innerRadius, double outerRadius)
     {
-        double startRad_clockwiseFromUp = StartAngle + (index * SectorAngle);
-        double angle2_clockwiseFromUp = startRad_clockwiseFromUp + SectorAngle;
+        double startRad_clockwiseFromUp = _startAngle + (index * _sectorAngle);
+        double angle2_clockwiseFromUp = startRad_clockwiseFromUp + _sectorAngle;
 
         var x1 = Math.Cos(startRad_clockwiseFromUp) * innerRadius;
         var y1 = Math.Sin(startRad_clockwiseFromUp) * innerRadius;
@@ -91,7 +103,7 @@ public partial class DartboardVisualizer
         var x4 = Math.Cos(startRad_clockwiseFromUp) * outerRadius;
         var y4 = Math.Sin(startRad_clockwiseFromUp) * outerRadius;
 
-        int largeArcFlag = (SectorAngle > Math.PI) ? 1 : 0;
+        const int largeArcFlag = (_sectorAngle > Math.PI) ? 1 : 0;
 
         var sb = new StringBuilder();
         var culture = System.Globalization.CultureInfo.InvariantCulture;
@@ -106,8 +118,8 @@ public partial class DartboardVisualizer
 
     private static (double X, double Y) GetSectorTextPosition(int index)
     {
-        var angle = StartAngle + (index * SectorAngle) + (SectorAngle / 2);
-        var radius = DoubleRingOuter + 0.12;
+        var angle = _startAngle + (index * _sectorAngle) + (_sectorAngle / 2);
+        const double radius = _doubleRingOuter + 0.12;
 
         return (Math.Cos(angle) * radius, Math.Sin(angle) * radius);
     }
@@ -115,7 +127,7 @@ public partial class DartboardVisualizer
     private (double X, double Y) GetZoomPosition()
     {
         const double inset = 0.02;
-        var border = inset + 0.04;
+        const double border = inset + 0.04;
         var totalSize = ZoomSize + border;
 
         double x = _mouseX >= 0 ? -1.15 + inset : 1.15 - totalSize;
@@ -134,7 +146,7 @@ public partial class DartboardVisualizer
         {
             var coords = await JSRuntime.InvokeAsync<SvgCoordinates>(
                 "dartboardInterop.getSvgCoordinates",
-                svgElementRef,
+                _svgElementRef,
                 e.ClientX,
                 e.ClientY);
 
@@ -150,7 +162,7 @@ public partial class DartboardVisualizer
         }
     }
 
-    private void HandleMouseLeave(MouseEventArgs e)
+    private void HandleMouseLeave(MouseEventArgs mouseEventArgs)
     {
         _mouseOver = false;
     }
@@ -165,7 +177,7 @@ public partial class DartboardVisualizer
 
             var coords = await JSRuntime.InvokeAsync<SvgCoordinates>(
                 "dartboardInterop.getSvgCoordinates",
-                svgElementRef,
+                _svgElementRef,
                 e.ClientX,
                 e.ClientY);
 
@@ -180,14 +192,12 @@ public partial class DartboardVisualizer
         }
     }
 
-#pragma warning disable CA1812
-#pragma warning disable S1144
+#pragma warning disable CA1812, S1144
     private sealed class SvgCoordinates
     {
         public double X { get; set; }
 
         public double Y { get; set; }
     }
-#pragma warning restore S1144
-#pragma warning restore CA1812
+#pragma warning restore S1144, CA1812
 }

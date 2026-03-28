@@ -71,8 +71,11 @@ public class EdgeCaseTests
             {
                 var result = simulator.Throw(target);
                 Assert.That(result, Is.Not.Null, $"Target {target} returned null");
-                Assert.That(result.Score, Is.InRange(0, 60), $"Target {target} has invalid score {result.Score}");
-                Assert.That(result.SectorNumber, Is.InRange(0, 20), $"Target {target} has invalid sector {result.SectorNumber}");
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.Score, Is.InRange(0, 60), $"Target {target} has invalid score {result.Score}");
+                    Assert.That(result.SectorNumber, Is.InRange(0, 20), $"Target {target} has invalid sector {result.SectorNumber}");
+                });
             }
         }
 
@@ -92,10 +95,13 @@ public class EdgeCaseTests
             }
 
             var uniqueScores = results.Select(r => r.Score).Distinct().Count();
-            Assert.That(uniqueScores, Is.GreaterThan(1),
-                "All throws produced identical results - randomness may be broken");
+            Assert.Multiple(() =>
+            {
+                Assert.That(uniqueScores, Is.GreaterThan(1),
+                            "All throws produced identical results - randomness may be broken");
 
-            Assert.That(results.All(r => r.Score >= 0 && r.Score <= 60), Is.True);
+                Assert.That(results.All(r => r.Score >= 0 && r.Score <= 60), Is.True);
+            });
         }
 
         [Test]
@@ -150,9 +156,12 @@ public class EdgeCaseTests
                 var result1 = simulator1.Throw(target);
                 var result2 = simulator2.Throw(target);
 
-                Assert.That(result1.Score, Is.EqualTo(result2.Score));
-                Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
-                Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result1.Score, Is.EqualTo(result2.Score));
+                    Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
+                    Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+                });
             }
         }
 
@@ -191,9 +200,12 @@ public class EdgeCaseTests
             var double1 = simulator.Throw(Target.Double(1));
             var triple1 = simulator.Throw(Target.Triple(1));
 
-            Assert.That(single1, Is.Not.Null);
-            Assert.That(double1, Is.Not.Null);
-            Assert.That(triple1, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(single1, Is.Not.Null);
+                Assert.That(double1, Is.Not.Null);
+                Assert.That(triple1, Is.Not.Null);
+            });
         }
 
         [Test]
@@ -207,9 +219,12 @@ public class EdgeCaseTests
             var double20 = simulator.Throw(Target.Double(20));
             var triple20 = simulator.Throw(Target.Triple(20));
 
-            Assert.That(single20, Is.Not.Null);
-            Assert.That(double20, Is.Not.Null);
-            Assert.That(triple20, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(single20, Is.Not.Null);
+                Assert.That(double20, Is.Not.Null);
+                Assert.That(triple20, Is.Not.Null);
+            });
         }
 
         [Test]
@@ -302,8 +317,11 @@ public class EdgeCaseTests
                 .Build();
             var result2 = simulator3.Throw(target);
 
-            Assert.That(result1.Score, Is.EqualTo(result2.Score));
-            Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1.Score, Is.EqualTo(result2.Score));
+                Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
+            });
         }
 
         [Test]
@@ -451,8 +469,11 @@ public class EdgeCaseTests
                 results3.Add(sim3.Throw(target).Score);
             }
 
-            Assert.That(results1, Is.Not.EqualTo(results2));
-            Assert.That(results2, Is.Not.EqualTo(results3));
+            Assert.Multiple(() =>
+            {
+                Assert.That(results1, Is.Not.EqualTo(results2));
+                Assert.That(results2, Is.Not.EqualTo(results3));
+            });
             Assert.That(results1, Is.Not.EqualTo(results3));
         }
     }

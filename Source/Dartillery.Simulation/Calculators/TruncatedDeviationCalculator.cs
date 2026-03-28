@@ -12,6 +12,7 @@ internal sealed class TruncatedDeviationCalculator : IContextualDeviationCalcula
     private readonly IContextualDeviationCalculator _inner;
     private readonly ISpreadBounds _bounds;
 
+    /// <summary>Initializes a truncation decorator with the given inner calculator and bounds.</summary>
     public TruncatedDeviationCalculator(
         IContextualDeviationCalculator inner,
         ISpreadBounds bounds)
@@ -22,6 +23,7 @@ internal sealed class TruncatedDeviationCalculator : IContextualDeviationCalcula
         _bounds = bounds;
     }
 
+    /// <inheritdoc/>
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);

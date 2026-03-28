@@ -50,7 +50,10 @@ public class TimeProviderTests
     {
         var session = new EnhancedDartboardSimulatorBuilder().WithSeed(42).BuildSession();
 
-        Assert.That(session.SessionId, Is.Not.EqualTo(Guid.Empty));
-        Assert.That(session.Throw(Target.Triple(20)), Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(session.SessionId, Is.Not.EqualTo(Guid.Empty));
+            Assert.That(session.Throw(Target.Triple(20)), Is.Not.Null);
+        });
     }
 }

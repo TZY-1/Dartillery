@@ -22,7 +22,7 @@ public class Game501Tests
         TestContext.Out.WriteLine($"Highest score (3 darts): {gameStats.HighestThreeDartScore}");
         TestContext.Out.WriteLine($"Checkout attempts: {gameStats.CheckoutAttempts}");
         TestContext.Out.WriteLine($"Checkout success: {(gameStats.CheckoutAttempts > 0 ? $"{gameStats.CheckoutSuccess}/{gameStats.CheckoutAttempts}" : "N/A")}");
-        TestContext.Out.WriteLine($"\n--- Score Progression ---");
+        TestContext.Out.WriteLine("\n--- Score Progression ---");
 
         for (int i = 0; i < gameStats.Visits.Count; i++)
         {
@@ -30,7 +30,7 @@ public class Game501Tests
             TestContext.Out.WriteLine($"Visit {i + 1}: {FormatVisit(visit)} = {visit.TotalScore} points (Remaining: {visit.RemainingAfter})");
         }
 
-        TestContext.Out.WriteLine($"\n--- Target Distribution ---");
+        TestContext.Out.WriteLine("\n--- Target Distribution ---");
         var topTargets = gameStats.TargetsAimed
             .GroupBy(t => t.ToString())
             .Select(g => new { Target = g.Key, Count = g.Count() })
@@ -42,7 +42,7 @@ public class Game501Tests
             TestContext.Out.WriteLine($"{target.Target}: {target.Count} times");
         }
 
-        TestContext.Out.WriteLine($"\n--- Hit Distribution ---");
+        TestContext.Out.WriteLine("\n--- Hit Distribution ---");
         var topHits = gameStats.ActualHits
             .GroupBy(r => $"{r.SegmentType} {(r.SectorNumber > 0 ? r.SectorNumber.ToString() : string.Empty)}")
             .Select(g => new { Hit = g.Key, Count = g.Count(), TotalScore = g.Sum(r => r.Score) })
@@ -119,12 +119,12 @@ public class Game501Tests
             var avgThreeDartAvg = finishedGames.Count > 0 ? finishedGames.Average(g => g.ThreeDartAverage) : 0;
             var finishRate = finishedGames.Count * 100.0 / gameCount;
 
-            TestContext.Out.WriteLine($"\n--- Overall Statistics ---");
+            TestContext.Out.WriteLine("\n--- Overall Statistics ---");
             TestContext.Out.WriteLine($"Games finished: {finishedGames.Count}/{gameCount} ({finishRate:F1}%)");
             TestContext.Out.WriteLine($"Average darts per game: {avgDarts:F1}");
             TestContext.Out.WriteLine($"Average 3-dart average: {avgThreeDartAvg:F2}");
 
-            Assert.That(allGames.Count, Is.EqualTo(gameCount));
+            Assert.That(allGames, Has.Count.EqualTo(gameCount));
         }
     }
 
@@ -156,7 +156,7 @@ public class Game501Tests
                 var target = SelectTarget(visitScore);
 
                 // Check if this is a checkout attempt
-                bool isCheckoutAttempt = visitScore - target.GetScore() == 0 &&
+                bool isCheckoutAttempt = visitScore == target.GetScore() &&
                                          (target.SegmentType is SegmentType.Double or SegmentType.InnerBull);
 
                 if (isCheckoutAttempt)
@@ -169,7 +169,7 @@ public class Game501Tests
                 var result = simulator.Throw(target);
                 visitScore -= result.Score;
 
-                if ((visitScore == 1 || visitScore < 0) ||
+                if (visitScore == 1 || visitScore < 0 ||
                     (visitScore == 0 && !result.IsDouble))
                 {
                     // Bust - no score this visit
@@ -236,7 +236,7 @@ public class Game501Tests
         // Default: aim for T20
         var defaultTarget = Target.Triple(20);
 
-        if (remaining - defaultTarget.GetScore() <= 0)
+        if (remaining <= defaultTarget.GetScore())
         {
             var newTargetScore = defaultTarget.GetScore() - Target.Double(20).GetScore();
             return Target.Single(newTargetScore);

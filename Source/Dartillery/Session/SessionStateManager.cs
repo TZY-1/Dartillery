@@ -7,10 +7,8 @@ namespace Dartillery.Session;
 /// </summary>
 public sealed class SessionStateManager
 {
-    private readonly PlayerProfile _profile;
     private readonly List<ThrowResult> _throwHistory = new();
     private readonly TimeProvider _timeProvider;
-    private readonly Guid _sessionId;
 
     private int _throwCount;
     private DateTime _sessionStart;
@@ -25,9 +23,9 @@ public sealed class SessionStateManager
     public SessionStateManager(PlayerProfile profile, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
-        _profile = profile;
+        Profile = profile;
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _sessionId = Guid.NewGuid();
+        SessionId = Guid.NewGuid();
         _sessionStart = _timeProvider.GetUtcNow().UtcDateTime;
         _lastThrowTime = _sessionStart;
     }
@@ -35,7 +33,7 @@ public sealed class SessionStateManager
     /// <summary>
     /// Gets the player profile associated with this session.
     /// </summary>
-    public PlayerProfile Profile => _profile;
+    public PlayerProfile Profile { get; }
 
     /// <summary>
     /// Gets the total number of throws made in this session.
@@ -50,7 +48,7 @@ public sealed class SessionStateManager
     /// <summary>
     /// Gets the unique identifier assigned to this session at creation time.
     /// </summary>
-    public Guid SessionId => _sessionId;
+    public Guid SessionId { get; }
 
     /// <summary>
     /// Gets the time when the session was started.

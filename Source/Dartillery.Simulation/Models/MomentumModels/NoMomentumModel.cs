@@ -9,5 +9,6 @@ namespace Dartillery.Simulation.Models.MomentumModels;
 /// </summary>
 internal sealed class NoMomentumModel : IMomentumModel
 {
+    /// <inheritdoc/>
     public double CalculateMomentumModifier(IReadOnlyList<ThrowResult> recentHistory) => 1.0;
 }

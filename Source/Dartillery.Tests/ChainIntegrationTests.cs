@@ -111,23 +111,26 @@ public class ChainIntegrationTests
         {
             TestContext.Out.WriteLine($"  {result}");
 
-            Assert.That(result.Score, Is.GreaterThanOrEqualTo(0),
-                $"Score must be >= 0, got {result.Score}");
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Score, Is.GreaterThanOrEqualTo(0),
+                            $"Score must be >= 0, got {result.Score}");
 
-            Assert.That(definedSegmentTypes.Contains(result.SegmentType), Is.True,
-                $"SegmentType '{result.SegmentType}' is not a defined enum value");
+                Assert.That(definedSegmentTypes, Does.Contain(result.SegmentType),
+                    $"SegmentType '{result.SegmentType}' is not a defined enum value");
 
-            Assert.That(double.IsNaN(result.HitPoint.X), Is.False,
-                $"HitPoint.X must not be NaN, got {result.HitPoint.X}");
+                Assert.That(double.IsNaN(result.HitPoint.X), Is.False,
+                    $"HitPoint.X must not be NaN, got {result.HitPoint.X}");
 
-            Assert.That(double.IsInfinity(result.HitPoint.X), Is.False,
-                $"HitPoint.X must not be Infinity, got {result.HitPoint.X}");
+                Assert.That(double.IsInfinity(result.HitPoint.X), Is.False,
+                    $"HitPoint.X must not be Infinity, got {result.HitPoint.X}");
 
-            Assert.That(double.IsNaN(result.HitPoint.Y), Is.False,
-                $"HitPoint.Y must not be NaN, got {result.HitPoint.Y}");
+                Assert.That(double.IsNaN(result.HitPoint.Y), Is.False,
+                    $"HitPoint.Y must not be NaN, got {result.HitPoint.Y}");
 
-            Assert.That(double.IsInfinity(result.HitPoint.Y), Is.False,
-                $"HitPoint.Y must not be Infinity, got {result.HitPoint.Y}");
+                Assert.That(double.IsInfinity(result.HitPoint.Y), Is.False,
+                    $"HitPoint.Y must not be Infinity, got {result.HitPoint.Y}");
+            });
         }
 
         TestContext.Out.WriteLine($"All {results.Count} results are valid.");

@@ -10,7 +10,7 @@ namespace Dartillery.Web.Services;
 /// </summary>
 public static class DartboardGeometryService
 {
-    private const double ViewBoxCenter = 300.0;
+    private const double _viewBoxCenter = 300.0;
 
     /// <summary>
     /// Converts normalized coordinates (0-1 radius) to SVG viewport pixels
@@ -20,8 +20,8 @@ public static class DartboardGeometryService
     /// <returns>Tuple with (X, Y) viewport coordinates</returns>
     public static (double X, double Y) NormalizedToViewport(Point2D point, double viewportRadius = 280.0)
     {
-        double x = ViewBoxCenter + (point.X * viewportRadius);
-        double y = ViewBoxCenter - (point.Y * viewportRadius); // Invert Y-axis
+        double x = _viewBoxCenter + (point.X * viewportRadius);
+        double y = _viewBoxCenter - (point.Y * viewportRadius); // Invert Y-axis
 
         return (x, y);
     }
@@ -139,6 +139,6 @@ public static class DartboardGeometryService
                $"A {outerRadius:F2},{outerRadius:F2} 0 {largeArcFlag} 1 {outerEndX:F2},{outerEndY:F2} " +
                $"L {innerEndX:F2},{innerEndY:F2} " +
                $"A {innerRadius:F2},{innerRadius:F2} 0 {largeArcFlag} 0 {innerStartX:F2},{innerStartY:F2} " +
-               $"Z";
+               "Z";
     }
 }

@@ -26,6 +26,7 @@ internal sealed class SimpleGroupingModel : IGroupingModel
         _maxDeflection = maxDeflection;
     }
 
+    /// <inheritdoc/>
     public DeflectionResult ApplyDeflection(
         Point2D hitPoint,
         List<ThrowResult> previousThrowsInVisit)

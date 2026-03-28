@@ -24,8 +24,11 @@ public class PlayerSessionTests
             var session = new EnhancedDartboardSimulatorBuilder()
                 .BuildSession();
 
-            Assert.That(session.ThrowCount, Is.EqualTo(0));
-            Assert.That(session.ThrowHistory, Is.Empty);
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.ThrowCount, Is.EqualTo(0));
+                Assert.That(session.ThrowHistory, Is.Empty);
+            });
         }
 
         [Test]
@@ -50,9 +53,12 @@ public class PlayerSessionTests
             var result3 = session.Throw(Target.Bullseye());
 
             Assert.That(session.ThrowHistory, Has.Count.EqualTo(3));
-            Assert.That(session.ThrowHistory[0], Is.EqualTo(result1));
-            Assert.That(session.ThrowHistory[1], Is.EqualTo(result2));
-            Assert.That(session.ThrowHistory[2], Is.EqualTo(result3));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.ThrowHistory[0], Is.EqualTo(result1));
+                Assert.That(session.ThrowHistory[1], Is.EqualTo(result2));
+                Assert.That(session.ThrowHistory[2], Is.EqualTo(result3));
+            });
         }
 
         [Test]
@@ -71,10 +77,13 @@ public class PlayerSessionTests
 
             session.Reset();
 
-            Assert.That(throwCountBeforeReset, Is.GreaterThan(0));
-            Assert.That(session.ThrowCount, Is.EqualTo(0));
-            Assert.That(session.ThrowHistory, Is.Empty);
-            Assert.That(session.CurrentFatigue, Is.LessThanOrEqualTo(fatigueBeforeReset));
+            Assert.Multiple(() =>
+            {
+                Assert.That(throwCountBeforeReset, Is.GreaterThan(0));
+                Assert.That(session.ThrowCount, Is.EqualTo(0));
+                Assert.That(session.ThrowHistory, Is.Empty);
+                Assert.That(session.CurrentFatigue, Is.LessThanOrEqualTo(fatigueBeforeReset));
+            });
         }
 
         [Test]
@@ -185,8 +194,11 @@ public class PlayerSessionTests
 
             session.Reset();
 
-            Assert.That(fatigueBeforeReset, Is.GreaterThan(0));
-            Assert.That(session.CurrentFatigue, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(fatigueBeforeReset, Is.GreaterThan(0));
+                Assert.That(session.CurrentFatigue, Is.EqualTo(0));
+            });
         }
     }
 
@@ -235,8 +247,11 @@ public class PlayerSessionTests
                 checkoutScores.Add(session.Throw(Target.Double(20), checkoutContext).Score);
             }
 
-            Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
-            Assert.That(checkoutScores.All(s => s >= 0 && s <= 40), Is.True);
+            Assert.Multiple(() =>
+            {
+                Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
+                Assert.That(checkoutScores.All(s => s >= 0 && s <= 40), Is.True);
+            });
 
             TestContext.Out.WriteLine($"Normal average: {normalScores.Average():F2}");
             TestContext.Out.WriteLine($"Checkout average: {checkoutScores.Average():F2}");
@@ -261,9 +276,12 @@ public class PlayerSessionTests
 
             var dart3 = session.Throw(Target.Triple(20), gameContext);
 
-            Assert.That(dart1, Is.Not.Null);
-            Assert.That(dart2, Is.Not.Null);
-            Assert.That(dart3, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(dart1, Is.Not.Null);
+                Assert.That(dart2, Is.Not.Null);
+                Assert.That(dart3, Is.Not.Null);
+            });
         }
     }
 
@@ -280,8 +298,11 @@ public class PlayerSessionTests
             var profile = session.Profile;
 
             Assert.That(profile, Is.Not.Null);
-            Assert.That(profile.Name, Is.EqualTo("TestPlayer"));
-            Assert.That(profile.BaseSkill, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(profile.Name, Is.EqualTo("TestPlayer"));
+                Assert.That(profile.BaseSkill, Is.GreaterThan(0));
+            });
         }
 
         [Test]
@@ -312,9 +333,12 @@ public class PlayerSessionTests
                 allScores.Add(result.Score);
             }
 
-            Assert.That(session.ThrowCount, Is.EqualTo(500));
-            Assert.That(session.ThrowHistory.Count, Is.EqualTo(500));
-            Assert.That(allScores.All(s => s >= 0 && s <= 60), Is.True);
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.ThrowCount, Is.EqualTo(500));
+                Assert.That(session.ThrowHistory, Has.Count.EqualTo(500));
+                Assert.That(allScores.All(s => s >= 0 && s <= 60), Is.True);
+            });
 
             TestContext.Out.WriteLine($"Average score over 500 throws: {allScores.Average():F2}");
             TestContext.Out.WriteLine($"Final fatigue: {session.CurrentFatigue:F6}");
@@ -333,14 +357,20 @@ public class PlayerSessionTests
                     session.Throw(Target.Triple(20));
                 }
 
-                Assert.That(session.ThrowCount, Is.EqualTo(50));
-                Assert.That(session.ThrowHistory.Count, Is.EqualTo(50));
+                Assert.Multiple(() =>
+                {
+                    Assert.That(session.ThrowCount, Is.EqualTo(50));
+                    Assert.That(session.ThrowHistory, Has.Count.EqualTo(50));
+                });
 
                 // Reset for next game
                 session.Reset();
 
-                Assert.That(session.ThrowCount, Is.EqualTo(0));
-                Assert.That(session.ThrowHistory.Count, Is.EqualTo(0));
+                Assert.Multiple(() =>
+                {
+                    Assert.That(session.ThrowCount, Is.EqualTo(0));
+                    Assert.That(session.ThrowHistory.Count, Is.EqualTo(0));
+                });
             }
         }
     }
@@ -397,8 +427,11 @@ public class PlayerSessionTests
             TestContext.Out.WriteLine($"Final score: {remainingScore}");
             TestContext.Out.WriteLine($"3-dart average: {(501 - remainingScore) * 3.0 / session.ThrowCount:F2}");
 
-            Assert.That(session.ThrowCount, Is.GreaterThan(0));
-            Assert.That(visitScores.Count, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.ThrowCount, Is.GreaterThan(0));
+                Assert.That(visitScores.Count, Is.GreaterThan(0));
+            });
         }
 
         private static Target SelectTarget(int remaining)

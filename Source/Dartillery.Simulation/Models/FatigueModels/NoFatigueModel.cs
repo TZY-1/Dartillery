@@ -9,5 +9,6 @@ namespace Dartillery.Simulation.Models.FatigueModels;
 /// </summary>
 internal sealed class NoFatigueModel : IFatigueModel
 {
+    /// <inheritdoc/>
     public double CalculateFatigue(SessionState state, PlayerProfile profile) => 0.0;
 }

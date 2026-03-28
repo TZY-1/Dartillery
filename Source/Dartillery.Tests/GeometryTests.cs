@@ -22,7 +22,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_InnerBullCenter_ReturnsInnerBull()
         {
-            double radius = 0.0;
+            const double radius = 0.0;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -32,7 +32,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_InnerBullEdge_ReturnsInnerBull()
         {
-            double radius = BoardDimensions.InnerBullRadius;
+            const double radius = BoardDimensions.InnerBullRadius;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -42,7 +42,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_OuterBullInner_ReturnsOuterBull()
         {
-            double radius = BoardDimensions.InnerBullRadius + 0.001;
+            const double radius = BoardDimensions.InnerBullRadius + 0.001;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -52,7 +52,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_OuterBullEdge_ReturnsOuterBull()
         {
-            double radius = BoardDimensions.OuterBullRadius;
+            const double radius = BoardDimensions.OuterBullRadius;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -62,7 +62,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_TripleRingInnerEdge_ReturnsTriple()
         {
-            double radius = BoardDimensions.TripleRingInner;
+            const double radius = BoardDimensions.TripleRingInner;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -72,7 +72,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_TripleRingCenter_ReturnsTriple()
         {
-            double radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
+            const double radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -82,7 +82,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_TripleRingOuterEdge_ReturnsTriple()
         {
-            double radius = BoardDimensions.TripleRingOuter;
+            const double radius = BoardDimensions.TripleRingOuter;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -92,7 +92,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_DoubleRingInnerEdge_ReturnsDouble()
         {
-            double radius = BoardDimensions.DoubleRingInner;
+            const double radius = BoardDimensions.DoubleRingInner;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -102,7 +102,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_DoubleRingOuterEdge_ReturnsDouble()
         {
-            double radius = BoardDimensions.DoubleRingOuter;
+            const double radius = BoardDimensions.DoubleRingOuter;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -112,7 +112,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_BetweenOuterBullAndTriple_ReturnsSingle()
         {
-            double radius = BoardDimensions.OuterBullRadius + 0.001;
+            const double radius = BoardDimensions.OuterBullRadius + 0.001;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -122,7 +122,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_BetweenTripleAndDouble_ReturnsSingle()
         {
-            double radius = BoardDimensions.TripleRingOuter + 0.001;
+            const double radius = BoardDimensions.TripleRingOuter + 0.001;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -132,7 +132,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_JustBeforeTriple_ReturnsSingle()
         {
-            double radius = BoardDimensions.TripleRingInner - 0.001;
+            const double radius = BoardDimensions.TripleRingInner - 0.001;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -142,7 +142,7 @@ public class GeometryTests
         [Test]
         public void ResolveRing_JustBeforeDouble_ReturnsSingle()
         {
-            double radius = BoardDimensions.DoubleRingInner - 0.001;
+            const double radius = BoardDimensions.DoubleRingInner - 0.001;
 
             var result = _resolver.ResolveRing(radius);
 
@@ -260,7 +260,7 @@ public class GeometryTests
         {
             // Test points exactly at sector boundaries
             // Each sector spans 18 degrees, boundaries should be handled correctly
-            var halfSector = BoardDimensions.SectorAngle / 2.0;
+            const double halfSector = BoardDimensions.SectorAngle / 2.0;
 
             for (int i = 0; i < 20; i++)
             {
@@ -322,7 +322,7 @@ public class GeometryTests
         public void ResolveSector_SameAngleDifferentRadius_ReturnsSameSector()
         {
             // Points at the same angle but different radii should be in the same sector
-            double angle = Math.PI / 6; // 30 degrees
+            const double angle = Math.PI / 6; // 30 degrees
 
             var point1 = new Point2D(Math.Cos(angle) * 0.05, Math.Sin(angle) * 0.05);
             var point2 = new Point2D(Math.Cos(angle) * 0.15, Math.Sin(angle) * 0.15);
@@ -464,9 +464,12 @@ public class GeometryTests
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.InnerBull));
-            Assert.That(result.Score, Is.EqualTo(50));
-            Assert.That(result.SectorNumber, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.InnerBull));
+                Assert.That(result.Score, Is.EqualTo(50));
+                Assert.That(result.SectorNumber, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -477,67 +480,82 @@ public class GeometryTests
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Miss));
-            Assert.That(result.Score, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Miss));
+                Assert.That(result.Score, Is.EqualTo(0));
+            });
         }
 
         [Test]
         public void Resolve_Triple20Region_ReturnsTriple20()
         {
             // Point in Triple 20 region (top of board, triple ring radius)
-            var radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
+            const double radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
             var hitPoint = new Point2D(0.0, radius);
             var aimedPoint = new Point2D(0.0, radius);
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Triple));
-            Assert.That(result.SectorNumber, Is.EqualTo(20));
-            Assert.That(result.Score, Is.EqualTo(60));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Triple));
+                Assert.That(result.SectorNumber, Is.EqualTo(20));
+                Assert.That(result.Score, Is.EqualTo(60));
+            });
         }
 
         [Test]
         public void Resolve_Double20Region_ReturnsDouble20()
         {
             // Point in Double 20 region (top of board, double ring radius)
-            var radius = (BoardDimensions.DoubleRingInner + BoardDimensions.DoubleRingOuter) / 2.0;
+            const double radius = (BoardDimensions.DoubleRingInner + BoardDimensions.DoubleRingOuter) / 2.0;
             var hitPoint = new Point2D(0.0, radius);
             var aimedPoint = new Point2D(0.0, radius);
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Double));
-            Assert.That(result.SectorNumber, Is.EqualTo(20));
-            Assert.That(result.Score, Is.EqualTo(40));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Double));
+                Assert.That(result.SectorNumber, Is.EqualTo(20));
+                Assert.That(result.Score, Is.EqualTo(40));
+            });
         }
 
         [Test]
         public void Resolve_Single20Region_ReturnsSingle20()
         {
             // Point in Single 20 region (top of board, between bull and triple)
-            var radius = BoardDimensions.OuterBullRadius + 0.01;
+            const double radius = BoardDimensions.OuterBullRadius + 0.01;
             var hitPoint = new Point2D(0.0, radius);
             var aimedPoint = new Point2D(0.0, radius);
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Single));
-            Assert.That(result.SectorNumber, Is.EqualTo(20));
-            Assert.That(result.Score, Is.EqualTo(20));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Single));
+                Assert.That(result.SectorNumber, Is.EqualTo(20));
+                Assert.That(result.Score, Is.EqualTo(20));
+            });
         }
 
         [Test]
         public void Resolve_OuterBullRegion_ReturnsOuterBull()
         {
-            var radius = (BoardDimensions.InnerBullRadius + BoardDimensions.OuterBullRadius) / 2.0;
+            const double radius = (BoardDimensions.InnerBullRadius + BoardDimensions.OuterBullRadius) / 2.0;
             var hitPoint = new Point2D(radius, 0.0);
             var aimedPoint = new Point2D(0.0, 0.0);
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.OuterBull));
-            Assert.That(result.Score, Is.EqualTo(25));
-            Assert.That(result.SectorNumber, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.OuterBull));
+                Assert.That(result.Score, Is.EqualTo(25));
+                Assert.That(result.SectorNumber, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -550,8 +568,11 @@ public class GeometryTests
             var innerResult = _resolver.Resolve(innerBullPoint, aimedPoint);
             var outerResult = _resolver.Resolve(outerBullPoint, aimedPoint);
 
-            Assert.That(innerResult.SectorNumber, Is.EqualTo(0));
-            Assert.That(outerResult.SectorNumber, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(innerResult.SectorNumber, Is.EqualTo(0));
+                Assert.That(outerResult.SectorNumber, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -560,7 +581,7 @@ public class GeometryTests
             var expectedSectors = new[] { 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5 };
             var hitSectors = new HashSet<int>();
 
-            var radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
+            const double radius = (BoardDimensions.TripleRingInner + BoardDimensions.TripleRingOuter) / 2.0;
 
             for (int i = 0; i < 20; i++)
             {
@@ -586,8 +607,11 @@ public class GeometryTests
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.HitPoint, Is.EqualTo(hitPoint));
-            Assert.That(result.AimedPoint, Is.EqualTo(aimedPoint));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.HitPoint, Is.EqualTo(hitPoint));
+                Assert.That(result.AimedPoint, Is.EqualTo(aimedPoint));
+            });
         }
 
         [Test]
@@ -610,8 +634,11 @@ public class GeometryTests
 
             var result = _resolver.Resolve(hitPoint, aimedPoint);
 
-            Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Miss));
-            Assert.That(result.Score, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.SegmentType, Is.EqualTo(SegmentType.Miss));
+                Assert.That(result.Score, Is.EqualTo(0));
+            });
         }
     }
 }

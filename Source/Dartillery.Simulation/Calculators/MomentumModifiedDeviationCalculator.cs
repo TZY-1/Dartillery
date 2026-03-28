@@ -10,12 +10,14 @@ internal sealed class MomentumModifiedDeviationCalculator : IContextualDeviation
 {
     private readonly IContextualDeviationCalculator _inner;
 
+    /// <summary>Initializes a momentum modifier decorator wrapping the given inner calculator.</summary>
     public MomentumModifiedDeviationCalculator(IContextualDeviationCalculator inner)
     {
         ArgumentNullException.ThrowIfNull(inner);
         _inner = inner;
     }
 
+    /// <inheritdoc/>
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);

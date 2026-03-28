@@ -27,8 +27,11 @@ public class DartboardSimulatorTests
         var result = simulator.Throw(target);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Score, Is.GreaterThanOrEqualTo(0));
-        Assert.That(result.SectorNumber, Is.InRange(0, 20));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Score, Is.GreaterThanOrEqualTo(0));
+            Assert.That(result.SectorNumber, Is.InRange(0, 20));
+        });
     }
 
     [Test]
@@ -59,9 +62,12 @@ public class DartboardSimulatorTests
         var result1 = simulator1.Throw(target);
         var result2 = simulator2.Throw(target);
 
-        Assert.That(result1.Score, Is.EqualTo(result2.Score));
-        Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
-        Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result1.Score, Is.EqualTo(result2.Score));
+            Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
+            Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+        });
     }
 
     [Test]

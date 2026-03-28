@@ -32,6 +32,7 @@ internal sealed class TargetResolver : ITargetResolver
         _ringResolver = ringResolver;
     }
 
+    /// <inheritdoc/>
     public Target? Resolve(Point2D point)
     {
         double radius = point.DistanceFromOrigin;

@@ -41,7 +41,7 @@ public class StatisticalAnalysisTests
     {
         var target = Target.Bullseye();
         const int throwCount = 1000;
-        var seed = 123;
+        const int seed = 123;
 
         TestContext.Out.WriteLine($"=== Distribution Comparison: Aiming at {target} ===");
         TestContext.Out.WriteLine($"Throws per distribution: {throwCount}\n");
@@ -70,8 +70,11 @@ public class StatisticalAnalysisTests
         TestContext.Out.WriteLine("--- Uniform Distribution (max radius=0.06) ---");
         PrintStatistics(uniformStats, throwCount);
 
-        Assert.That(gaussianStats.AverageScorePerDart, Is.GreaterThan(0));
-        Assert.That(uniformStats.AverageScorePerDart, Is.GreaterThan(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(gaussianStats.AverageScorePerDart, Is.GreaterThan(0));
+            Assert.That(uniformStats.AverageScorePerDart, Is.GreaterThan(0));
+        });
     }
 
     [Test]
@@ -207,20 +210,20 @@ public class StatisticalAnalysisTests
 
         TestContext.Out.WriteLine($"Misses: {stats.Misses} ({stats.Misses * 100.0 / throwCount:F1}%)");
 
-        TestContext.Out.WriteLine($"Top Scores:");
+        TestContext.Out.WriteLine("Top Scores:");
 
         foreach (var (score, count) in stats.ScoreDistribution.OrderByDescending(x => x.Value).Take(3))
         {
             TestContext.Out.WriteLine($"  {score} points: {count} times");
         }
 
-        TestContext.Out.WriteLine($"Score Distribution:");
+        TestContext.Out.WriteLine("Score Distribution:");
         foreach (var (score, count) in stats.ScoreDistribution.OrderByDescending(x => x.Value))
         {
             TestContext.Out.WriteLine($"  {score} points: {count} times ({count * 100.0 / throwCount:F1}%)");
         }
 
-        TestContext.Out.WriteLine($"Field Distribution:");
+        TestContext.Out.WriteLine("Field Distribution:");
         foreach (var ((segmenttype, score), count) in stats.FieldDistribution.OrderByDescending(x => x.Value))
         {
             TestContext.Out.WriteLine($"  {segmenttype} {score}: {count} ({count * 100.0 / throwCount:F1}%)");

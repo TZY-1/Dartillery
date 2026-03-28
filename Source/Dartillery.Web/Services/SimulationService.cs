@@ -1,4 +1,5 @@
 using Dartillery.Core.Models;
+using Dartillery.Web.Models;
 
 namespace Dartillery.Web.Services;
 
@@ -11,74 +12,114 @@ public sealed class SimulationService
 
     private PlayerSession? _session;
 
+    /// <summary>Raised when any simulation state changes.</summary>
 #pragma warning disable CA1003 // Blazor UI notification pattern uses Action, not EventHandler
     public event Action? OnStateChanged;
 #pragma warning restore CA1003
 
-    // Configuration properties for UI binding
+    /// <summary>Selected skill level preset name.</summary>
     public string SelectedSkillLevel { get; set; } = "Amateur";
 
+    /// <summary>Base precision (sigma) for throw deviation.</summary>
     public double CustomSigma { get; set; } = 0.05;
 
+    /// <summary>Whether fatigue simulation is active.</summary>
     public bool EnableFatigue { get; set; } = true;
 
+    /// <summary>Whether pressure simulation is active.</summary>
     public bool EnablePressure { get; set; }
 
+    /// <summary>Active pressure scenario for game context.</summary>
     public PressureScenario PressureScenario { get; set; } = PressureScenarios.Relaxed;
 
+    /// <summary>Whether bust rules are enforced during pressure.</summary>
     public bool PressureEnforceBust { get; set; } = true;
 
+    /// <summary>Fatigue accumulation rate per throw.</summary>
     public double FatigueRate { get; set; } = 0.007;
 
+    /// <summary>Resistance to pressure effects (0–1).</summary>
     public double PressureResistance { get; set; } = 0.5;
 
+    /// <summary>Maximum fatigue cap.</summary>
     public double MaxFatigue { get; set; } = 0.05;
 
+    /// <summary>Selected fatigue model type.</summary>
     public FatigueModelType FatigueModelType { get; set; } = FatigueModelType.Logarithmic;
 
+    /// <summary>Growth rate for logarithmic fatigue model.</summary>
     public double FatigueGrowthRate { get; set; } = 0.01;
 
+    /// <summary>Whether momentum (hot/cold streak) is active.</summary>
     public bool EnableMomentum { get; set; }
 
+    /// <summary>Number of recent throws to analyze for momentum.</summary>
     public int MomentumWindowSize { get; set; } = 6;
 
+    /// <summary>Success rate threshold to trigger hot streak.</summary>
     public double MomentumHotThreshold { get; set; } = 0.7;
 
+    /// <summary>Failure rate threshold to trigger cold streak.</summary>
     public double MomentumColdThreshold { get; set; } = 0.5;
 
+    /// <summary>Deviation reduction bonus during hot streak.</summary>
     public double MomentumHotBonus { get; set; } = 0.05;
 
+    /// <summary>Deviation increase penalty during cold streak.</summary>
     public double MomentumColdPenalty { get; set; } = 0.1;
 
+    /// <summary>Deviation factor threshold for classifying a "good" throw.</summary>
     public double MomentumGoodDeviation { get; set; } = 1.0;
 
+    /// <summary>Deviation factor threshold for classifying a "bad" throw.</summary>
     public double MomentumBadDeviation { get; set; } = 2.5;
 
+    /// <summary>Whether dart grouping/deflection is active.</summary>
     public bool EnableGrouping { get; set; }
 
+    /// <summary>Distance within which darts deflect each other.</summary>
     public double GroupingClusterRadius { get; set; } = 0.08;
 
+    /// <summary>Maximum deflection offset when darts overlap.</summary>
     public double GroupingMaxDeflection { get; set; } = 0.04;
 
+    /// <summary>Whether target-specific difficulty scaling is active.</summary>
     public bool EnableTargetDifficulty { get; set; }
 
+    /// <summary>Whether clicking the dartboard triggers manual throws.</summary>
     public bool EnableManualTargeting { get; set; }
 
+    /// <summary>Selected spread algorithm (Gaussian, Uniform, or Bivariate).</summary>
     public SpreadMode SpreadMode { get; set; } = SpreadMode.Gaussian;
 
+    /// <summary>Vertical-to-horizontal sigma ratio for bivariate mode.</summary>
+    public double BivariateSigmaRatio { get; set; } = 0.7;
+
+    /// <summary>Rotation angle in degrees for the bivariate spread ellipse.</summary>
+    public double BivariateAngleDegrees { get; set; }
+
+    /// <summary>Throw-to-throw consistency for bivariate mode (0–1).</summary>
+    public double BivariateConsistency { get; set; } = 0.8;
+
+    /// <summary>Whether to show the spread shape overlay on the board.</summary>
     public bool ShowSpreadCircle { get; set; } = true;
 
+    /// <summary>Base spread bounds (without fatigue) for visualization.</summary>
     public ISpreadBounds? BaseBounds { get; private set; }
 
+    /// <summary>Effective spread bounds (with fatigue) for visualization.</summary>
     public ISpreadBounds? EffectiveBounds { get; private set; }
 
-    // Current state properties
+    /// <summary>All throw results in the current session.</summary>
     public IReadOnlyList<ThrowResult> Throws => _throws.AsReadOnly();
 
+    /// <summary>Current accumulated fatigue value.</summary>
     public double CurrentFatigue => _session?.CurrentFatigue ?? 0.0;
 
+    /// <summary>Total throws in the current session.</summary>
     public int ThrowCount => _session?.ThrowCount ?? 0;
 
+    /// <summary>Active player name.</summary>
     public string PlayerName => _session?.Profile.Name ?? "Unknown";
 
     /// <summary>
@@ -106,14 +147,14 @@ public sealed class SimulationService
     /// <summary>
     /// Exposes the game state tracker for pressure visualization in UI components.
     /// </summary>
-    public GameStateTracker GameState => _gameStateTracker;
+    public GameStateTracker GameState { get; } = new();
 
     /// <summary>
     /// Returns the pressure modifier that would apply to the next throw based on current game state.
     /// </summary>
     public double PreviewPressureModifier =>
         EnablePressure && _session != null
-            ? _session.PreviewPressureModifier(_gameStateTracker.ToGameContext())
+            ? _session.PreviewPressureModifier(GameState.ToGameContext())
             : 1.0;
 
     /// <summary>
@@ -178,12 +219,18 @@ public sealed class SimulationService
         }
 
         builder.WithSpreadMode(SpreadMode);
+
+        if (SpreadMode == SpreadMode.Bivariate)
+        {
+            builder.WithBivariateParameters(BivariateSigmaRatio, BivariateAngleDegrees, BivariateConsistency);
+        }
+
         builder.WithTruncation();
 
         // Compute bounds for visualization using the spread algorithm's own logic
-        BaseBounds = SpreadBoundsFactory.Create(SpreadMode, CustomSigma);
+        BaseBounds = SpreadBoundsFactory.Create(SpreadMode, CustomSigma, BivariateSigmaRatio, BivariateAngleDegrees);
         var effectivePrecision = CustomSigma + (EnableFatigue ? MaxFatigue : 0);
-        EffectiveBounds = SpreadBoundsFactory.Create(SpreadMode, effectivePrecision);
+        EffectiveBounds = SpreadBoundsFactory.Create(SpreadMode, effectivePrecision, BivariateSigmaRatio, BivariateAngleDegrees);
 
         _session = builder.BuildSession();
         _throws.Clear();
@@ -208,6 +255,15 @@ public sealed class SimulationService
         FatigueRate = profile.FatigueRate;
         PressureResistance = profile.PressureResistance;
         MaxFatigue = profile.MaxFatigue;
+
+        // Bivariate defaults per skill level
+        (BivariateSigmaRatio, BivariateAngleDegrees, BivariateConsistency) = preset switch
+        {
+            "Professional" => (0.85, 5.0, 0.9),
+            "Beginner" => (0.5, 15.0, 0.5),
+            _ => (0.7, 10.0, 0.7) // Amateur
+        };
+
         RebuildSession();
     }
 
@@ -220,7 +276,6 @@ public sealed class SimulationService
     /// <returns>The throw result</returns>
     public ThrowResult ThrowAt(Target target, GameContext? gameContext = null)
     {
-        // Lazy initialization - rebuild session if not yet created
         if (_session == null)
         {
             RebuildSession();
@@ -233,7 +288,7 @@ public sealed class SimulationService
 
         if (EnablePressure)
         {
-            _gameStateTracker.RecordThrow(result);
+            GameState.RecordThrow(result);
         }
 
         NotifyStateChanged();
@@ -284,7 +339,7 @@ public sealed class SimulationService
 
         if (EnablePressure)
         {
-            _gameStateTracker.RecordThrow(result);
+            GameState.RecordThrow(result);
         }
 
         NotifyStateChanged();
@@ -297,8 +352,8 @@ public sealed class SimulationService
     /// </summary>
     public void ResetGameState()
     {
-        _gameStateTracker.EnforceBustRules = PressureEnforceBust;
-        _gameStateTracker.StartScenario(PressureScenario);
+        GameState.EnforceBustRules = PressureEnforceBust;
+        GameState.StartScenario(PressureScenario);
     }
 
     /// <summary>
@@ -310,8 +365,8 @@ public sealed class SimulationService
     {
         if (EnablePressure)
         {
-            _gameStateTracker.EnforceBustRules = PressureEnforceBust;
-            return _gameStateTracker.ToGameContext();
+            GameState.EnforceBustRules = PressureEnforceBust;
+            return GameState.ToGameContext();
         }
 
         // Non-pressure path: basic visit tracking for grouping model

@@ -19,6 +19,7 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
     private readonly ITargetDifficultyModel _targetDifficultyModel;
     private readonly PlayerProfile _profile;
 
+    /// <summary>Initializes the adapter with deviation calculator, profile, and optional models.</summary>
     public ContextualSimulatorAdapter(
         IContextualDeviationCalculator deviationCalculator,
         PlayerProfile profile,
@@ -37,6 +38,7 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         _segmentResolver = segmentResolver ?? new SegmentResolver();
     }
 
+    /// <inheritdoc/>
     public ThrowResult Throw(Target target, ThrowContext context)
     {
         Point2D aimPoint = _aimPointCalculator.CalculateAimPoint(target);
@@ -70,6 +72,7 @@ internal sealed class ContextualSimulatorAdapter : IContextualThrowSimulator
         };
     }
 
+    /// <inheritdoc/>
     public ThrowResult ThrowAtPoint(Point2D aimPoint, ThrowContext context)
     {
         var (dx, dy) = _deviationCalculator.CalculateDeviation(_profile, context);

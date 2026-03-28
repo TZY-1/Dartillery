@@ -14,11 +14,14 @@ public class DependencyInjectionTests
 
         using var provider = services.BuildServiceProvider();
 
-        Assert.That(provider.GetRequiredService<IThrowSimulator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IDeviationCalculator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<ISegmentResolver>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IAimPointCalculator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<ITargetResolver>(), Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(provider.GetRequiredService<IThrowSimulator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IDeviationCalculator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<ISegmentResolver>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IAimPointCalculator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<ITargetResolver>(), Is.Not.Null);
+        });
     }
 
     [Test]
@@ -29,16 +32,19 @@ public class DependencyInjectionTests
 
         using var provider = services.BuildServiceProvider();
 
-        Assert.That(provider.GetRequiredService<IThrowSimulator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IDeviationCalculator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<ISegmentResolver>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IAimPointCalculator>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<ITargetResolver>(), Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(provider.GetRequiredService<IThrowSimulator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IDeviationCalculator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<ISegmentResolver>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IAimPointCalculator>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<ITargetResolver>(), Is.Not.Null);
 
-        Assert.That(provider.GetRequiredService<IFatigueModel>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IPressureModel>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IMomentumModel>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<IGroupingModel>(), Is.Not.Null);
-        Assert.That(provider.GetRequiredService<ITargetDifficultyModel>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IFatigueModel>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IPressureModel>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IMomentumModel>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<IGroupingModel>(), Is.Not.Null);
+            Assert.That(provider.GetRequiredService<ITargetDifficultyModel>(), Is.Not.Null);
+        });
     }
 }

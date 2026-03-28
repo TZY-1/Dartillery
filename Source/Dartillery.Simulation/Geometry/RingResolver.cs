@@ -8,6 +8,7 @@ namespace Dartillery.Simulation.Geometry;
 /// </summary>
 internal sealed class RingResolver : IRingResolver
 {
+    /// <inheritdoc/>
     public SegmentType ResolveRing(double radius)
     {
         // Handle bull regions (no sector dependency)
@@ -20,11 +21,15 @@ internal sealed class RingResolver : IRingResolver
         // Handle scoring rings
         if (radius >= BoardDimensions.TripleRingInner &&
             radius <= BoardDimensions.TripleRingOuter)
+        {
             return SegmentType.Triple;
+        }
 
         if (radius >= BoardDimensions.DoubleRingInner &&
             radius <= BoardDimensions.DoubleRingOuter)
+        {
             return SegmentType.Double;
+        }
 
         // Everything else is Single
         return SegmentType.Single;

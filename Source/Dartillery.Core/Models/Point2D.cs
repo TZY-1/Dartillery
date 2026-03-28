@@ -7,7 +7,7 @@ namespace Dartillery.Core.Models;
 public readonly record struct Point2D(double X, double Y)
 {
     /// <summary>Floating-point equality tolerance.</summary>
-    private const double EqualityTolerance = 1e-10;
+    private const double _equalityTolerance = 1e-10;
 
     /// <summary>
     /// Euclidean distance from the board center (0,0), i.e., the radial position.
@@ -55,8 +55,8 @@ public readonly record struct Point2D(double X, double Y)
     /// Determines whether this point is equal to another within floating-point tolerance.
     /// </summary>
     public bool Equals(Point2D other) =>
-        Math.Abs(X - other.X) < EqualityTolerance &&
-        Math.Abs(Y - other.Y) < EqualityTolerance;
+        Math.Abs(X - other.X) < _equalityTolerance &&
+        Math.Abs(Y - other.Y) < _equalityTolerance;
 
     /// <inheritdoc />
     public override int GetHashCode() => HashCode.Combine(X, Y);

@@ -20,6 +20,7 @@ internal sealed class LogarithmicFatigueModel : IFatigueModel
         _growthRate = growthRate;
     }
 
+    /// <inheritdoc/>
     public double CalculateFatigue(SessionState state, PlayerProfile profile)
     {
         // Logarithmic curve: fatigue = maxFatigue * (1 - e^(-throwCount * growthRate))

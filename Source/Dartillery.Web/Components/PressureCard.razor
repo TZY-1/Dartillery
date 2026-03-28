@@ -1,3 +1,4 @@
+@using System.Linq
 @using Dartillery.Core.Models
 @using Dartillery.Web.Models
 @using Dartillery.Web.Services
@@ -36,9 +37,9 @@
             <select class="form-select"
                     value="@Svc.PressureScenario.Name"
                     @onchange="OnScenarioChanged">
-                @foreach (var scenario in PressureScenarios.All)
+                @foreach (var name in PressureScenarios.All.Select(s => s.Name))
                 {
-                    <option value="@scenario.Name">@scenario.Name</option>
+                    <option value="@name">@name</option>
                 }
                 @if (Svc.PressureScenario.Name == "Custom")
                 {

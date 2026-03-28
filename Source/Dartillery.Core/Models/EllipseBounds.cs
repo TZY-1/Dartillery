@@ -13,7 +13,7 @@ public sealed record EllipseBounds(double RadiusX, double RadiusY, double AngleD
     /// <inheritdoc/>
     public bool Contains(double dx, double dy)
     {
-        var (lx, ly) = RotateToLocal(dx, dy);
+        (double lx, double ly) = RotateToLocal(dx, dy);
         return RadiusX > 0 && RadiusY > 0
             && ((lx * lx) / (RadiusX * RadiusX)) + ((ly * ly) / (RadiusY * RadiusY)) <= 1.0;
     }
@@ -22,7 +22,7 @@ public sealed record EllipseBounds(double RadiusX, double RadiusY, double AngleD
     public double NormalizedDistance(double dx, double dy)
     {
         if (RadiusX <= 0 || RadiusY <= 0) return 0;
-        var (lx, ly) = RotateToLocal(dx, dy);
+        (double lx, double ly) = RotateToLocal(dx, dy);
         return Math.Sqrt(((lx * lx) / (RadiusX * RadiusX)) + ((ly * ly) / (RadiusY * RadiusY)));
     }
 
@@ -30,10 +30,10 @@ public sealed record EllipseBounds(double RadiusX, double RadiusY, double AngleD
     public string ToSvgElement(double cx, double cy, string extraAttributes = "")
     {
         var c = CultureInfo.InvariantCulture;
-        var extra = string.IsNullOrEmpty(extraAttributes) ? string.Empty : " " + extraAttributes;
+        string extra = string.IsNullOrEmpty(extraAttributes) ? string.Empty : " " + extraAttributes;
 
         // SVG rotate uses clockwise degrees; negate because our Y-axis is inverted in SVG
-        var svgAngle = -AngleDegrees;
+        double svgAngle = -AngleDegrees;
 
         return $"<ellipse cx=\"{cx.ToString("F4", c)}\" cy=\"{cy.ToString("F4", c)}\" " +
                $"rx=\"{RadiusX.ToString("F4", c)}\" ry=\"{RadiusY.ToString("F4", c)}\" " +

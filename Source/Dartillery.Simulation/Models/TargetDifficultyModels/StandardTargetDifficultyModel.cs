@@ -10,6 +10,7 @@ namespace Dartillery.Simulation.Models.TargetDifficultyModels;
 /// </summary>
 internal sealed class StandardTargetDifficultyModel : ITargetDifficultyModel
 {
+    /// <inheritdoc/>
     public double GetDifficultyModifier(Target target)
     {
         return target.SegmentType switch

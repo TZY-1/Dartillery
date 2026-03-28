@@ -11,12 +11,14 @@ internal sealed class PressureModifiedDeviationCalculator : IContextualDeviation
 {
     private readonly IContextualDeviationCalculator _inner;
 
+    /// <summary>Initializes a pressure modifier decorator wrapping the given inner calculator.</summary>
     public PressureModifiedDeviationCalculator(IContextualDeviationCalculator inner)
     {
         ArgumentNullException.ThrowIfNull(inner);
         _inner = inner;
     }
 
+    /// <inheritdoc/>
     public (double DX, double DY) CalculateDeviation(PlayerProfile profile, ThrowContext context)
     {
         var (dx, dy) = _inner.CalculateDeviation(profile, context);

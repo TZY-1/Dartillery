@@ -1,0 +1,6 @@
+[*.cs]
+# Test methods and classes do not require XML documentation.
+dotnet_diagnostic.SA1600.severity = none
+
+# NUnit assertions style is acceptable as-is.
+dotnet_diagnostic.NUnit2046.severity = none

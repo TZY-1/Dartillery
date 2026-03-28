@@ -90,8 +90,11 @@ public class EnhancedSimulatorAnalysisTests
                 }
             }
 
-            Assert.That(linearSession.CurrentFatigue, Is.GreaterThan(0));
-            Assert.That(realisticSession.CurrentFatigue, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(linearSession.CurrentFatigue, Is.GreaterThan(0));
+                Assert.That(realisticSession.CurrentFatigue, Is.GreaterThan(0));
+            });
         }
 
         [Test]
@@ -180,20 +183,23 @@ public class EnhancedSimulatorAnalysisTests
             var pressureAvg = pressureScores.Average();
             var pressureHitRate = pressureHits * 100.0 / throwsPerScenario;
 
-            TestContext.Out.WriteLine($"Normal Situation:");
+            TestContext.Out.WriteLine("Normal Situation:");
             TestContext.Out.WriteLine($"  Average Score: {normalAvg:F2}");
             TestContext.Out.WriteLine($"  Hit Rate (D20): {normalHitRate:F1}%");
             TestContext.Out.WriteLine();
-            TestContext.Out.WriteLine($"Checkout Pressure:");
+            TestContext.Out.WriteLine("Checkout Pressure:");
             TestContext.Out.WriteLine($"  Average Score: {pressureAvg:F2}");
             TestContext.Out.WriteLine($"  Hit Rate (D20): {pressureHitRate:F1}%");
             TestContext.Out.WriteLine();
-            TestContext.Out.WriteLine($"Impact:");
+            TestContext.Out.WriteLine("Impact:");
             TestContext.Out.WriteLine($"  Score Difference: {pressureAvg - normalAvg:F2} ({(pressureAvg - normalAvg) / normalAvg * 100:F1}%)");
             TestContext.Out.WriteLine($"  Hit Rate Difference: {pressureHitRate - normalHitRate:F1}%");
 
-            Assert.That(pressureScores.All(s => s >= 0 && s <= 40), Is.True);
-            Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
+            Assert.Multiple(() =>
+            {
+                Assert.That(pressureScores.All(s => s >= 0 && s <= 40), Is.True);
+                Assert.That(normalScores.All(s => s >= 0 && s <= 40), Is.True);
+            });
         }
 
         [Test]
@@ -236,8 +242,11 @@ public class EnhancedSimulatorAnalysisTests
 
                 TestContext.Out.WriteLine($"{name,-15} {resistance,-15:F2} {avgScore,-12:F2} {hitRate,-11:F1}%");
 
-                Assert.That(avgScore, Is.GreaterThanOrEqualTo(0));
-                Assert.That(hitRate, Is.GreaterThanOrEqualTo(0));
+                Assert.Multiple(() =>
+                {
+                    Assert.That(avgScore, Is.GreaterThanOrEqualTo(0));
+                    Assert.That(hitRate, Is.GreaterThanOrEqualTo(0));
+                });
             }
         }
     }
@@ -504,8 +513,11 @@ public class EnhancedSimulatorAnalysisTests
             TestContext.Out.WriteLine($"{"Basic",-15} {basicAvg,-12:F2} {basicHits,-8} {basicHitRate,-9:F1}%");
             TestContext.Out.WriteLine($"{"Enhanced",-15} {enhancedAvg,-12:F2} {enhancedHits,-8} {enhancedHitRate,-9:F1}%");
 
-            Assert.That(basicAvg, Is.GreaterThan(0));
-            Assert.That(enhancedAvg, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(basicAvg, Is.GreaterThan(0));
+                Assert.That(enhancedAvg, Is.GreaterThan(0));
+            });
         }
 
         [Test]
@@ -544,8 +556,11 @@ public class EnhancedSimulatorAnalysisTests
             TestContext.Out.WriteLine($"Center: ({avgX:F6}, {avgY:F6})");
             TestContext.Out.WriteLine($"Standard Deviation: {stdDev:F6}");
 
-            Assert.That(coordinates, Has.Count.EqualTo(throwCount));
-            Assert.That(stdDev, Is.GreaterThan(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(coordinates, Has.Count.EqualTo(throwCount));
+                Assert.That(stdDev, Is.GreaterThan(0));
+            });
         }
 
         private static Target SelectSmartTarget(int remaining)

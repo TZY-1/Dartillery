@@ -21,6 +21,7 @@ internal sealed class TimeBasedFatigueModel : IFatigueModel
         _fatiguePerMinute = fatiguePerMinute;
     }
 
+    /// <inheritdoc/>
     public double CalculateFatigue(SessionState state, PlayerProfile profile)
     {
         double minutes = state.SessionDuration.TotalMinutes;

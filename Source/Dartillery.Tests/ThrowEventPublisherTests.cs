@@ -39,8 +39,11 @@ public class ThrowEventPublisherTests
             publisher.Publish(SomeResult(), SomeContext(), SomeProfile(), sessionId: Guid.NewGuid(), DateTime.UtcNow));
 
         Assert.That(aggregate, Is.Not.Null);
-        Assert.That(aggregate!.InnerExceptions, Has.Count.EqualTo(2));
-        Assert.That(aggregate.InnerExceptions, Does.Contain(error1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(aggregate!.InnerExceptions, Has.Count.EqualTo(2));
+            Assert.That(aggregate.InnerExceptions, Does.Contain(error1));
+        });
         Assert.That(aggregate.InnerExceptions, Does.Contain(error2));
     }
 

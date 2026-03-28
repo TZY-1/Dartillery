@@ -8,6 +8,7 @@ namespace Dartillery.Simulation.Geometry;
 /// </summary>
 internal sealed class ScoreCalculator : IScoreCalculator
 {
+    /// <inheritdoc/>
     public int CalculateScore(SegmentType segmentType, int sectorNumber)
     {
         return segmentType switch

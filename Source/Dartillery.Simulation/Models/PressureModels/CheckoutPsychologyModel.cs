@@ -9,11 +9,12 @@ namespace Dartillery.Simulation.Models.PressureModels;
 /// </summary>
 internal sealed class CheckoutPsychologyModel : IPressureModel
 {
-    private static readonly HashSet<int> BogeyNumbers = new()
+    private static readonly HashSet<int> _bogeyNumbers = new()
     {
         169, 168, 166, 165, 163, 162, 159,
     };
 
+    /// <inheritdoc/>
     public double GetPrecisionModifier(PlayerProfile profile, GameContext context)
     {
         double pressure = 1.0;
@@ -28,7 +29,7 @@ internal sealed class CheckoutPsychologyModel : IPressureModel
                 pressure += 0.08;
             }
 
-            if (BogeyNumbers.Contains(context.RemainingScore))
+            if (_bogeyNumbers.Contains(context.RemainingScore))
             {
                 pressure += 0.04;
             }

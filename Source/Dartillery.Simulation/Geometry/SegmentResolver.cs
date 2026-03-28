@@ -38,6 +38,7 @@ internal sealed class SegmentResolver : ISegmentResolver
         _scoreCalculator = scoreCalculator;
     }
 
+    /// <inheritdoc/>
     public ThrowResult Resolve(Point2D hitPoint, Point2D aimedPoint)
     {
         double radius = hitPoint.DistanceFromOrigin;

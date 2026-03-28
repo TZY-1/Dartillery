@@ -9,6 +9,7 @@ namespace Dartillery.Simulation.Models.FatigueModels;
 /// </summary>
 internal sealed class LinearFatigueModel : IFatigueModel
 {
+    /// <inheritdoc/>
     public double CalculateFatigue(SessionState state, PlayerProfile profile)
     {
         double fatigue = state.ThrowCount * profile.FatigueRate;

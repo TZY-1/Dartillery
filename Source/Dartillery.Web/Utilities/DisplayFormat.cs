@@ -2,6 +2,9 @@ using Dartillery.Shared;
 
 namespace Dartillery.Web.Utilities;
 
+/// <summary>
+/// Formatting helpers for converting normalized board values to human-readable strings.
+/// </summary>
 public static class DisplayFormat
 {
     private const double _boardRadius = BoardDimensions.DartBoardRadiusInMM;

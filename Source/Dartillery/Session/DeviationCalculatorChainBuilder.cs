@@ -13,6 +13,7 @@ internal sealed class DeviationCalculatorChainBuilder
     private bool _useTruncation;
     private ISpreadBounds? _truncationBounds;
 
+    /// <summary>Initializes a new chain builder with the given base deviation calculator.</summary>
     public DeviationCalculatorChainBuilder(IDeviationCalculator baseCalculator)
     {
         ArgumentNullException.ThrowIfNull(baseCalculator);

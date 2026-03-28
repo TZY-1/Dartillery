@@ -8,5 +8,6 @@ namespace Dartillery.Simulation.Models.TargetDifficultyModels;
 /// </summary>
 internal sealed class NoTargetDifficultyModel : ITargetDifficultyModel
 {
+    /// <inheritdoc/>
     public double GetDifficultyModifier(Target target) => 1.0;
 }

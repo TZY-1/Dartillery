@@ -7,12 +7,15 @@ namespace Dartillery.Core.Models;
 /// </summary>
 public sealed record CircleBounds(double Radius) : ISpreadBounds
 {
+    /// <inheritdoc/>
     public bool Contains(double dx, double dy)
         => (dx * dx) + (dy * dy) <= Radius * Radius;
 
+    /// <inheritdoc/>
     public double NormalizedDistance(double dx, double dy)
         => Radius > 0 ? Math.Sqrt((dx * dx) + (dy * dy)) / Radius : 0;
 
+    /// <inheritdoc/>
     public string ToSvgElement(double cx, double cy, string extraAttributes = "")
     {
         var c = CultureInfo.InvariantCulture;

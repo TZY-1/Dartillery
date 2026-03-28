@@ -26,8 +26,11 @@ public class EnhancedSimulatorBuilderTests
                 .BuildSession();
 
             Assert.That(session, Is.Not.Null);
-            Assert.That(session.Profile, Is.Not.Null);
-            Assert.That(session.ThrowCount, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile, Is.Not.Null);
+                Assert.That(session.ThrowCount, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -41,9 +44,12 @@ public class EnhancedSimulatorBuilderTests
             var result1 = session1.Throw(target);
             var result2 = session2.Throw(target);
 
-            Assert.That(result1.Score, Is.EqualTo(result2.Score));
-            Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
-            Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1.Score, Is.EqualTo(result2.Score));
+                Assert.That(result1.SegmentType, Is.EqualTo(result2.SegmentType));
+                Assert.That(result1.SectorNumber, Is.EqualTo(result2.SectorNumber));
+            });
         }
 
         [Test]
@@ -76,9 +82,12 @@ public class EnhancedSimulatorBuilderTests
         {
             var session = CreateSession(b => b.WithProfessionalPlayer("Michael"));
 
-            Assert.That(session.Profile.Name, Is.EqualTo("Michael"));
-            Assert.That(session.Profile.BaseSkill, Is.LessThan(0.05));
-            Assert.That(session.Profile.PressureResistance, Is.GreaterThan(0.5));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile.Name, Is.EqualTo("Michael"));
+                Assert.That(session.Profile.BaseSkill, Is.LessThan(0.05));
+                Assert.That(session.Profile.PressureResistance, Is.GreaterThan(0.5));
+            });
         }
 
         [Test]
@@ -88,9 +97,12 @@ public class EnhancedSimulatorBuilderTests
                 .WithAmateurPlayer("John")
                 .BuildSession();
 
-            Assert.That(session.Profile.Name, Is.EqualTo("John"));
-            Assert.That(session.Profile.BaseSkill, Is.EqualTo(0.05).Within(0.01));
-            Assert.That(session.Profile.PressureResistance, Is.EqualTo(0.5).Within(0.1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile.Name, Is.EqualTo("John"));
+                Assert.That(session.Profile.BaseSkill, Is.EqualTo(0.05).Within(0.01));
+                Assert.That(session.Profile.PressureResistance, Is.EqualTo(0.5).Within(0.1));
+            });
         }
 
         [Test]
@@ -100,9 +112,12 @@ public class EnhancedSimulatorBuilderTests
                 .WithBeginnerPlayer("Sarah")
                 .BuildSession();
 
-            Assert.That(session.Profile.Name, Is.EqualTo("Sarah"));
-            Assert.That(session.Profile.BaseSkill, Is.GreaterThan(0.05));
-            Assert.That(session.Profile.PressureResistance, Is.LessThan(0.5));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile.Name, Is.EqualTo("Sarah"));
+                Assert.That(session.Profile.BaseSkill, Is.GreaterThan(0.05));
+                Assert.That(session.Profile.PressureResistance, Is.LessThan(0.5));
+            });
         }
 
         [Test]
@@ -124,8 +139,11 @@ public class EnhancedSimulatorBuilderTests
                 .BuildSession();
 
             Assert.That(session.Profile, Is.EqualTo(customProfile));
-            Assert.That(session.Profile.Name, Is.EqualTo("Custom Player"));
-            Assert.That(session.Profile.BaseSkill, Is.EqualTo(0.03));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile.Name, Is.EqualTo("Custom Player"));
+                Assert.That(session.Profile.BaseSkill, Is.EqualTo(0.03));
+            });
         }
 
         [Test]
@@ -280,7 +298,7 @@ public class EnhancedSimulatorBuilderTests
                 results.Add(session.Throw(Target.Triple(20)));
             }
 
-            Assert.That(results.Count, Is.EqualTo(20));
+            Assert.That(results, Has.Count.EqualTo(20));
         }
     }
 
@@ -327,9 +345,12 @@ public class EnhancedSimulatorBuilderTests
             var mediumResult = session.Throw(mediumTarget);
             var hardResult = session.Throw(hardTarget);
 
-            Assert.That(easyResult, Is.Not.Null);
-            Assert.That(mediumResult, Is.Not.Null);
-            Assert.That(hardResult, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(easyResult, Is.Not.Null);
+                Assert.That(mediumResult, Is.Not.Null);
+                Assert.That(hardResult, Is.Not.Null);
+            });
         }
     }
 
@@ -367,7 +388,7 @@ public class EnhancedSimulatorBuilderTests
                 results.Add(session.Throw(Target.Bullseye()));
             }
 
-            Assert.That(results.Count, Is.EqualTo(50));
+            Assert.That(results, Has.Count.EqualTo(50));
         }
     }
 
@@ -403,8 +424,11 @@ public class EnhancedSimulatorBuilderTests
                 .BuildSession();
 
             Assert.That(session, Is.Not.Null);
-            Assert.That(session.Profile, Is.Not.Null);
-            Assert.That(session.ThrowCount, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(session.Profile, Is.Not.Null);
+                Assert.That(session.ThrowCount, Is.EqualTo(0));
+            });
 
             // Should work with defaults
             var result = session.Throw(Target.Triple(20));
@@ -442,9 +466,12 @@ public class EnhancedSimulatorBuilderTests
 
             var result3 = session.Throw(Target.Double(12), gameContext);
 
-            Assert.That(result1, Is.Not.Null);
-            Assert.That(result2, Is.Not.Null);
-            Assert.That(result3, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1, Is.Not.Null);
+                Assert.That(result2, Is.Not.Null);
+                Assert.That(result3, Is.Not.Null);
+            });
         }
     }
 
@@ -475,9 +502,12 @@ public class EnhancedSimulatorBuilderTests
             TestContext.Out.WriteLine($"With Fatigue - First half: {firstHalfWithFatigue:F2}, Second half: {secondHalfWithFatigue:F2}");
             TestContext.Out.WriteLine($"Without Fatigue - Average: {scoresWithoutFatigue.Average():F2}");
 
-            // Both configurations should deliver valid results
-            Assert.That(scoresWithFatigue.All(s => s >= 0 && s <= 60), Is.True);
-            Assert.That(scoresWithoutFatigue.All(s => s >= 0 && s <= 60), Is.True);
+            Assert.Multiple(() =>
+            {
+                // Both configurations should deliver valid results
+                Assert.That(scoresWithFatigue.All(s => s >= 0 && s <= 60), Is.True);
+                Assert.That(scoresWithoutFatigue.All(s => s >= 0 && s <= 60), Is.True);
+            });
         }
 
         [Test]
@@ -509,8 +539,11 @@ public class EnhancedSimulatorBuilderTests
             TestContext.Out.WriteLine($"Amateur average: {amateurAvg:F2}");
             TestContext.Out.WriteLine($"Beginner average: {beginnerAvg:F2}");
 
-            Assert.That(proAvg, Is.GreaterThan(amateurAvg));
-            Assert.That(amateurAvg, Is.GreaterThan(beginnerAvg));
+            Assert.Multiple(() =>
+            {
+                Assert.That(proAvg, Is.GreaterThan(amateurAvg));
+                Assert.That(amateurAvg, Is.GreaterThan(beginnerAvg));
+            });
         }
     }
 

@@ -15,23 +15,23 @@ public static class BoardDimensions
 
     /// <summary>Radius of the inner bull (double bull / bullseye).</summary>
     public const double InnerBullRadius =
-        InnerBullRadiusInMM / DartBoardRadiusInMM; // ≈ 0.03735
+        _innerBullRadiusInMM / DartBoardRadiusInMM; // ≈ 0.03735
 
     /// <summary>Radius of the outer bull (single bull).</summary>
     public const double OuterBullRadius =
-        OuterBullRadiusInMM / DartBoardRadiusInMM; // ≈ 0.09353
+        _outerBullRadiusInMM / DartBoardRadiusInMM; // ≈ 0.09353
 
     /// <summary>Inner radius of the triple ring.</summary>
     public const double TripleRingInner =
-        TripleRingInnerRadiusInMM / DartBoardRadiusInMM; // ≈ 0.62941
+        _tripleRingInnerRadiusInMM / DartBoardRadiusInMM; // ≈ 0.62941
 
     /// <summary>Outer radius of the triple ring.</summary>
     public const double TripleRingOuter =
-        TripleRingOuterRadiusInMM / DartBoardRadiusInMM; // ≈ 0.67647
+        _tripleRingOuterRadiusInMM / DartBoardRadiusInMM; // ≈ 0.67647
 
     /// <summary>Inner radius of the double ring.</summary>
     public const double DoubleRingInner =
-        DoubleRingInnerRadiusInMM / DartBoardRadiusInMM; // ≈ 0.95294
+        _doubleRingInnerRadiusInMM / DartBoardRadiusInMM; // ≈ 0.95294
 
     /// <summary>Outer radius of the double ring (board outer edge).</summary>
     public const double DoubleRingOuter = 1.0;
@@ -65,17 +65,17 @@ public static class BoardDimensions
     // =========================================================================
 
     /// <summary>Radius of the inner bull (double bull).</summary>
-    private const double InnerBullRadiusInMM = 6.35;
+    private const double _innerBullRadiusInMM = 6.35;
 
     /// <summary>Radius of the outer bull (single bull).</summary>
-    private const double OuterBullRadiusInMM = 15.9;
+    private const double _outerBullRadiusInMM = 15.9;
 
     /// <summary>Distance from board center to inner edge of the triple ring.</summary>
-    private const double TripleRingInnerRadiusInMM = 107.0;
+    private const double _tripleRingInnerRadiusInMM = 107.0;
 
     /// <summary>Distance from board center to outer edge of the triple ring.</summary>
-    private const double TripleRingOuterRadiusInMM = 115.0;
+    private const double _tripleRingOuterRadiusInMM = 115.0;
 
     /// <summary>Distance from board center to inner edge of the double ring.</summary>
-    private const double DoubleRingInnerRadiusInMM = 162.0;
+    private const double _doubleRingInnerRadiusInMM = 162.0;
 }
