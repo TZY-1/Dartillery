@@ -484,10 +484,9 @@ public class IntegrationTests
 
             TestContext.Out.WriteLine($"Checkout (D16): {(success ? $"SUCCESS in {attemptsNeeded} attempts" : "FAILED")}");
 
-            if (success)
-            {
-                Assert.That(attemptsNeeded, Is.LessThanOrEqualTo(maxAttempts));
-            }
+            Assert.That(success, Is.True,
+                "Professional player should hit D16 within 20 attempts with seeded RNG");
+            Assert.That(attemptsNeeded, Is.LessThanOrEqualTo(maxAttempts));
         }
     }
 }

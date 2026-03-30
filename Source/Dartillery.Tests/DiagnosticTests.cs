@@ -117,6 +117,8 @@ public class DiagnosticTests
             TestContext.Out.WriteLine($"{sector,-8} {i,-8} {angleRad,-15:F4} {angleDeg,-12:F2} {sectors[leftNeighborIdx],-15} {sectors[rightNeighborIdx],-15}");
         }
 
-        Assert.That(sectors, Has.Length.EqualTo(20));
+        var expectedOrder = new[] { 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5 };
+        Assert.That(sectors, Is.EqualTo(expectedOrder),
+            "Sectors should follow standard dartboard clockwise order starting from 12 o'clock");
     }
 }

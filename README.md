@@ -2,6 +2,8 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download)
 [![C#](https://img.shields.io/badge/C%23-12-blue.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![CI](https://github.com/TZY-1/Dartillery/actions/workflows/ci.yml/badge.svg)](https://github.com/TZY-1/Dartillery/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/TZY-1/Dartillery/graph/badge.svg)](https://codecov.io/gh/TZY-1/Dartillery)
 
 Dartillery is a dart throw simulation engine built with C# and .NET 8. The repository serves as an example of applying SOLID principles, Clean Code practices, and architectural patterns like Builder, Decorator, and Dependency Injection to a domain-specific problem.
 
@@ -54,7 +56,7 @@ The solution uses a multi-project structure to separate domains:
 Clone this repository and compile the solution:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Dartillery.git
+git clone https://github.com/TZY-1/Dartillery.git
 cd Dartillery
 dotnet build
 ```
@@ -73,7 +75,7 @@ dotnet run
 The engine provides a fluent Builder API. You can use standard configurations, fine-tune existing models, or inject custom logic.
 
 ### 1. Quick Start (Standard Presets)
-The easiest way to get started is by using the integrated presets that automatically apply a variety of behavioral behaviors:
+The easiest way to get started is by using the integrated presets that automatically apply a variety of behavioral models:
 
 ```csharp
 // Build an advanced simulation pipeline using predefined logic
@@ -86,11 +88,11 @@ var session = new EnhancedDartboardSimulatorBuilder()
     .WithTruncation()               // Caps maximum statistical scatter
     .BuildSession();
 
-// Aim for Treble 20
-var aimPoint = new AimPoint(20, Multiplier.Treble);
+// Aim for Triple 20
+var target = Target.Triple(20);
 
 // Throw the dart
-var result = session.Throw(aimPoint);
+var result = session.Throw(target);
 ```
 
 ### 2. Fine-Tuning the Simulation
@@ -108,8 +110,8 @@ var fineTunedSession = new EnhancedDartboardSimulatorBuilder()
     })
     // Adjust Momentum window and bonuses
     .WithStandardMomentum(windowSize: 10, hotHandBonus: 0.1, coldStreakPenalty: 0.2)
-    // Adjust truncation to max deviation allowed
-    .WithTruncation(maxDeviation: 0.3)
+    // Cap maximum deviation to prevent extreme outliers
+    .WithTruncation()
     .BuildSession();
 ```
 
@@ -136,12 +138,6 @@ var customSession = new EnhancedDartboardSimulatorBuilder()
 ```
 
 ---
-
-## Contributing & Clean Code
-
-This project focuses on **SOLID principles & Clean architecture**. It incorporates strict C# formatting rules and utilizes centralized Roslyn analyzers enforced on build to maintain high code quality across the solution.
-
-Feel free to open a Pull Request for new simulation models or visual dashboard improvements.
 
 ## License
 

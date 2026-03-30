@@ -37,14 +37,18 @@ public class CheckoutTests
         TestContext.Out.WriteLine($"{"Score",-6} {"Route",-30} {"Success %",-12} {"Avg Darts",-10}");
         TestContext.Out.WriteLine(new string('-', 62));
 
+        var allStats = new List<CheckoutStatistics>();
+
         foreach (var checkout in checkouts.OrderByDescending(c => c.Score))
         {
             var stats = SimulateCheckout(simulator, checkout.Targets, 100);
+            allStats.Add(stats);
             var routeStr = string.Join(" -> ", checkout.Targets.Where(t => t != null));
             TestContext.Out.WriteLine($"{checkout.Score,-6} {routeStr,-30} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
 
-        Assert.Pass();
+        Assert.That(allStats.Any(s => s.Successes > 0), Is.True,
+            "At least one checkout route should succeed for a professional player");
     }
 
     [Test]
@@ -64,13 +68,17 @@ public class CheckoutTests
         TestContext.Out.WriteLine($"{"Strategy",-20} {"Success %",-12} {"Avg Darts",-10}");
         TestContext.Out.WriteLine(new string('-', 45));
 
+        var allStats = new List<(string Name, CheckoutStatistics Stats)>();
+
         foreach (var (name, route) in strategies)
         {
             var stats = SimulateCheckout(simulator, route, 200);
+            allStats.Add((name, stats));
             TestContext.Out.WriteLine($"{name,-20} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
 
-        Assert.Pass();
+        Assert.That(allStats.All(s => s.Stats.Attempts > 0), Is.True,
+            "All strategies should have recorded attempts");
     }
 
     [Test]
@@ -89,15 +97,21 @@ public class CheckoutTests
         TestContext.Out.WriteLine($"{"Level",-15} {"Success %",-12} {"Avg Darts",-10}");
         TestContext.Out.WriteLine(new string('-', 40));
 
+        var results = new List<(string Name, CheckoutStatistics Stats)>();
+
         foreach (var (level, name) in precisionLevels)
         {
             var simulator = CreateSeededSimulator(level, seed: 42);
 
             var stats = SimulateCheckout(simulator, checkoutRoute, 200);
+            results.Add((name, stats));
             TestContext.Out.WriteLine($"{name,-15} {stats.SuccessRate * 100,-11:F1}% {stats.AverageDarts,-10:F2}");
         }
 
-        Assert.Pass();
+        Assert.That(results[0].Stats.SuccessRate, Is.GreaterThanOrEqualTo(results[1].Stats.SuccessRate),
+            "Professional should have at least as high a success rate as Amateur");
+        Assert.That(results[1].Stats.SuccessRate, Is.GreaterThanOrEqualTo(results[2].Stats.SuccessRate),
+            "Amateur should have at least as high a success rate as Beginner");
     }
 
     private static IThrowSimulator CreateSeededSimulator(SimulatorPrecision precision, int seed)

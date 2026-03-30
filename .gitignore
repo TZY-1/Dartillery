@@ -367,3 +367,7 @@ FodyWeavers.xsd
 
 # GSD planning documents
 .planning/
+
+# Code coverage reports
+CoverageResults/
+CoverageReport/

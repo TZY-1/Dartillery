@@ -51,15 +51,12 @@ public class EdgeCaseTests
 
             var targets = new List<Target>();
 
-            // Alle Singles (1-20)
             for (int i = 1; i <= 20; i++)
                 targets.Add(Target.Single(i));
 
-            // Alle Doubles (1-20)
             for (int i = 1; i <= 20; i++)
                 targets.Add(Target.Double(i));
 
-            // Alle Triples (1-20)
             for (int i = 1; i <= 20; i++)
                 targets.Add(Target.Triple(i));
 
@@ -304,14 +301,13 @@ public class EdgeCaseTests
         {
             var simulator = new DartboardSimulatorBuilder()
                 .WithSeed(1)
-                .WithSeed(2) // sollte vorherigen Wert überschreiben
-                .WithSeed(3) // sollte wieder überschreiben
+                .WithSeed(2)
+                .WithSeed(3)
                 .Build();
 
             var target = Target.Triple(20);
             var result1 = simulator.Throw(target);
 
-            // Vergleiche mit Simulator, der direkt mit Seed 3 gebaut wurde
             var simulator3 = new DartboardSimulatorBuilder()
                 .WithSeed(3)
                 .Build();
@@ -329,7 +325,7 @@ public class EdgeCaseTests
         {
             var simulator = new DartboardSimulatorBuilder()
                 .WithPrecision(SimulatorPrecision.Professional)
-                .WithStandardDeviation(0.15) // sollte Precision überschreiben
+                .WithStandardDeviation(0.15)
                 .Build();
 
             var result = simulator.Throw(Target.Triple(20));
@@ -354,7 +350,6 @@ public class EdgeCaseTests
                 Assert.That(str, Is.Not.Null);
                 Assert.That(str, Is.Not.Empty);
 
-                // ToString sollte Typ und Nummer enthalten
                 TestContext.Out.WriteLine($"Target: {str}");
             }
         }
@@ -393,7 +388,6 @@ public class EdgeCaseTests
             Assert.That(allResults.All(r => r.Score >= 0 && r.Score <= 60), Is.True,
                 "Some results had invalid scores");
 
-            // Prüfe auf vernünftige Verteilung
             var averageScore = allResults.Average(r => r.Score);
             Assert.That(averageScore, Is.GreaterThan(0),
                 "Average score should be greater than 0");
@@ -435,16 +429,13 @@ public class EdgeCaseTests
                 samples.Add(simulator.Throw(target));
             }
 
-            // Sollte das Ziel manchmal treffen, aber nicht immer
             var hitCount = samples.Count(s => s.SegmentType == SegmentType.Triple && s.SectorNumber == 20);
             Assert.That(hitCount, Is.GreaterThan(0), "Never hit the target - precision might be too low");
             Assert.That(hitCount, Is.LessThan(1000), "Always hit the target - no randomness");
 
-            // Sollte mehrere verschiedene Scores haben
             var uniqueScores = samples.Select(s => s.Score).Distinct().Count();
             Assert.That(uniqueScores, Is.GreaterThan(3), "Too few unique scores - distribution too narrow");
 
-            // Sollte gelegentlich daneben werfen bei Amateur-Präzision
             var missCount = samples.Count(s => s.SegmentType == SegmentType.Miss);
             TestContext.Out.WriteLine($"Hit rate: {hitCount}/1000, Unique scores: {uniqueScores}, Misses: {missCount}");
         }

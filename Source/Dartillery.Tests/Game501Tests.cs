@@ -71,11 +71,14 @@ public class Game501Tests
         TestContext.Out.WriteLine($"{"Level",-15} {"Avg",-8} {"Darts",-8} {"Finished",-10} {"Checkout %",-12}");
         TestContext.Out.WriteLine(new string('-', 55));
 
+        var allStats = new List<Game501Statistics>();
+
         foreach (var (level, name) in precisionLevels)
         {
             var simulator = CreateSeededSimulator(level, seed: 123);
 
             var stats = Simulate501Game(simulator, maxDarts: 100);
+            allStats.Add(stats);
             var checkoutPct = stats.CheckoutAttempts > 0
                 ? stats.CheckoutSuccess * 100.0 / stats.CheckoutAttempts
                 : 0;
@@ -83,7 +86,12 @@ public class Game501Tests
             TestContext.Out.WriteLine($"{name,-15} {stats.ThreeDartAverage,-7:F2} {stats.TotalDarts,-8} {(stats.GameWon ? "Yes" : "No"),-10} {checkoutPct,-11:F1}%");
         }
 
-        Assert.That(precisionLevels, Has.Length.EqualTo(3));
+        Assert.Multiple(() =>
+        {
+            Assert.That(allStats, Has.Count.EqualTo(3));
+            Assert.That(allStats[0].ThreeDartAverage, Is.GreaterThan(allStats[2].ThreeDartAverage),
+                "Professional should have a higher 3-dart average than Beginner");
+        });
     }
 
     [Test]
